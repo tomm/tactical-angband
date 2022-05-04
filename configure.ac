@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 4.2.4, bugs@rephial.org)
+AC_INIT(TacticalAngband, 4.2.4, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -11,7 +11,7 @@ done
 
 BUILDSYS_INIT
 
-AC_SUBST(PACKAGE, angband)
+AC_SUBST(PACKAGE, tacticalangband)
 
 AC_CONFIG_HEADERS(src/autoconf.h)
 
@@ -42,7 +42,7 @@ if test "x$wsetgid$with_private_dirs$with_no_install" != "xyes";  then
 --with-setgid=<groupname>
     This configures the game to store savefiles and scorefiles in a central
     location on the system, writeable only by the group \"groupname\".  If you
-    want a traditional installation of Angband, where all users share a
+    want a traditional installation of TacticalAngband, where all users share a
     scorefile, then use this option, and set the groupname to your \"games\"
     group.  This option requires the game to have the \"setgid\" bit set on its
     permissions, and thus this option requires root when installing.
@@ -580,7 +580,7 @@ fi
 if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
 elif test "x$with_private_dirs" = "xyes" && test ! "x$enable_win" = "xyes"; then
-	echo "  (with private save and score files in ~/.angband/Angband/)"
+	echo "  (with private save and score files in ~/.angband/TacticalAngband/)"
 fi
 if test "x$with_sphinx" == "xyes"; then
 	echo "  documentation:                          Yes"

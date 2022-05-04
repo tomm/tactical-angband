@@ -5,10 +5,10 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-NAME = Angband
+NAME = Tactical-Angband
 VERSION = 4.2.4
 COPYRIGHT = (c) 1995-2022 Angband contributors
-PROGNAME = angband
+PROGNAME = tactical-angband
 
 HEADERS = \
 	angband.h \

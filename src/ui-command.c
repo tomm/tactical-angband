@@ -148,7 +148,7 @@ void do_cmd_version(void)
 	region local_area = { 0, 0, 0, 0 };
 
 	my_strcpy(header_buf,
-			  format("You are playing %s.  Type '?' for more info.", buildver),
+			  format("You are playing %s.  Type '?' for more info.", buildid),
 			  sizeof(header_buf));
 	textblock_append(tb, "\n");
 	textblock_append(tb, "%s", copyright);
