@@ -67,7 +67,7 @@ lash-desc:acid
 numerator:1  
 denominator:3
 divisor:3
-damage-cap:1600
+damage-cap:800
 msgt:BR_ACID
 obvious:1
 wake:1
@@ -83,7 +83,7 @@ lash-desc:lightning
 numerator:1  
 denominator:3
 divisor:3
-damage-cap:1600
+damage-cap:800
 msgt:BR_ELEC
 obvious:1
 wake:1
@@ -99,7 +99,7 @@ lash-desc:fire
 numerator:1  
 denominator:3
 divisor:3
-damage-cap:1600
+damage-cap:800
 msgt:BR_FIRE
 obvious:1
 wake:1
@@ -115,7 +115,7 @@ lash-desc:frost
 numerator:1  
 denominator:3
 divisor:3
-damage-cap:1600
+damage-cap:800
 msgt:BR_FROST
 obvious:1
 wake:1
@@ -131,7 +131,7 @@ lash-desc:venom
 numerator:1  
 denominator:3
 divisor:3
-damage-cap:800
+damage-cap:400
 msgt:BR_GAS
 obvious:1
 wake:1
@@ -147,7 +147,7 @@ lash-desc:brightness
 numerator:6
 denominator:8+1d4
 divisor:6
-damage-cap:500
+damage-cap:250
 msgt:BR_LIGHT
 obvious:1
 wake:1
@@ -163,7 +163,7 @@ lash-desc:blackness
 numerator:6
 denominator:8+1d4
 divisor:6
-damage-cap:500
+damage-cap:250
 msgt:BR_DARK
 obvious:1
 wake:1
@@ -179,7 +179,7 @@ lash-desc:sound
 numerator:6
 denominator:8+1d4
 divisor:6
-damage-cap:500
+damage-cap:250
 msgt:BR_SOUND
 obvious:1
 wake:1
@@ -195,7 +195,7 @@ lash-desc:razors
 numerator:6
 denominator:8+1d4
 divisor:6
-damage-cap:500
+damage-cap:250
 msgt:BR_SHARDS
 obvious:1
 wake:1
@@ -211,7 +211,7 @@ lash-desc:dislocation
 numerator:6
 denominator:8+1d4
 divisor:6
-damage-cap:400
+damage-cap:200
 msgt:BR_NEXUS
 obvious:1
 wake:1
@@ -227,7 +227,7 @@ lash-desc:withering
 numerator:6
 denominator:8+1d4
 divisor:6
-damage-cap:600
+damage-cap:300
 msgt:BR_NETHER
 obvious:1
 wake:1
@@ -243,7 +243,7 @@ lash-desc:confusion
 numerator:6
 denominator:8+1d4
 divisor:6
-damage-cap:600
+damage-cap:300
 msgt:BR_CHAOS
 obvious:1
 wake:1
@@ -259,7 +259,7 @@ lash-desc:unmagic
 numerator:6
 denominator:8+1d4
 divisor:6
-damage-cap:500
+damage-cap:250
 msgt:BR_DISEN
 obvious:1
 wake:1
@@ -303,7 +303,7 @@ player-desc:gravity
 blind-desc:something strange
 lash-desc:gravity
 divisor:3
-damage-cap:200
+damage-cap:100
 msgt:BR_GRAVITY
 obvious:1
 wake:1
@@ -317,7 +317,7 @@ player-desc:inertia
 blind-desc:something strange
 lash-desc:lassitude
 divisor:6
-damage-cap:200
+damage-cap:100
 msgt:BR_INERTIA
 obvious:1
 wake:1
@@ -331,7 +331,7 @@ player-desc:force
 blind-desc:something hard
 lash-desc:impact
 divisor:6
-damage-cap:200
+damage-cap:100
 msgt:BR_FORCE
 obvious:1
 wake:1
@@ -345,7 +345,7 @@ player-desc:time
 blind-desc:something strange
 lash-desc:ruination
 divisor:3
-damage-cap:150
+damage-cap:75
 msgt:BR_TIME
 obvious:1
 wake:1
@@ -359,7 +359,7 @@ player-desc:plasma
 blind-desc:something
 lash-desc:living fire
 divisor:6
-damage-cap:150
+damage-cap:75
 msgt:BR_PLASMA
 obvious:1
 wake:1
@@ -400,7 +400,7 @@ player-desc:the elements
 blind-desc:something
 lash-desc:raw magic
 divisor:3
-damage-cap:1600
+damage-cap:800
 msgt:BR_ELEMENTS
 obvious:1
 wake:1
