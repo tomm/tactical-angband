@@ -153,7 +153,7 @@ owner:15000:Vella the Slender (Human)
 slots:6:10
 turnover:9
 always:scroll:Word of Recall
-#always:scroll:Phase Door
+always:potion:Retreat
 always:scroll:Remove Curse
 always:potion:Cure Light Wounds
 normal:scroll:Monster Confusion

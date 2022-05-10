@@ -5285,6 +5285,20 @@ attack:1d1:0:0
 armor:0:0
 flags:INSTA_ART | QUEST_ART
 
+## Tactical-Angband objects
+
+name:Retreat
+type:potion
+graphics:?:w
+level:1
+weight:5
+cost:15
+alloc:20:1 to 100
+pile:100:2d3
+power:5
+effect:TIMED_INC:RETREAT:0:0
+dice:10
+
 
 #The "Special Artifacts" are now automatically generated from artifact.txt
 

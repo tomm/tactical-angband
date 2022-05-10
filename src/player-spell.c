@@ -497,6 +497,11 @@ bool spell_cast(int spell_index, int dir, struct command *cmd)
 	bool ident = false;
 	int beam  = beam_chance();
 
+	/* Casting ends retreating effect */
+	if (player->timed[TMD_RETREAT]) {
+		player_set_timed(player, TMD_RETREAT, 0, true);
+	}
+
 	/* Get the spell */
 	const struct class_spell *spell = spell_by_index(player, spell_index);
 
