@@ -2219,7 +2219,7 @@ graphics:=:d
 level:5
 weight:2
 cost:1000
-alloc:20:10 to 50
+alloc:0:10 to 50
 flags:EASY_KNOW
 curse:teleportation:100
 values:SPEED[2]
@@ -2487,7 +2487,7 @@ graphics:":d
 level:10
 weight:3
 cost:10
-alloc:20:10 to 40
+alloc:0:10 to 40
 flags:EASY_KNOW
 curse:teleportation:100
 
@@ -2535,7 +2535,7 @@ graphics:?:w
 level:1
 weight:5
 cost:15
-alloc:50:1 to 100
+alloc:0:1 to 100
 pile:100:2d3
 power:5
 effect:TELEPORT
@@ -2547,7 +2547,7 @@ graphics:?:w
 level:10
 weight:5
 cost:40
-alloc:40:10 to 100
+alloc:0:10 to 100
 pile:25:2
 power:6
 effect:TELEPORT
@@ -2559,7 +2559,7 @@ graphics:?:w
 level:20
 weight:5
 cost:800
-alloc:16:20 to 100
+alloc:0:20 to 100
 pile:10:2
 power:15
 effect:TELEPORT_LEVEL
@@ -2774,7 +2774,7 @@ graphics:?:w
 level:40
 weight:5
 cost:2500
-alloc:25:40 to 100
+alloc:0:40 to 100
 power:20
 effect:BANISH
 
@@ -2784,7 +2784,7 @@ graphics:?:w
 level:50
 weight:5
 cost:3000
-alloc:20:50 to 100
+alloc:0:50 to 100
 power:25
 effect:MASS_BANISH
 
@@ -2944,7 +2944,7 @@ graphics:?:w
 level:40
 weight:5
 cost:1000
-alloc:30:40 to 100
+alloc:0:40 to 100
 power:12
 effect:DESTRUCTION:LIGHT:15
 
@@ -3950,7 +3950,7 @@ graphics:-:d
 level:20
 weight:10
 cost:3500
-alloc:20:20 to 100
+alloc:0:20 to 100
 attack:1d1:0:0
 armor:0:0
 charges:6+d5
@@ -4181,7 +4181,7 @@ graphics:_:d
 level:50
 weight:50
 cost:6000
-alloc:20:50 to 100
+alloc:0:50 to 100
 attack:1d2:0:0
 armor:0:0
 charges:1+d3
@@ -4360,7 +4360,7 @@ graphics:_:d
 level:70
 weight:50
 cost:5000
-alloc:10:70 to 100
+alloc:0:70 to 100
 attack:1d2:0:0
 armor:0:0
 charges:1+d2
@@ -4448,7 +4448,7 @@ graphics:_:d
 level:20
 weight:50
 cost:2000
-alloc:50:20 to 100
+alloc:0:20 to 100
 attack:1d2:0:0
 armor:0:0
 charges:5+d4
@@ -4810,7 +4810,7 @@ graphics:-:d
 level:45
 weight:15
 cost:5000
-alloc:20:45 to 100
+alloc:0:45 to 100
 attack:1d1:0:0
 armor:0:0
 power:11

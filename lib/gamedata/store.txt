@@ -153,7 +153,7 @@ owner:15000:Vella the Slender (Human)
 slots:6:10
 turnover:9
 always:scroll:Word of Recall
-always:scroll:Phase Door
+#always:scroll:Phase Door
 always:scroll:Remove Curse
 always:potion:Cure Light Wounds
 normal:scroll:Monster Confusion
@@ -194,7 +194,7 @@ normal:wand:Confuse Monster
 normal:wand:Magic Missile
 normal:wand:Stinking Cloud
 normal:wand:Stone to Mud
-normal:staff:Teleportation
+#normal:staff:Teleportation
 normal:staff:Light
 normal:staff:Mapping
 normal:staff:Detect Invisible
