@@ -659,3 +659,10 @@ blind-desc:something
 obvious:1
 color:White
 
+code:SWAP_PLACES
+type:monster
+desc:swaps places with a monster
+blind-desc:something
+obvious:1
+wake:1
+color:White

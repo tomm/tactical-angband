@@ -67,6 +67,7 @@ EFFECT(SUMMON,						false,	NULL,		1,		EFINFO_SUMM,	"summons %s at the current du
 EFFECT(BANISH,						false,	NULL,		0,		EFINFO_NONE,	"removes all of a given creature type from the level",	"banish")
 EFFECT(MASS_BANISH,					false,	NULL,		0,		EFINFO_NONE,	"removes all nearby creatures",	"banish all")
 EFFECT(PROBE,						false,	NULL,		0,		EFINFO_NONE,	"gives you information on the health and abilities of monsters you can see",	"probe")
+EFFECT(SWAP_PLACES,					false,	NULL,	0,		EFINFO_NONE,	"swap places with a target",	"swap places")
 EFFECT(TELEPORT,					false,	"range",	2,		EFINFO_TELE,	"teleports %s randomly %s",	"teleport %s %s")
 EFFECT(TELEPORT_TO,					false,	NULL,		0,		EFINFO_NONE,	"teleports toward a target",	"teleport to target")
 EFFECT(TELEPORT_LEVEL,				false,	NULL,		0,		EFINFO_NONE,	"teleports you one level up or down",	"teleport level")

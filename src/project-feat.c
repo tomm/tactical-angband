@@ -591,6 +591,10 @@ static void project_feature_handler_AWAY_ALL(project_feature_handler_context_t *
 {
 }
 
+static void project_feature_handler_SWAP_PLACES(project_feature_handler_context_t *context)
+{
+}
+
 static void project_feature_handler_TURN_UNDEAD(project_feature_handler_context_t *context)
 {
 }

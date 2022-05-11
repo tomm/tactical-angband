@@ -246,6 +246,7 @@ typedef struct project_monster_handler_context_s {
 	uint16_t flag;
 	int do_poly;
 	int teleport_distance;
+	bool swap_places;
 	enum mon_messages hurt_msg;
 	enum mon_messages die_msg;
 	int mon_timed[MON_TMD_MAX];
@@ -803,6 +804,11 @@ static void project_monster_handler_AWAY_ALL(project_monster_handler_context_t *
 	context->hurt_msg = MON_MSG_DISAPPEAR;
 }
 
+static void project_monster_handler_SWAP_PLACES(project_monster_handler_context_t *context)
+{
+	context->swap_places = true;
+}
+
 /* Turn undead (Use "dam" as "power") */
 static void project_monster_handler_TURN_UNDEAD(project_monster_handler_context_t *context)
 {
@@ -1215,6 +1221,12 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		/* Wake the monster up, don't notice the player */
 		monster_wake(mon, false, 0);
+	} else if (context->swap_places) {
+		effect_simple(EF_SWAP_PLACES, context->origin, "", 0, 0, 0,
+					     context->grid.y, context->grid.x, NULL);
+
+		/* Wake the monster up, don't notice the player */
+		monster_wake(mon, false, 0);
 	} else {
 		for (int i = 0; i < MON_TMD_MAX; i++) {
 			if (context->mon_timed[i] > 0) {
@@ -1326,6 +1338,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 		0, /* flag */
 		0, /* do_poly */
 		0, /* teleport_distance */
+		false, /* swap_places */
 		MON_MSG_NONE, /* hurt_msg */
 		MON_MSG_DIE, /* die_msg */
 		{0, 0, 0, 0, 0, 0},

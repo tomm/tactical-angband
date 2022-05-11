@@ -2339,6 +2339,53 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 }
 
 /**
+ * Swap the positions of a player and a monster.
+ */
+bool effect_handler_SWAP_PLACES(effect_handler_context_t *context)
+{
+	char ma_name[80];
+	bool is_player = (context->origin.what != SRC_MONSTER || context->subtype);
+	struct loc point_a = loc(context->x, context->y);
+	struct loc point_b;
+	struct monster *mon_a = cave_monster(cave, square(cave, point_a)->mon);
+
+	if (context->origin.what == SRC_PLAYER) {
+		point_b = player->grid;
+
+		monster_desc(ma_name, sizeof(ma_name), mon_a, MDESC_TARG);
+		msg("You swap places with %s!", ma_name);
+	} else if (context->origin.what == SRC_MONSTER) {
+		char mb_name[80];
+		struct monster *mon_b = cave_monster(cave, context->origin.which.monster);
+		monster_desc(mb_name, sizeof(mb_name), mon_b, MDESC_TARG);
+		point_b = mon_b->grid;
+		msg("%s swaps places with %s!", mb_name, ma_name);
+	} else {
+		msg("Invalid source for effect_handler_SWAP_PLACES. Please report this bug!");
+		return true;
+	}
+
+	/* Sound */
+	sound(is_player ? MSG_TELEPORT : MSG_TPOTHER);
+
+	/* Move player */
+	monster_swap(point_a, point_b);
+
+	/* Clear any projection marker to prevent double processing */
+	sqinfo_off(square(cave, point_a)->info, SQUARE_PROJECT);
+
+	/* Clear monster target if it's no longer visible */
+	if (!target_able(target_get_monster())) {
+		target_set_monster(NULL);
+	}
+
+	/* Lots of updates after monster_swap */
+	handle_stuff(player);
+
+	return true;
+}
+
+/**
  * Teleport player or monster up to context->value.base grids away.
  *
  * If no spaces are readily available, the distance may increase.

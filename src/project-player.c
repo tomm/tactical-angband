@@ -634,6 +634,11 @@ static int project_player_handler_AWAY_ALL(project_player_handler_context_t *con
 	return 0;
 }
 
+static int project_player_handler_SWAP_PLACES(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
 static int project_player_handler_TURN_UNDEAD(project_player_handler_context_t *context)
 {
 	return 0;

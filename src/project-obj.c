@@ -393,6 +393,10 @@ static void project_object_handler_AWAY_ALL(project_object_handler_context_t *co
 {
 }
 
+static void project_object_handler_SWAP_PLACES(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_TURN_UNDEAD(project_object_handler_context_t *context)
 {
 }
