@@ -972,7 +972,7 @@ name:S_KIN
 msgt:SUM_MONSTER
 hit:100
 effect:SUMMON:KIN
-dice:8
+dice:2
 lore:summon similar monsters
 lore-color-base:Orange
 message-vis:{name} summons {pronoun} kin.
@@ -992,7 +992,7 @@ name:S_MONSTERS
 msgt:SUM_MONSTER
 hit:100
 effect:SUMMON:MONSTERS
-dice:8
+dice:2
 lore:summon monsters
 lore-color-base:Orange
 message-vis:{name} summons some friends.
@@ -1002,7 +1002,7 @@ name:S_ANIMAL
 msgt:SUM_ANIMAL
 hit:100
 effect:SUMMON:ANIMAL
-dice:12
+dice:3
 lore:summon animals
 lore-color-base:Orange
 message-vis:{name} summons animals.
@@ -1012,7 +1012,7 @@ name:S_SPIDER
 msgt:SUM_SPIDER
 hit:100
 effect:SUMMON:SPIDER
-dice:12
+dice:3
 lore:summon spiders
 lore-color-base:Orange
 message-vis:{name} summons spiders.
@@ -1022,7 +1022,7 @@ name:S_HOUND
 msgt:SUM_HOUND
 hit:100
 effect:SUMMON:HOUND
-dice:12
+dice:3
 lore:summon hounds
 lore-color-base:Orange
 message-vis:{name} summons hounds.
@@ -1032,7 +1032,7 @@ name:S_HYDRA
 msgt:SUM_HYDRA
 hit:100
 effect:SUMMON:HYDRA
-dice:6
+dice:1
 lore:summon hydras
 lore-color-base:Orange
 message-vis:{name} summons hydras.
@@ -1082,7 +1082,7 @@ name:S_HI_DEMON
 msgt:SUM_HI_DEMON
 hit:100
 effect:SUMMON:HI_DEMON
-dice:8
+dice:1
 lore:summon greater demons
 lore-color-base:Light Red
 message-vis:{name} summons major demons.
@@ -1092,7 +1092,7 @@ name:S_HI_UNDEAD
 msgt:SUM_HI_UNDEAD
 hit:100
 effect:SUMMON:HI_UNDEAD
-dice:8
+dice:1
 lore:summon greater undead
 lore-color-base:Light Red
 message-vis:{name} summons fiends of darkness.
@@ -1102,7 +1102,7 @@ name:S_HI_DRAGON
 msgt:SUM_HI_DRAGON
 hit:100
 effect:SUMMON:HI_DRAGON
-dice:8
+dice:1
 lore:summon ancient dragons
 lore-color-base:Light Red
 message-vis:{name} summons ancient dragons.
@@ -1112,7 +1112,7 @@ name:S_WRAITH
 msgt:SUM_WRAITH
 hit:100
 effect:SUMMON:WRAITH
-dice:8
+dice:1
 lore:summon ringwraiths
 lore-color-base:Light Red
 message-vis:{name} summons ringwraiths.
@@ -1122,7 +1122,7 @@ name:S_UNIQUE
 msgt:SUM_UNIQUE
 hit:100
 effect:SUMMON:UNIQUE
-dice:8
+dice:1
 lore:summon uniques
 lore-color-base:Light Red
 message-vis:{name} summons {pronoun} servants.
