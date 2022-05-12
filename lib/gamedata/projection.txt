@@ -665,4 +665,4 @@ desc:swaps places with a monster
 blind-desc:something
 obvious:1
 wake:1
-color:White
+color:Light Red

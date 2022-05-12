@@ -1339,3 +1339,21 @@ aim:1
 power:25
 effect:BREATH:MISSILE:0:20
 dice:300
+
+# Tactical-Angband additions
+
+name:RETREAT
+aim:0
+power:5
+msg:{name} fills your limbs with energy!
+effect:TIMED_INC:RETREAT:0:5
+dice:10
+desc:sets you on a hasty retreat
+
+name:SWAP_PLACES
+aim:1
+power:5
+msg:{name} focuses magical energy on your target!
+effect:SELECT
+effect:BOLT_STATUS:SWAP_PLACES
+desc:swaps your location with the target
