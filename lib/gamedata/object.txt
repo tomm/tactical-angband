@@ -5326,5 +5326,15 @@ charges:6+d5
 power:11
 effect:BOLT_STATUS:SWAP_PLACES
 
+name:Running
+type:ring
+graphics:=:d
+level:40
+weight:2
+cost:10000
+alloc:40:75 to 100
+flags:GOOD
+values:MOVES[1]
+
 #The "Special Artifacts" are now automatically generated from artifact.txt
 
