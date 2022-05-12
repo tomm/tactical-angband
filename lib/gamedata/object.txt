@@ -5313,6 +5313,18 @@ effect:SELECT
 effect:BOLT_STATUS:SWAP_PLACES
 dice:M60
 
+name:Swap Places
+type:wand
+graphics:-:d
+level:20
+weight:10
+cost:3500
+alloc:0:20 to 100
+attack:1d1:0:0
+armor:0:0
+charges:6+d5
+power:11
+effect:BOLT_STATUS:SWAP_PLACES
 
 #The "Special Artifacts" are now automatically generated from artifact.txt
 
