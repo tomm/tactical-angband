@@ -639,7 +639,7 @@ bool player_inc_check(struct player *p, int idx, bool lore)
 			update_smart_learn(mon, p, effect->fail, 0, -1);
 		}
 
-		if (player_of_has(p, effect->fail)) {
+		if (player_of_has(p, effect->fail) && (effect->fail == OF_FREE_ACT || !one_in_(6))) {
 			if (mon) {
 				msg("You resist the effect!");
 			}
@@ -682,6 +682,13 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	assert(idx < TMD_MAX);
 
 	if (check == false || player_inc_check(p, idx, false) == true) {
+		/* If there was resistance to the effect, but it slipped through anyway (1 in 6)
+		 * then reduce duration */
+		if (timed_effects[idx].fail_code == TMD_FAIL_FLAG_OBJECT) {
+			if (player_of_has(p, timed_effects[idx].fail)) {
+				v /= 6;
+			}
+		}
 		/* Paralysis should be non-cumulative */
 		if (idx == TMD_PARALYZED && p->timed[TMD_PARALYZED] > 0) {
 			return false;

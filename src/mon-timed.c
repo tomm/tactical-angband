@@ -90,7 +90,7 @@ static bool saving_throw(const struct monster *mon, int effect_type, int timer, 
 /**
  * Determines whether the given monster successfully resists the given effect.
  */
-static bool does_resist(const struct monster *mon, int effect_type, int timer, int flag)
+static bool does_resist(const struct monster *mon, int effect_type, int *timer, int flag)
 {
 	assert(mon != NULL);
 	assert(effect_type >= 0);
@@ -106,13 +106,18 @@ static bool does_resist(const struct monster *mon, int effect_type, int timer, i
 
 	/* Check resistances from monster flags */
 	if (rf_has(mon->race->flags, effect->flag_resist)) {
-		lore_learn_flag_if_visible(lore, mon, effect->flag_resist);
-		return true;
+		/* Sometimes resistance is ineffective (but reduces duration) */
+		if (one_in_(6)) {
+			*timer /= 3;
+		} else {
+			lore_learn_flag_if_visible(lore, mon, effect->flag_resist);
+			return true;
+		}
 	}
 
 	/* Some effects get a saving throw; others don't */
 	if (effect->gets_save == true) {
-		return saving_throw(mon, effect_type, timer, flag);
+		return saving_throw(mon, effect_type, *timer, flag);
 	} else {
 		return false;
 	}
@@ -179,7 +184,7 @@ static bool mon_set_timed(struct monster *mon,
 	}
 
 	/* Determine if the monster resisted or not, if appropriate */
-	if (check_resist && does_resist(mon, effect_type, timer, flag)) {
+	if (check_resist && does_resist(mon, effect_type, &timer, flag)) {
 		resisted = true;
 		m_note = MON_MSG_UNAFFECTED;
 	} else {

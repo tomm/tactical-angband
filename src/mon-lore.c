@@ -1399,9 +1399,9 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	create_mon_flag_mask(current_flags, RFT_PROT, RFT_MAX);
 	rf_inter(current_flags, known_flags);
 	if (prev)
-		my_strcpy(start, ", and cannot be ", sizeof(start));
+		my_strcpy(start, ", and cannot be easily ", sizeof(start));
 	else
-		my_strcpy(start, format("%s cannot be ", initial_pronoun),
+		my_strcpy(start, format("%s cannot be easily ", initial_pronoun),
 				  sizeof(start));
 	lore_append_clause(tb, current_flags, COLOUR_L_UMBER, start, "or", "");
 	if (!rf_is_empty(current_flags)) {
