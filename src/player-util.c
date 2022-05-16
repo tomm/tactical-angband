@@ -934,13 +934,6 @@ bool player_can_cast(struct player *p, bool show_msg)
 		return false;
 	}
 
-	if (p->timed[TMD_BLIND] || no_light(p)) {
-		if (show_msg) {
-			msg("You cannot see!");
-		}
-		return false;
-	}
-
 	if (p->timed[TMD_CONFUSED]) {
 		if (show_msg) {
 			msg("You are too confused!");
@@ -962,6 +955,13 @@ bool player_can_study(struct player *p, bool show_msg)
 {
 	if (!player_can_cast(p, show_msg))
 		return false;
+
+	if (p->timed[TMD_BLIND] || no_light(p)) {
+		if (show_msg) {
+			msg("You cannot see!");
+		}
+		return false;
+	}
 
 	if (!p->upkeep->new_spells) {
 		if (show_msg) {
