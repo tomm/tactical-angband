@@ -194,7 +194,7 @@ normal:wand:Confuse Monster
 normal:wand:Magic Missile
 normal:wand:Stinking Cloud
 normal:wand:Stone to Mud
-#normal:staff:Teleportation
+normal:wand:Swap Places
 normal:staff:Light
 normal:staff:Mapping
 normal:staff:Detect Invisible
