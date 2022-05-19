@@ -5344,7 +5344,7 @@ weight:10
 cost:3500
 alloc:20:20 to 100
 armor:0:0
-charges:6+d5
+charges:18+d15
 power:11
 effect:BEAM:FORCE
 dice:1d11
@@ -5360,7 +5360,7 @@ armor:0:0
 power:11
 effect:BEAM:FORCE
 dice:1d11
-time:25
+time:10
 
 name:Stair Creation
 type:scroll
