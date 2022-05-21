@@ -2256,9 +2256,9 @@ graphics:=:d
 level:30
 weight:2
 cost:4000
-alloc:50:15 to 80
+alloc:50:20 to 80
 flags:AFRAID | EASY_KNOW
-values:SPEED[2]
+values:MOVES[1]
 
 name:the Mouse
 type:ring
@@ -5332,7 +5332,7 @@ graphics:=:d
 level:40
 weight:2
 cost:10000
-alloc:40:75 to 100
+alloc:40:40 to 80
 flags:GOOD
 values:MOVES[1]
 
