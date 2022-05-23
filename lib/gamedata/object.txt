@@ -5305,7 +5305,7 @@ graphics:?:w
 level:10
 weight:5
 cost:40
-alloc:40:10 to 100
+alloc:0:10 to 100
 attack:1d1:0:0
 pile:25:2
 power:6
@@ -5372,6 +5372,19 @@ alloc:16:20 to 100
 pile:10:2
 power:15
 effect:CREATE_STAIRS
+
+name:Locking
+type:scroll
+graphics:?:w
+level:10
+weight:5
+cost:40
+alloc:50:4 to 100
+pile:25:2
+power:6
+effect:TOUCH:LOCK_DOOR
+dice:7+1d7
+# for some reason, this value ends up 4-8 in project_feature_handler_context_t.dam...
 
 #The "Special Artifacts" are now automatically generated from artifact.txt
 

@@ -763,6 +763,12 @@ static void project_monster_handler_KILL_TRAP(project_monster_handler_context_t 
 	context->dam = 0;
 }
 
+static void project_monster_handler_LOCK_DOOR(project_monster_handler_context_t *context)
+{
+	context->skipped = true;
+	context->dam = 0;
+}
+
 static void project_monster_handler_MAKE_DOOR(project_monster_handler_context_t *context)
 {
 	context->skipped = true;

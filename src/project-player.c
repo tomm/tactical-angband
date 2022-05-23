@@ -594,6 +594,11 @@ static int project_player_handler_KILL_WALL(project_player_handler_context_t *co
 	return 0;
 }
 
+static int project_player_handler_LOCK_DOOR(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
 static int project_player_handler_KILL_DOOR(project_player_handler_context_t *context)
 {
 	return 0;

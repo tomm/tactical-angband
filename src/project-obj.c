@@ -369,6 +369,10 @@ static void project_object_handler_KILL_TRAP(project_object_handler_context_t *c
 	}
 }
 
+static void project_object_handler_LOCK_DOOR(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_MAKE_DOOR(project_object_handler_context_t *context)
 {
 }

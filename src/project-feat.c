@@ -184,6 +184,37 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 }
 
+/* Lock Doors */
+static void project_feature_handler_LOCK_DOOR(project_feature_handler_context_t *context)
+{
+	const struct loc grid = context->grid;
+
+	/* Require a grid without monsters */
+	if (square_monster(cave, grid) || square_isplayer(cave, grid)) return;
+
+	/* Require a door grid */
+	if (!square_isdoor(cave, grid)) return;
+
+	/* Push objects off the grid */
+	if (square_object(cave, grid))
+		push_object(grid);
+
+	/* Create closed door */
+	square_add_door(cave, grid, true);
+	square_set_door_lock(cave, grid, context->dam);
+
+	if (square_isview(cave, grid)) {
+		msg("The door magically slams fast!");
+	}
+
+	/* Observe */
+	if (square_isknown(cave, grid))
+		context->obvious = true;
+
+	/* Update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+}
+
 /* Destroy Doors */
 static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t *context)
 {
