@@ -1167,3 +1167,11 @@ min-combat:255:0:0
 type:dragon armor
 values:SPEED[d5]
 min-values:SPEED[0]
+
+# TacticalAngband additions
+
+name:of Running
+info:10000:20
+alloc:8:15 to 100
+type:boots
+values:MOVES[1]
