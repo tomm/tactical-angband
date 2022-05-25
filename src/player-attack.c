@@ -1304,6 +1304,11 @@ void do_cmd_fire(struct command *cmd) {
 		return;
 	}
 
+	/* Attacking ends retreating effect */
+	if (player->timed[TMD_RETREAT]) {
+		player_set_timed(player, TMD_RETREAT, 0, true);
+	}
+
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
 			/* Prompt */ "Fire which ammunition?",
