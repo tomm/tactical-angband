@@ -5311,7 +5311,6 @@ pile:25:2
 power:6
 effect:SELECT
 effect:BOLT_STATUS:SWAP_PLACES
-dice:M60
 
 name:Swap Places
 type:wand
@@ -5341,7 +5340,7 @@ type:wand
 graphics:-:d
 level:20
 weight:10
-cost:3500
+cost:1500
 alloc:20:20 to 100
 armor:0:0
 charges:18+d15
@@ -5385,6 +5384,20 @@ power:6
 effect:TOUCH:LOCK_DOOR
 dice:7+1d7
 # for some reason, this value ends up 4-8 in project_feature_handler_context_t.dam...
+
+name:Wind
+type:staff
+graphics:_:d
+level:30
+weight:50
+cost:4000
+alloc:20:30 to 100
+attack:1d2:0:0
+armor:0:0
+charges:8+d10
+power:14
+effect:SPHERE:FORCE:5
+dice:2d8
 
 #The "Special Artifacts" are now automatically generated from artifact.txt
 
