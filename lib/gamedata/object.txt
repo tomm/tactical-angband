@@ -5318,7 +5318,7 @@ graphics:-:d
 level:20
 weight:10
 cost:3500
-alloc:20:20 to 100
+alloc:30:20 to 100
 attack:1d1:0:0
 armor:0:0
 charges:6+d5
@@ -5341,7 +5341,7 @@ graphics:-:d
 level:20
 weight:10
 cost:1500
-alloc:20:20 to 100
+alloc:50:20 to 100
 armor:0:0
 charges:18+d15
 power:11
@@ -5391,7 +5391,7 @@ graphics:_:d
 level:30
 weight:50
 cost:4000
-alloc:20:30 to 100
+alloc:40:30 to 100
 attack:1d2:0:0
 armor:0:0
 charges:8+d10

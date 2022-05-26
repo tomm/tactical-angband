@@ -1175,3 +1175,4 @@ info:10000:20
 alloc:8:15 to 100
 type:boots
 values:MOVES[1]
+min-values:MOVES[0]
