@@ -5396,8 +5396,8 @@ attack:1d2:0:0
 armor:0:0
 charges:8+d10
 power:14
-effect:SPHERE:FORCE:5
-dice:2d8
+effect:SPHERE:FORCE:6
+dice:0
 
 #The "Special Artifacts" are now automatically generated from artifact.txt
 
