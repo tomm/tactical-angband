@@ -5379,7 +5379,7 @@ level:10
 weight:5
 cost:40
 alloc:50:4 to 100
-pile:25:2
+pile:50:1d4
 power:6
 effect:TOUCH:LOCK_DOOR
 dice:7+1d7
