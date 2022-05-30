@@ -4720,7 +4720,7 @@ experience:50
 blow:BITE:HURT:1d8
 flags:RAND_25 | BASH_DOOR | GROUP_AI | ATTR_FLICKER
 spell-freq:4
-spells:BLINK
+spells:BLINK | TELE_TO
 message-invis:BLINK:Something yips.
 friends:100:2d7:Same
 desc:A strange magical member of the canine race, its form seems to shimmer and
@@ -9673,7 +9673,7 @@ desc: corridors.
 name:minotaur
 base:hybrid
 color:s
-speed:130
+speed:120
 hit-points:550
 hearing:13
 smell:20
