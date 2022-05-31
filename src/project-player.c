@@ -494,6 +494,24 @@ static int project_player_handler_INERTIA(project_player_handler_context_t *cont
 	return 0;
 }
 
+static int project_player_handler_WIND(project_player_handler_context_t *context)
+{
+	struct loc centre = origin_get_loc(context->origin);
+
+	/* Player gets pushed in a random direction if on the trap */
+	if (context->origin.what == SRC_TRAP &&	loc_eq(player->grid, centre)) {
+		int d = randint0(8);
+		centre = loc_sum(centre, ddgrid_ddd[d]);
+	}
+
+	/* Thrust player away. */
+	thrust_away(centre, context->grid, 3 + context->dam / 20);
+
+	context->dam = 0;
+
+	return 0;
+}
+
 static int project_player_handler_FORCE(project_player_handler_context_t *context)
 {
 	struct loc centre = origin_get_loc(context->origin);

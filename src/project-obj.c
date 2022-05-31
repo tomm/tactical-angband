@@ -291,6 +291,10 @@ static void project_object_handler_INERTIA(project_object_handler_context_t *con
 {
 }
 
+static void project_object_handler_WIND(project_object_handler_context_t *context)
+{
+}
+
 /* Force -- potions and flasks */
 static void project_object_handler_FORCE(project_object_handler_context_t *context)
 {

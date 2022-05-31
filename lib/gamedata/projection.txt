@@ -433,6 +433,19 @@ obvious:1
 wake:1
 color:White
 
+code:WIND
+name:wind
+type:element
+desc:wind
+player-desc:wind
+blind-desc:wind
+divisor:12
+damage-cap:100
+msgt:BR_WIND
+obvious:1
+wake:1
+color:Light Blue
+
 code:LIGHT_WEAK
 type:environs
 desc:light

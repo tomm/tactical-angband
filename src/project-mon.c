@@ -679,6 +679,17 @@ static void project_monster_handler_INERTIA(project_monster_handler_context_t *c
 	project_monster_breath(context, RSF_BR_INER, 3);
 }
 
+/* Wind */
+static void project_monster_handler_WIND(project_monster_handler_context_t *context)
+{
+	struct loc centre = origin_get_loc(context->origin);
+
+	/* Thrust monster away */
+	thrust_away(centre, context->grid, context->dam);
+
+	context->dam = 0;
+}
+
 /* Force */
 static void project_monster_handler_FORCE(project_monster_handler_context_t *context)
 {
