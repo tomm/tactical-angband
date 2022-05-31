@@ -1173,6 +1173,152 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 		return true;
 	}
 
+	/* Phase 1: Clear out a circle around the player and lose knowledge of it */
+	for (grid.y = (py - r); grid.y <= (py + r); grid.y++) {
+		for (grid.x = (px - r); grid.x <= (px + r); grid.x++) {
+			/* Skip illegal grids */
+			if (!square_in_bounds_fully(cave, grid)) continue;
+
+			/* Extract the distance */
+			k = distance(loc(px, py), grid);
+
+			/* Stay in the circle of death */
+			if (k > r) continue;
+
+			/* Lose room and vault */
+			sqinfo_off(square(cave, grid)->info, SQUARE_ROOM);
+			sqinfo_off(square(cave, grid)->info, SQUARE_VAULT);
+
+			/* Forget completely */
+			if (!square_isbright(cave, grid)) {
+				sqinfo_off(square(cave, grid)->info, SQUARE_GLOW);
+			}
+			sqinfo_off(square(cave, grid)->info, SQUARE_SEEN);
+			square_forget(cave, grid);
+			square_light_spot(cave, grid);
+
+			/* Deal with player later */
+			if (loc_eq(grid, player->grid)) continue;
+
+			/* Don't remove stairs */
+			if (square_isstairs(cave, grid)) continue;
+
+			/* Destroy any grid that isn't a permament wall */
+			if (!square_isperm(cave, grid)) {
+				/* Deal with artifacts */
+				struct object *obj = square_object(cave, grid);
+				while (obj) {
+					if (obj->artifact) {
+						if (OPT(player, birth_lose_arts) ||
+							obj_is_known_artifact(obj)) {
+							history_lose_artifact(player, obj->artifact);
+							mark_artifact_created(
+								obj->artifact,
+								true);
+						} else {
+							mark_artifact_created(
+								obj->artifact,
+								false);
+						}
+					}
+					obj = obj->next;
+				}
+
+				/* Delete objects */
+				square_excise_pile(player->cave, grid);
+				square_excise_pile(cave, grid);
+
+				/* Open empty space so we can push monsters around in phase 2 */
+				square_destroy_wall(cave, grid);
+			}
+		}
+	}
+
+	/* Phase 2: push monsters away from the player */
+	for (int i=1; i<cave->mon_max; i++) {
+		struct monster *mon = cave_monster(cave, i);
+		/* Extract the distance */
+		k = distance(loc(px, py), mon->grid);
+
+		/* Stay in the circle of death */
+		if (k > r) continue;
+
+		/* Stun them */
+		mon_inc_timed(mon, MON_TMD_STUN, 15, 0);
+
+		/* Push them away */
+		thrust_away(player->grid, mon->grid, r);
+	}
+
+	/* Phase 3: trash the dungeon */
+	for (grid.y = (py - r); grid.y <= (py + r); grid.y++) {
+		for (grid.x = (px - r); grid.x <= (px + r); grid.x++) {
+			/* Skip illegal grids */
+			if (!square_in_bounds_fully(cave, grid)) continue;
+
+			/* Extract the distance */
+			k = distance(loc(px, py), grid);
+
+			/* Stay in the circle of death */
+			if (k > r) continue;
+
+			if (square(cave, grid)->mon == 0) {
+				square_destroy(cave, grid);
+			}
+		}
+	}
+
+
+	/* Player is affected */
+	if (elem == ELEM_LIGHT) {
+		msg("There is a searing blast of light!");
+		equip_learn_element(player, ELEM_LIGHT);
+		if (!player_resists(player, ELEM_LIGHT)) {
+			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
+								   true);
+		}
+	} else if (elem == ELEM_DARK) {
+		msg("Darkness seems to crush you!");
+		equip_learn_element(player, ELEM_DARK);
+		if (!player_resists(player, ELEM_DARK)) {
+			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
+								   true);
+		}
+	}
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw monster list */
+	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
+
+	return true;
+}
+
+/**
+ * The destruction effect
+ *
+ * This effect "deletes" monsters (instead of killing them).
+ *
+ * This is always an effect centred on the player; it is similar to the
+ * earthquake effect.
+ */
+bool effect_handler_DESTRUCTION_old(effect_handler_context_t *context)
+{
+	int k, r = context->radius;
+	int elem = context->subtype;
+	int py = player->grid.y;
+	int px = player->grid.x;
+	struct loc grid;
+
+	context->ident = true;
+
+	/* No effect in town or arena */
+	if ((!player->depth) || (player->upkeep->arena_level)) {
+		msg("The ground shakes for a moment.");
+		return true;
+	}
+
 	/* Big area of affect */
 	for (grid.y = (py - r); grid.y <= (py + r); grid.y++) {
 		for (grid.x = (px - r); grid.x <= (px + r); grid.x++) {
