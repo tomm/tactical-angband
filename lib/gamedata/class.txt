@@ -909,7 +909,7 @@ dice:100
 desc:Teleports away each evil monster within line of sight.
 
 spell:Word of Destruction:35:35:80:115
-effect:DESTRUCTION:LIGHT:15
+effect:DESTRUCTION:LIGHT:10
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.
@@ -1117,7 +1117,7 @@ desc:Inflicts damage equal to four times player level on a single monster that
 desc: is not undead, an elemental, a golem, or a vortex.
 
 spell:Grond's Blow:35:35:80:115
-effect:DESTRUCTION:DARK:15
+effect:DESTRUCTION:DARK:10
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.

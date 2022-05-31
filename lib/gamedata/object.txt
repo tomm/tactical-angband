@@ -2946,7 +2946,7 @@ weight:5
 cost:1000
 alloc:0:40 to 100
 power:12
-effect:DESTRUCTION:LIGHT:15
+effect:DESTRUCTION:LIGHT:10
 
 ### Bad scrolls ###
 
@@ -4186,7 +4186,7 @@ attack:1d2:0:0
 armor:0:0
 charges:1+d3
 power:12
-effect:DESTRUCTION:LIGHT:15
+effect:DESTRUCTION:LIGHT:10
 
 ### Monster-affecting ###
 
