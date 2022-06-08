@@ -1830,31 +1830,53 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 	return true;
 }
 
-
 /**
- * Create stairs at the player location
+ * Try creating stairs. Returns success or failure
  */
-bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
+static bool _maybe_create_stairs(struct loc grid)
 {
-	context->ident = true;
+	/* Ignore out of bounds locations */
+	if (!square_in_bounds_fully(cave, grid)) return false;
 
 	/* Only allow stairs to be created on empty floor */
-	if (!square_isfloor(cave, player->grid)) {
-		msg("There is no empty floor here.");
+	if (!square_isfloor(cave, grid)) {
 		return false;
 	}
 
 	/* Fails for persistent levels (for now) and arenas */
 	if (OPT(player, birth_levels_persist) || player->upkeep->arena_level) {
-		msg("Nothing happens!");
 		return false;
 	}
 
 	/* Push objects off the grid */
-	if (square_object(cave, player->grid))
-		push_object(player->grid);
+	if (square_object(cave, grid))
+		push_object(grid);
 
-	square_add_stairs(cave, player->grid, player->depth);
+	square_add_stairs(cave, grid, player->depth);
+
+	return true;
+}
+
+/**
+ * Create stairs around the player location
+ */
+bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
+{
+	const int stair_locs[4][2] = { {  0, -2 }, { -2,  0 }, {  2,  0 }, {  0,  2 } };
+	bool success = false;
+
+	context->ident = true;
+
+	for (int i=0; i<4; ++i) {
+		if (_maybe_create_stairs((struct loc) { .x=player->grid.x + stair_locs[i][0], .y=player->grid.y + stair_locs[i][1] })) {
+			success = true;
+		}
+	}
+
+	if (!success) {
+		msg("Nothing happens!");
+		return false;
+	}
 
 	return true;
 }
