@@ -354,7 +354,7 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 	}
 
 	/* Can create lava if extremely powerful. */
-	if ((context->dam > randint1(1800) + 600) &&
+	if ((context->dam > randint1(900) + 300) &&
 		square_isfloor(cave, context->grid)) {
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->grid);
@@ -376,7 +376,7 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 	}
 
 	/* Sufficiently intense cold can solidify lava. */
-	if ((context->dam > randint1(900) + 300) &&
+	if ((context->dam > randint1(450) + 150) &&
 		square_isfiery(cave, context->grid)) {
 		bool occupied = square_isoccupied(cave, context->grid);
 
@@ -557,7 +557,7 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 	}
 
 	/* Can create lava if extremely powerful. */
-	if ((context->dam > randint1(1800) + 600) &&
+	if ((context->dam > randint1(900) + 300) &&
 		square_isfloor(cave, context->grid)) {
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->grid);
