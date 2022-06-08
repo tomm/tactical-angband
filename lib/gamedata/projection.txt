@@ -224,9 +224,9 @@ desc:nether
 player-desc:nether
 blind-desc:something cold
 lash-desc:withering
-numerator:12
+numerator:6
 denominator:8+1d4
-divisor:6
+divisor:12
 damage-cap:300
 msgt:BR_NETHER
 obvious:1
