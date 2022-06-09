@@ -7501,7 +7501,7 @@ flags:DROP_60 | WEIRD_MIND
 flags:MOVE_BODY
 flags:NO_STUN | NO_SLOW | NO_SLEEP
 spell-freq:9
-spells:HASTE | DARKNESS
+spells:DARKNESS
 desc:A tree which has become entish, or maybe an ent which has become tree-ish.
 
 
@@ -9454,7 +9454,7 @@ desc: more than a hatred of all that lives.
 name:beholder
 base:eye
 color:U
-speed:120
+speed:110
 hit-points:1400
 hearing:40
 armor-class:96
@@ -10057,7 +10057,7 @@ hearing:20
 armor-class:120
 sleepiness:20
 depth:42
-rarity:1
+rarity:2
 experience:2900
 blow:CRUSH:HURT:5d6
 blow:CRUSH:HURT:5d6
@@ -10065,10 +10065,10 @@ blow:CRUSH:HURT:5d6
 blow:CRUSH:HURT:5d6
 flags:DROP_60 | WEIRD_MIND | EVIL
 flags:BASH_DOOR | KILL_BODY
-flags:NO_STUN | NO_SLOW | NO_SLEEP
+flags:NO_STUN | NO_SLEEP
 innate-freq:8
 spell-freq:7
-spells:HASTE | DARKNESS | SCARE | BLIND
+spells:DARKNESS | SCARE | BLIND
 desc:A huorn with a bad heart.
 
 name:The Queen Ant
@@ -10483,7 +10483,7 @@ desc: its length.
 name:undead beholder
 base:eye
 color:u
-speed:120
+speed:115
 hit-points:2376
 hearing:30
 armor-class:120
@@ -11117,8 +11117,7 @@ flags:OPEN_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
-spell-freq:3
-spells:HEAL
+spell-freq:6
 spells:S_ANIMAL
 drop-base:nature book:8:1:1
 drop-base:nature book:8:1:1
@@ -11870,7 +11869,7 @@ flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:3
-spells:HEAL | MIND_BLAST
+spells:MIND_BLAST
 spells:S_ANIMAL | S_HOUND | S_SPIDER
 drop-base:nature book:5:1:1
 drop-base:nature book:15:1:1
