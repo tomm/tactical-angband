@@ -2944,7 +2944,7 @@ graphics:?:w
 level:40
 weight:5
 cost:1000
-alloc:0:40 to 100
+alloc:30:40 to 100
 power:12
 effect:DESTRUCTION:LIGHT:10
 
@@ -4181,7 +4181,7 @@ graphics:_:d
 level:50
 weight:50
 cost:6000
-alloc:0:50 to 100
+alloc:20:50 to 100
 attack:1d2:0:0
 armor:0:0
 charges:1+d3
