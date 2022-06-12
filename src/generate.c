@@ -845,7 +845,7 @@ static const struct cave_profile *choose_profile(struct player *p)
 		profile = find_cave_profile("town");
 	} else if (is_quest(p, p->depth)) {
 		/* Quest levels must be normal levels */
-		profile = find_cave_profile("classic");
+		profile = find_cave_profile("modified");
 	} else if (labyrinth_check(p->depth) &&
 			(labyrinth_alloc > 0 || labyrinth_alloc == -1)) {
 		profile = find_cave_profile("labyrinth");
@@ -879,7 +879,7 @@ static const struct cave_profile *choose_profile(struct player *p)
 			}
 		}
 		if (!profile) {
-			profile = find_cave_profile("classic");
+			profile = find_cave_profile("modified");
 		}
 	}
 

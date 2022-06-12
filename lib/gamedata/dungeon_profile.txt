@@ -88,7 +88,7 @@ name:classic
 params:11:50:200:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-alloc:90
+alloc:10
 
 # Greater vaults only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
