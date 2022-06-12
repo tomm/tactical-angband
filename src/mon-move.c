@@ -1999,6 +1999,9 @@ void restore_monsters(void)
 		/* Regenerate */
 		regen_monster(mon, num_turns / 100);
 
+		/* Tactical-angband: don't let player abuse stairs for easy healing in combat */
+		mon->hp = mon->maxhp;
+
 		/* Handle timed effects */
 		status_red = num_turns * turn_energy(mon->mspeed) / z_info->move_energy;
 		if (status_red > 0) {
