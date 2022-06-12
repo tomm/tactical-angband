@@ -5367,7 +5367,7 @@ graphics:?:w
 level:20
 weight:5
 cost:800
-alloc:16:20 to 100
+alloc:0:20 to 100
 pile:10:2
 power:15
 effect:CREATE_STAIRS
