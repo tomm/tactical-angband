@@ -344,8 +344,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 		telepathy_ok = false;
 	}
 
-	/* Nearby */
-	if (d <= z_info->max_sight) {
+	/* Within telepathy range */
+	if (d <= z_info->esp_range) {
 		/* Basic telepathy */
 		if (telepathy_ok && monster_is_esp_detectable(mon)) {
 			/* Detectable */
@@ -354,7 +354,10 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			/* Check for LOS so that MFLAG_VIEW is set later */
 			if (square_isview(c, mon->grid)) easy = true;
 		}
+	}
 
+	/* Nearby */
+	if (d <= z_info->max_sight) {
 		/* Normal line of sight and player is not blind */
 		if (square_isview(c, mon->grid) && !player->timed[TMD_BLIND]) {
 			/* Use "infravision" */

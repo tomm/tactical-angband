@@ -119,6 +119,7 @@ struct angband_constants
 	/* Player constants, read from constants.txt */
 	uint16_t max_sight;	/* Maximum visual range */
 	uint16_t max_range;	/* Maximum missile and spell range */
+	uint16_t esp_range;	/* Range of ESP detection */
 	uint16_t start_gold;	/* Amount of gold the player starts with */
 	uint16_t food_value;	/* Number of turns 1% of food lasts */
 };

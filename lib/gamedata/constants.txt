@@ -202,3 +202,6 @@ player:start-gold:600
 
 # Number of turns that 1% of player food capacity feeds them for
 player:food-value:100
+
+# Detection range of telepathy
+player:esp-range:20
