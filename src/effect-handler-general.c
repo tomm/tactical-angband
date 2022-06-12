@@ -2146,8 +2146,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 		}
 
 		/* Continue summoning until we reach the current dungeon level */
-		/* Tactical-Angband: summon depth is strictly summoner level / 2 */
-		rlev = mon->race->level / 2;
+		/* Tactical-Angband: summon depth is strictly summoner 2*level/3 */
+		rlev = 2 * mon->race->level / 3;
 		while ((val < player->depth * rlev) && (attempts < summon_max)) {
 			int temp;
 
@@ -2190,10 +2190,12 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 		if (!count)
 			msg("But nothing comes.");
 	} else {
+		int summon_level = 2 * player->depth / 3 + level_boost;
+		summon_level = summon_level > 0 ? summon_level : 1;
+
 		/* If not a monster summon, it's simple */
 		while (summon_max) {
-			count += summon_specific(player->grid, player->depth / 2 + level_boost,
-									 summon_type, true, one_in_(4));
+			count += summon_specific(player->grid, summon_level, summon_type, true, one_in_(4));
 			summon_max--;
 		}
 	}
