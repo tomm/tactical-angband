@@ -1262,9 +1262,16 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			/* Stay in the circle of death */
 			if (k > r) continue;
 
-			if (square(cave, grid)->mon == 0) {
-				square_destroy(cave, grid);
-			}
+			/* Don't remove stairs */
+			if (square_isstairs(cave, grid)) continue;
+
+			/* Ignore permanent walls */
+			if (square_isperm(cave, grid)) continue;
+
+			/* Ignore grids with monsters / player on */
+			if (square(cave, grid)->mon != 0) continue;
+
+			square_destroy(cave, grid);
 		}
 	}
 
