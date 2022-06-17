@@ -1324,12 +1324,12 @@ desc: stairs and recall is set, unless Morgoth is dead.
 
 spell:Healing:30:50:80:100
 effect:HEAL_HP
-dice:2000
+dice:300
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
-desc:Heals 2000 points of damage and cures all stunning, cuts, poison
+desc:Heals 300 points of damage and cures all stunning, cuts, poison
 desc: and amnesia.
 
 spell:Clairvoyance:37:50:80:150
