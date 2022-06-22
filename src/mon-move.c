@@ -1705,6 +1705,9 @@ static bool monster_check_active(struct monster *mon)
 	return mflag_has(mon->mflag, MFLAG_ACTIVE) ? true : false;
 }
 
+/* Was 50 in V */
+#define NOISE_WAKEUP_THRESHOLD 25
+
 /**
  * Wake a monster or reduce its depth of sleep
  *
@@ -1738,13 +1741,23 @@ static void monster_reduce_sleep(struct monster *mon)
 		}
 	} else if ((notice * notice * notice) <= player_noise) {
 		int sleep_reduction = 1;
+		/* local_noise will just be distance to the player (in tiles, as sound travels) */
 		int local_noise = cave->noise.grids[mon->grid.y][mon->grid.x];
 		bool woke_up = false;
 
 		/* Test - wake up faster in hearing distance of the player 
 		 * Note no dependence on stealth for now */
-		if ((local_noise > 0) && (local_noise < 50)) {
-			sleep_reduction = (100 / local_noise);
+		if ((local_noise > 0) && (local_noise < NOISE_WAKEUP_THRESHOLD)) {
+			/* Vanilla formula is:
+			 *   sleep_reduction = (2 * NOISE_WAKEUP_THRESHOLD / local_noise);
+			 * which gives:
+			 *   [100, 50, 33, 25, 20, 16, 14, 12, 11, 10, 9, ...]
+			 * Tactical angband's altered formula gives:
+			 *   [100, 33, 20, 14, 11, 9, 7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 3, 2, 2, ...]
+			 * Which makes typical wakeup distances roughly halved,
+			 * matching reduced player LoS
+			 */
+			sleep_reduction = (2 * NOISE_WAKEUP_THRESHOLD - 1) / local_noise;
 		}
 
 		/* Note a complete wakeup */
