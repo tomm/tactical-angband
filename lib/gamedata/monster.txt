@@ -3056,7 +3056,7 @@ blow:HIT:HURT:1d8
 flags:OPEN_DOOR | BASH_DOOR
 flags:NO_FEAR
 spell-freq:3
-spells:BLINK
+spells:BLINK | TELE_TO
 desc:It is a fast-moving demon that blinks quickly in and out of existence; no
 desc: other demon matches its teleporting mastery.
 
@@ -4765,7 +4765,7 @@ flags:EVIL
 flags:NEVER_MOVE
 flags:HURT_LIGHT | NO_FEAR
 spell-freq:5
-spells:HOLD
+spells:HOLD | TELE_TO
 desc:A huge disembodied eye.  As you stare into the black nothingness of its
 desc: pupil, you feel your will and vitality draining away, and are unable to
 desc: do anything except approach it in horrified fascination.
