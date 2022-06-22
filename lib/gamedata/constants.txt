@@ -101,10 +101,10 @@ world:max-depth:128
 world:day-length:10000
 
 # Max number of grids in each dungeon level (vertically)
-world:dungeon-hgt:66
+world:dungeon-hgt:50
 
 # Max number of grids in each dungeon level (horizontally)
-world:dungeon-wid:99
+world:dungeon-wid:100
 
 # Max number of grids in each town level (vertically)
 world:town-hgt:22
@@ -192,10 +192,10 @@ obj-make:default-lamp:7500
 #---------------------------------------------------------------------
 
 # Maximum visual range
-player:max-sight:12
+player:max-sight:10
 
 # Maximum missile and spell range
-player:max-range:12
+player:max-range:10
 
 # Amount of gold (or value of equipment) the player starts with
 player:start-gold:600
