@@ -3351,6 +3351,49 @@ bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 }
 
 /**
+ * Open a 3x3 pit of lava under the targetted (evil) monster.
+ */
+bool effect_handler_DAMNATION(effect_handler_context_t *context)
+{
+	struct monster *mon = target_get_monster();
+
+	context->ident = true;
+
+	/* Need to choose a monster, not just point */
+	if (!mon) {
+		msg("No monster selected!");
+		return false;
+	}
+
+	if (!rf_has(mon->race->flags, RF_EVIL)) {
+		msg("Only the evil can be damned!");
+		return true;
+	}
+
+	/* Wake up, become aware */
+	monster_wake(mon, false, 100);
+
+	context->ident = true;
+
+	const int door_locs[9][2] = { {0, 0}, { -1, -1 }, { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 } };
+
+	for (int i=0; i<9; ++i) {
+		struct loc grid = { .x=mon->grid.x + door_locs[i][0], .y=mon->grid.y + door_locs[i][1] };
+
+		/* Ignore permanent walls */
+		if (square_isperm(cave, grid)) continue;
+
+		/* Create lava */
+		square_set_feat(cave, grid, FEAT_LAVA);
+	}
+
+	/* Update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	return true;
+}
+
+/**
  * Imprison a monster in locked doors
  */
 bool effect_handler_IMPRISON(effect_handler_context_t *context)

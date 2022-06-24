@@ -904,10 +904,10 @@ book:prayer book:dungeon:[Wrath of the Valar]:5:divine
 book-graphics:?:g
 book-properties:50000:10:60 to 100
 
-spell:Banish Evil:25:25:80:250
-effect:PROJECT_LOS_AWARE:AWAY_EVIL
+spell:Damnation of Evil:30:50:80:250
+effect:DAMNATION
 dice:100
-desc:Teleports away each evil monster within line of sight.
+desc:Opens a pit of lava under an evil monster.
 
 spell:Word of Destruction:35:35:80:115
 effect:DESTRUCTION:LIGHT:10
