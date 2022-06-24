@@ -1528,7 +1528,7 @@ void steal_monster_item(struct monster *mon, int midx)
 
 		/* Player hit and run */
 		if (player->timed[TMD_ATT_RUN]) {
-			const char *near = "20";
+			const char *near = "5";
 			msg("You vanish into the shadows!");
 			effect_simple(EF_TELEPORT, source_player(), near, 0, 0, 0, 0, 0,
 						  NULL);
