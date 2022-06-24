@@ -237,10 +237,11 @@ effect:DETECT_STAIRS
 effect-yx:22:40
 desc:Detects all traps, doors, and stairs in the immediate area.
 
-spell:Phase Door:2:2:22:4
-effect:TELEPORT
+spell:Retreat:2:2:22:4
+effect:TIMED_INC:RETREAT:0:0
 dice:10
-desc:Teleports you randomly up to 10 squares away.
+desc:Gives a temporary +2 movement speed, that ends on any non-movement
+desc: actions.
 
 spell:Electric Arc:2:2:34:4
 effect:SHORT_BEAM:ELEC:0:1
@@ -317,18 +318,15 @@ effect:TOUCH:KILL_DOOR
 effect:TOUCH:KILL_TRAP
 desc:Disables traps and destroys doors within a 1-square radius of you.
 
-spell:Teleport Self:7:6:35:5
-effect:TELEPORT
-dice:M$M
-expr:M:PLAYER_LEVEL:* 9 / 5
-desc:Teleports you randomly within the current level.
+spell:Locking:7:6:35:5
+effect:TOUCH:LOCK_DOOR
+dice:7+1d7
+desc:Repairs and locks all adjacent doors.
 
-spell:Teleport Other:15:10:30:12
-effect:BOLT_STATUS:AWAY_ALL
-dice:$B
-expr:B:PLAYER_LEVEL:* 3
-desc:Produces a bolt that teleports away the first monster in its path.
-desc:  Distance teleported increases with player level.
+spell:Swap Places:15:10:30:12
+effect:BOLT_STATUS:SWAP_PLACES
+desc:Produces a bolt swaps your location with that of the first monster in
+desc:  its path.
 
 spell:Resistance:20:20:65:20
 effect:SET_VALUE
@@ -1417,10 +1415,11 @@ effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
-spell:Phase Door:7:2:55:4
-effect:TELEPORT
+spell:Retreat:7:2:55:4
+effect:TIMED_INC:RETREAT:0:0
 dice:10
-desc:Teleports you randomly up to 10 squares away.
+desc:Gives a temporary +2 movement speed, that ends on any non-movement
+desc: actions.
 
 spell:Object Detection:10:3:60:5
 effect:DETECT_GOLD
@@ -1452,23 +1451,20 @@ desc:Detects all monsters in the immediate area, for one turn only.
 
 book:magic book:dungeon:[Arcane Control]:4:arcane
 
-spell:Teleport Self:17:6:35:5
-effect:TELEPORT
-dice:M$M
-expr:M:PLAYER_LEVEL:* 9 / 5
-desc:Teleports you randomly within the current level.
+spell:Locking:17:6:35:5
+effect:TOUCH:LOCK_DOOR
+dice:7+1d7
+desc:Repairs and locks all adjacent doors.
 
 spell:Hit and Run:23:20:40:20
 effect:TIMED_INC:ATT_RUN
 dice:10
 desc:Prepares you to teleport a short distance after stealing from a monster.
 
-spell:Teleport Other:30:10:30:50
-effect:BOLT_STATUS:AWAY_ALL
-dice:$B
-expr:B:PLAYER_LEVEL:* 3
-desc:Produces a bolt that teleports away the first monster in its path.
-desc:  Distance teleported increases with player level.
+spell:Swap Places:30:10:30:50
+effect:BOLT_STATUS:SWAP_PLACES
+desc:Produces a bolt swaps your location with that of the first monster in
+desc:  its path.
 
 spell:Teleport Level:35:17:65:80
 effect:TELEPORT_LEVEL
