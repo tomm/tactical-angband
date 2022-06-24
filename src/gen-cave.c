@@ -1286,7 +1286,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(8) + k;
+	i = z_info->level_monster_min + randint1(4) + k/2;
 
 	/* Put some monsters in the dungeon */
 	for (; i > 0; i--)
@@ -1552,7 +1552,7 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
 	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Put some monsters in the dungeon */
-	for (i = z_info->level_monster_min + randint1(8) + k; i > 0; i--)
+	for (i = z_info->level_monster_min + randint1(4) + k/2; i > 0; i--)
 		pick_and_place_distant_monster(c, p, 0, true, c->depth);
 
 	/* Put some objects/gold in the dungeon */
@@ -2876,7 +2876,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(8) + k;
+	i = z_info->level_monster_min + randint1(4) + k/2;
 
 	/* Remove all monster restrictions. */
 	mon_restrict(NULL, c->depth, c->depth, true);
@@ -3103,7 +3103,7 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(8) + k;
+	i = z_info->level_monster_min + randint1(4) + k/2;
 
 	/* Moria levels have a high proportion of cave dwellers. */
 	mon_restrict("Moria dwellers", c->depth, c->depth, true);
@@ -3535,7 +3535,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 		build_streamer(normal, FEAT_QUARTZ, dun->profile->str.qc);
 
 	/* Pick a larger number of monsters for the lair */
-	i = (z_info->level_monster_min + randint1(20) + k);
+	i = (z_info->level_monster_min + randint1(10) + k/2);
 
 	/* Find appropriate monsters */
 	while (true) {
@@ -3712,21 +3712,21 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	}
 
 	/* Pick some monsters for the left cavern */
-	i = z_info->level_monster_min + randint1(4) + k;
+	i = z_info->level_monster_min + randint1(4) + k/2;
 
 	/* Place the monsters */
 	for (; i > 0; i--)
 		pick_and_place_distant_monster(left, p, 0, true, left->depth);
 
 	/* Pick some of monsters for the right cavern */
-	i = z_info->level_monster_min + randint1(4) + k;
+	i = z_info->level_monster_min + randint1(4) + k/2;
 
 	/* Place the monsters */
 	for (; i > 0; i--)
 		pick_and_place_distant_monster(right, p, 0, true, right->depth);
 
 	/* Pick a larger number of monsters for the gauntlet */
-	i = (z_info->level_monster_min + randint1(6) + k);
+	i = (z_info->level_monster_min + randint1(6) + k/2);
 
 	/* Find appropriate monsters */
 	while (true) {
