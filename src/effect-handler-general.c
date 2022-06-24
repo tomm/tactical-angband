@@ -3351,6 +3351,52 @@ bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 }
 
 /**
+ * Imprison a monster in locked doors
+ */
+bool effect_handler_IMPRISON(effect_handler_context_t *context)
+{
+	struct monster *mon = target_get_monster();
+
+	context->ident = true;
+
+	/* Need to choose a monster, not just point */
+	if (!mon) {
+		msg("No monster selected!");
+		return false;
+	}
+
+	/* Wake up, become aware */
+	monster_wake(mon, false, 100);
+
+	context->ident = true;
+
+	const int door_locs[8][2] = { { -1, -1 }, { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 } };
+
+	for (int i=0; i<8; ++i) {
+		struct loc grid = { .x=mon->grid.x + door_locs[i][0], .y=mon->grid.y + door_locs[i][1] };
+
+		/* Require a grid without monsters */
+		if (square_monster(cave, grid) || square_isplayer(cave, grid)) continue;
+
+		/* Require a floor grid */
+		if (!square_isfloor(cave, grid)) continue;
+
+		/* Push objects off the grid */
+		if (square_object(cave, grid))
+			push_object(grid);
+
+		/* Create locked door */
+		square_add_door(cave, grid, true);
+		square_set_door_lock(cave, grid, 7 + randint1(7));
+	}
+
+	/* Update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	return true;
+}
+
+/**
  * Take control of a monster
  */
 bool effect_handler_COMMAND(effect_handler_context_t *context)

@@ -366,10 +366,9 @@ desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
-spell:Teleport Level:28:17:65:20
-effect:TELEPORT_LEVEL
-desc:Teleports you 1 level up or 1 level down (chosen at random).
-desc:  This spell may have no effect when the forced descent option is set.
+spell:Imprisonment:28:17:65:20
+effect:IMPRISON
+desc:Surrounds the targeted monster with locked doors.
 
 spell:Detection:30:10:70:30
 effect:DETECT_TRAPS
@@ -1466,10 +1465,9 @@ effect:BOLT_STATUS:SWAP_PLACES
 desc:Produces a bolt swaps your location with that of the first monster in
 desc:  its path.
 
-spell:Teleport Level:35:17:65:80
-effect:TELEPORT_LEVEL
-desc:Teleports you 1 level up or 1 level down (chosen at random).
-desc:  This spell may have no effect when the forced descent option is set.
+spell:Imprisonment:35:17:65:80
+effect:IMPRISON
+desc:Surrounds the targeted monster with locked doors.
 
 
 ############### RANGER ###############

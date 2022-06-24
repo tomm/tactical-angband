@@ -122,3 +122,4 @@ EFFECT(WONDER,						true,	NULL,		0,		EFINFO_NONE,	"creates random and unpredicta
 EFFECT(SELECT,						false,	NULL,		0,		EFINFO_NONE,	"selects one of ",	"")
 EFFECT(SET_VALUE,					false,	NULL,		0,		EFINFO_NONE,	"",					"")
 EFFECT(CLEAR_VALUE,					false,	NULL,		0,		EFINFO_NONE,	"",					"")
+EFFECT(IMPRISON,				        true,	NULL,		0,		EFINFO_NONE,	"surrounds the monster with locked doors",	"imprison")
