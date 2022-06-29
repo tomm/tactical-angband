@@ -81,14 +81,14 @@ alloc:-1
 name:cavern
 params:1:0:200:0
 min-level:15
-alloc:10
+alloc:5
 
 ## Classic
 name:classic
 params:11:50:200:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-alloc:10
+alloc:-1
 
 # Greater vaults only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
@@ -120,7 +120,7 @@ name:modified
 params:1:50:300:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-alloc:97
+alloc:100
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:50
