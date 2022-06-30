@@ -530,7 +530,17 @@ bool check_hit(struct player *p, int to_hit)
 	equip_learn_on_defend(p);
 
 	/* Check if the player was hit */
-	return test_hit(to_hit, p->state.ac + p->state.to_a);
+	bool did_hit = test_hit(to_hit, p->state.ac + p->state.to_a);
+
+	/* Tactical-angband: fighting on stairs is treacherous.
+	 * This is to discourage the dull tactic of fighting strong
+	 * groups on a staircase, and going up/down to heal during battle */
+	if (!did_hit && square_isstairs(cave, p->grid)) {
+		msg("You lose your footing on the staircase!");
+		return true;
+	}
+	
+	return did_hit;
 }
 
 /**
