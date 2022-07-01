@@ -2221,7 +2221,7 @@ weight:2
 cost:1000
 alloc:0:10 to 50
 flags:EASY_KNOW
-curse:teleportation:100
+#curse:teleportation:100
 values:SPEED[2]
 
 name:Reckless Attacks
@@ -2489,7 +2489,7 @@ weight:3
 cost:10
 alloc:0:10 to 40
 flags:EASY_KNOW
-curse:teleportation:100
+#curse:teleportation:100
 
 name:Slow Digestion
 type:amulet
