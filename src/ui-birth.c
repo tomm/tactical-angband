@@ -64,6 +64,7 @@ enum birth_stage
 	BIRTH_QUICKSTART,
 	BIRTH_RACE_CHOICE,
 	BIRTH_CLASS_CHOICE,
+	BIRTH_GAME_MODE_CHOICE,
 	BIRTH_ROLLER_CHOICE,
 	BIRTH_POINTBASED,
 	BIRTH_ROLLER,
@@ -88,6 +89,15 @@ enum birth_rollers
 	BR_POINTBASED = 0,
 	BR_NORMAL,
 	MAX_BIRTH_ROLLERS
+};
+
+
+enum game_modes
+{
+	GM_NORMAL = 0,
+	GM_IRON,
+	GM_INFINITE,
+	MAX_GAME_MODES
 };
 
 
@@ -145,7 +155,7 @@ static enum birth_stage textui_birth_quickstart(void)
 /**
  * The various menus
  */
-static struct menu race_menu, class_menu, roller_menu;
+static struct menu race_menu, class_menu, roller_menu, game_mode_menu;
 
 /**
  * Locations of the menus, etc. on the screen
@@ -159,7 +169,9 @@ static struct menu race_menu, class_menu, roller_menu;
 #define RACE_AUX_COL    19
 #define CLASS_COL       19
 #define CLASS_AUX_COL   36
-#define ROLLER_COL      36
+#define GAME_MODE_COL   36
+#define GAME_MODE_AUX_COL   58
+#define ROLLER_COL      58
 #define HIST_INSTRUCT_ROW 18
 
 #define MENU_ROWS TABLE_ROW + 14
@@ -169,6 +181,7 @@ static struct menu race_menu, class_menu, roller_menu;
  */
 static region race_region = {RACE_COL, TABLE_ROW, 17, MENU_ROWS};
 static region class_region = {CLASS_COL, TABLE_ROW, 17, MENU_ROWS};
+static region game_mode_region = {GAME_MODE_COL, TABLE_ROW, 22, MENU_ROWS};
 static region roller_region = {ROLLER_COL, TABLE_ROW, 34, MENU_ROWS};
 
 /**
@@ -294,6 +307,38 @@ static void race_help(int i, void *db, const region *l)
 	while (n_flags < flag_space) {
 		text_out_e("\n");
 		n_flags++;
+	}
+
+	/* Reset text_out() indentation */
+	text_out_indent = 0;
+}
+
+static void game_mode_help(int i, void *db, const region *l)
+{
+	/* Output to the screen */
+	text_out_hook = text_out_to_screen;
+	
+	/* Indent output */
+	text_out_indent = GAME_MODE_AUX_COL;
+
+	/* Wipe the help area. Why do other _help function not do this, and
+	 * have no issue with stale text? XXX */
+	for (int i=0; i<8; i++) {
+		Term_erase(GAME_MODE_AUX_COL, TABLE_ROW+i, 255);
+	}
+	Term_gotoxy(GAME_MODE_AUX_COL, TABLE_ROW);
+
+	switch (i) {
+		case 0:
+			text_out_e("Persistent dungeons and recall to town.");
+			break;
+		case 1:
+			text_out_e("Descend only, with no recall to town.");
+			break;
+		case 2:
+			text_out_e("Infinite non-persistent dungeons.\n\nScum and grind to your heart's content.");
+			break;
+		default: break;
 	}
 
 	/* Reset text_out() indentation */
@@ -547,6 +592,12 @@ static void setup_menus(void)
 		"Standard roller" 
 	};
 
+	const char *game_mode_choices[MAX_GAME_MODES] = { 
+		"Normal", 
+		"Challenge",
+		"Infinite dungeon"
+	};
+
 	struct birthmenu_data *mdata;
 
 	/* Count the races */
@@ -582,6 +633,14 @@ static void setup_menus(void)
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
 		mdata->items[i] = roller_choices[i];
 	mdata->hint = "Choose how to generate your intrinsic stats. Point-based is recommended.";
+
+	/* Game mode menu */
+	init_birth_menu(&game_mode_menu, MAX_GAME_MODES, 0, &game_mode_region, false,
+					game_mode_help);
+	mdata = game_mode_menu.menu_data;
+	for (i = 0; i < MAX_GAME_MODES; i++)
+		mdata->items[i] = game_mode_choices[i];
+	mdata->hint = "Choose your game mode.";
 }
 
 /**
@@ -603,6 +662,7 @@ static void free_birth_menus(void)
 	free_birth_menu(&race_menu);
 	free_birth_menu(&class_menu);
 	free_birth_menu(&roller_menu);
+	free_birth_menu(&game_mode_menu);
 }
 
 /**
@@ -824,6 +884,28 @@ static enum birth_stage menu_question(enum birth_stage current,
 					cmd_set_arg_choice(cmdq_peek(), "choice", true);
 					next = current + 1;
 				}
+			} else if (current == BIRTH_GAME_MODE_CHOICE) {
+				OPT(player, birth_connect_stairs) = true;
+				switch (current_menu->cursor) {
+					case 0:
+						OPT(player, birth_levels_persist) = true;
+						OPT(player, birth_force_descend) = false;
+						OPT(player, birth_no_recall) = false;
+						break;
+					case 1:
+						OPT(player, birth_levels_persist) = false;
+						OPT(player, birth_force_descend) = true;
+						OPT(player, birth_no_recall) = true;
+						break;
+					case 2:
+						OPT(player, birth_levels_persist) = false;
+						OPT(player, birth_force_descend) = false;
+						OPT(player, birth_no_recall) = false;
+						break;
+				}
+				cmdq_push(choice_command);
+				cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
+				next = current + 1;
 			} else {
 				cmdq_push(choice_command);
 				cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
@@ -1652,8 +1734,9 @@ int textui_do_birth(void)
 				break;
 			}
 
-			case BIRTH_CLASS_CHOICE:
 			case BIRTH_RACE_CHOICE:
+			case BIRTH_CLASS_CHOICE:
+			case BIRTH_GAME_MODE_CHOICE:
 			case BIRTH_ROLLER_CHOICE:
 			{
 				struct menu *menu = &race_menu;
@@ -1670,6 +1753,11 @@ int textui_do_birth(void)
 
 				if (current_stage > BIRTH_CLASS_CHOICE) {
 					menu_refresh(&class_menu, false);
+					menu = &game_mode_menu;
+				}
+
+				if (current_stage > BIRTH_GAME_MODE_CHOICE) {
+					menu_refresh(&game_mode_menu, false);
 					menu = &roller_menu;
 				}
 
