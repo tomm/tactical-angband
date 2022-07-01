@@ -5119,7 +5119,7 @@ name:sasquatch
 plural:sasquatches
 base:yeti
 color:g
-speed:115
+speed:120
 hit-points:200
 hearing:15
 smell:20
@@ -5590,7 +5590,7 @@ desc:A scarred warrior who wields an axe and moves with confidence.
 name:Azog, Enemy of the Dwarves
 base:orc
 color:R
-speed:115
+speed:120
 hit-points:900
 hearing:20
 smell:20
@@ -6577,7 +6577,7 @@ desc:A 4-headed hydra with an extra head, steaming with acidic vapor.
 name:black knight
 base:person
 color:s
-speed:115
+speed:120
 hit-points:165
 hearing:20
 armor-class:105
@@ -8272,7 +8272,7 @@ desc: monster that breeds on death.
 name:Lokkak, the Ogre Chieftain
 base:ogre
 color:v
-speed:115
+speed:120
 hit-points:1500
 hearing:20
 smell:20
@@ -9454,7 +9454,7 @@ desc: more than a hatred of all that lives.
 name:beholder
 base:eye
 color:U
-speed:110
+speed:115
 hit-points:1400
 hearing:40
 armor-class:96
@@ -9673,7 +9673,7 @@ desc: corridors.
 name:minotaur
 base:hybrid
 color:s
-speed:120
+speed:125
 hit-points:550
 hearing:13
 smell:20
