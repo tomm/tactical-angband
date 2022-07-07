@@ -2155,8 +2155,8 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->to_a -= 10;
 		adjust_skill_scale(&state->skills[SKILL_DEVICE], -1, 10, 0);
 	}
-	if (p->timed[TMD_RETREAT]) {
-		extra_moves += 2;
+	if (p->timed[TMD_RUNNING]) {
+		extra_moves += 1;
 	}
 	if (p->timed[TMD_FAST] || p->timed[TMD_SPRINT]) {
 		state->speed += 10;

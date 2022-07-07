@@ -1445,7 +1445,7 @@ attack:1d1:-1:-1
 armor:2:0
 flags:FEATHER | TRAP_IMMUNE
 values:MOVES[1] | INT[2] | DEX[2] | STEALTH[2]
-act:RETREAT
+act:RUNNING
 time:20
 desc:A pair of running shoes once used by the treacherous Gríma son of
 desc: Gálmód, the Wormtongue of Edoras.  They are aptly suited for a
@@ -1764,7 +1764,7 @@ attack:1d4:-1:0
 armor:35:20
 values:DAM_RED[5]
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
-act:RETREAT
+act:RUNNING
 time:2
 desc:This wondrous shirt of fine-linked chain shimmers before your eyes like
 desc: light upon a rippling sea, the gems on it glittering like stars, the

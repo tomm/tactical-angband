@@ -880,7 +880,7 @@ blow:TOUCH:EAT_GOLD
 flags:MALE | EVIL
 flags:DROP_40
 flags:OPEN_DOOR | TAKE_ITEM
-drop:potion:Retreat:35:1:3
+drop:potion:Running:35:1:3
 friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
@@ -4249,7 +4249,7 @@ flags:DROP_1
 flags:OPEN_DOOR | TAKE_ITEM
 innate-freq:8
 spells:SHOT
-drop:potion:Retreat:70:2:6
+drop:potion:Running:70:2:6
 friends:50:1d2:Illusionist
 friends:50:1d2:Priest
 friends:50:1d2:warrior

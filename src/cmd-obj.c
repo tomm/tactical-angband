@@ -443,11 +443,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		can_use = check_devices(obj);
 	}
 
-	/* Using devices ends retreating effect */
-	if (can_use && player->timed[TMD_RETREAT]) {
-		player_set_timed(player, TMD_RETREAT, 0, true);
-	}
-
 	/* Execute the effect */
 	if (can_use) {
 		int beam = beam_chance(obj->tval);

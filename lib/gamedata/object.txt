@@ -5287,7 +5287,7 @@ flags:INSTA_ART | QUEST_ART
 
 ## Tactical-Angband objects
 
-name:Retreat
+name:Running
 type:potion
 graphics:?:w
 level:1
@@ -5296,8 +5296,8 @@ cost:15
 alloc:50:1 to 100
 pile:100:2d3
 power:5
-effect:TIMED_INC:RETREAT:0:0
-dice:10
+effect:TIMED_INC:RUNNING:0:0
+dice:15
 
 name:Swap Places
 type:scroll
@@ -5335,7 +5335,7 @@ alloc:40:40 to 80
 flags:GOOD
 values:MOVES[1]
 
-name:Thrust Away
+name:Wind
 type:wand
 graphics:-:d
 level:20
@@ -5348,7 +5348,7 @@ power:11
 effect:BEAM:WIND
 dice:3d3
 
-name:Thrust Away
+name:Wind
 type:rod
 graphics:-:d
 level:45

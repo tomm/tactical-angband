@@ -15,7 +15,7 @@ healing during fights.
 
 ## Escape spells / items
 
-Replaced phase door scrolls/activations with potions of retreat (temp +2 moves)
+Replaced phase door scrolls/activations with potions of running (temp +1 moves)
 
 There is a new "scroll of locking", that repairs and locks doors adjacent to
 the player.
@@ -56,12 +56,12 @@ Free action is still 100% effective for the player.
 ### Mage
 
 * Phase Door, Teleport Self, Teleport Other and Teleport Level have been
-  replaced with Retreat, Locking, Swap Places and Imprisonment respectively.
+  replaced with Running, Locking, Swap Places and Imprisonment respectively.
 
 ### Rogue
 
 * Phase Door, Teleport Self, Teleport Other and Teleport Level have been
-  replaced with Retreat, Locking, Swap Places and Imprisonment respectively.
+  replaced with Running, Locking, Swap Places and Imprisonment respectively.
 * "Hit and run" now teleports up to 5 squares (not 20).
 
 # Angband 4.2.4

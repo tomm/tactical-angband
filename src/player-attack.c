@@ -976,11 +976,6 @@ void py_attack(struct player *p, struct loc grid)
 		player_adjust_mana_precise(p, sp_gain);
 	}
 
-	/* Attacking ends retreating effect */
-	if (p->timed[TMD_RETREAT]) {
-		player_set_timed(p, TMD_RETREAT, 0, true);
-	}
-
 	/* Player attempts a shield bash if they can, and if monster is visible
 	 * and not too pathetic */
 	if (player_has(p, PF_SHIELD_BASH) && monster_is_visible(mon)) {
@@ -1302,11 +1297,6 @@ void do_cmd_fire(struct command *cmd) {
 
 	if (!player_get_resume_normal_shape(player, cmd)) {
 		return;
-	}
-
-	/* Attacking ends retreating effect */
-	if (player->timed[TMD_RETREAT]) {
-		player_set_timed(player, TMD_RETREAT, 0, true);
 	}
 
 	/* Get arguments */

@@ -1342,13 +1342,13 @@ dice:300
 
 # Tactical-Angband additions
 
-name:RETREAT
+name:RUNNING
 aim:0
 power:5
 msg:{name} fills your limbs with energy!
-effect:TIMED_INC:RETREAT:0:5
-dice:10
-desc:sets you on a hasty retreat
+effect:TIMED_INC:RUNNING:0:5
+dice:15
+desc:sets you running
 
 name:SWAP_PLACES
 aim:1

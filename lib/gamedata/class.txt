@@ -237,10 +237,10 @@ effect:DETECT_STAIRS
 effect-yx:22:40
 desc:Detects all traps, doors, and stairs in the immediate area.
 
-spell:Retreat:2:2:22:4
-effect:TIMED_INC:RETREAT:0:0
-dice:10
-desc:Gives a temporary +2 movement speed, that ends on any non-movement
+spell:Running:2:2:22:4
+effect:TIMED_INC:RUNNING:0:0
+dice:15
+desc:Gives a temporary +1 movement speed
 desc: actions.
 
 spell:Electric Arc:2:2:34:4
@@ -1414,10 +1414,10 @@ effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
-spell:Retreat:7:2:55:4
-effect:TIMED_INC:RETREAT:0:0
-dice:10
-desc:Gives a temporary +2 movement speed, that ends on any non-movement
+spell:Running:7:2:55:4
+effect:TIMED_INC:RUNNING:0:0
+dice:15
+desc:Gives a temporary +1 movement speed
 desc: actions.
 
 spell:Object Detection:10:3:60:5

@@ -427,8 +427,8 @@ on-end:Your limbs return to normal.
 on-increase:Your limbs feel more energetic!
 flag-synonym:FREE_ACT:1
 
-name:RETREAT
-desc:retreat
-grade:G:10000:Retreat:You prepare to flee!
-on-end:You stop fleeing.
+name:RUNNING
+desc:running
+grade:G:10000:Running:You prepare to run!
+on-end:You stop running.
 msgt:SPEED
