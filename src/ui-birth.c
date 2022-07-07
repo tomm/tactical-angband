@@ -96,7 +96,7 @@ enum game_modes
 {
 	GM_NORMAL = 0,
 	GM_IRON,
-	GM_INFINITE,
+	GM_IRON_STAIRSKIP3,
 	MAX_GAME_MODES
 };
 
@@ -182,7 +182,7 @@ static struct menu race_menu, class_menu, roller_menu, game_mode_menu;
 static region race_region = {RACE_COL, TABLE_ROW, 17, MENU_ROWS};
 static region class_region = {CLASS_COL, TABLE_ROW, 17, MENU_ROWS};
 static region game_mode_region = {GAME_MODE_COL, TABLE_ROW, 22, MENU_ROWS};
-static region roller_region = {ROLLER_COL, TABLE_ROW, 34, MENU_ROWS};
+static region roller_region = {ROLLER_COL, TABLE_ROW, 50, MENU_ROWS};
 
 /**
  * We use different menu "browse functions" to display the help text
@@ -328,17 +328,17 @@ static void game_mode_help(int i, void *db, const region *l)
 	}
 	Term_gotoxy(GAME_MODE_AUX_COL, TABLE_ROW);
 
-	switch (i) {
-		case 0:
+	switch ((enum game_modes)i) {
+		case GM_NORMAL:
 			text_out_e("Persistent dungeons and recall to town.");
 			break;
-		case 1:
-			text_out_e("Descend only, with no recall to town.");
+		case GM_IRON:
+			text_out_e("Persistent dungeons with no recall to town.");
 			break;
-		case 2:
-			text_out_e("Infinite non-persistent dungeons.\n\nScum and grind to your heart's content.");
+		case GM_IRON_STAIRSKIP3:
+			text_out_e("Like challenge mode, but descending three\nlevels at a time.");
 			break;
-		default: break;
+		case MAX_GAME_MODES: break; // to shut up enum case warning...
 	}
 
 	/* Reset text_out() indentation */
@@ -595,7 +595,7 @@ static void setup_menus(void)
 	const char *game_mode_choices[MAX_GAME_MODES] = { 
 		"Normal", 
 		"Challenge",
-		"Infinite dungeon"
+		"Death Wish"
 	};
 
 	struct birthmenu_data *mdata;
@@ -886,25 +886,26 @@ static enum birth_stage menu_question(enum birth_stage current,
 				}
 			} else if (current == BIRTH_GAME_MODE_CHOICE) {
 				OPT(player, birth_connect_stairs) = true;
-				switch (current_menu->cursor) {
-					case 0:
+				player->stair_skip = 1;
+				switch ((enum game_modes)current_menu->cursor) {
+					case GM_NORMAL:
 						OPT(player, birth_levels_persist) = true;
 						OPT(player, birth_force_descend) = false;
 						OPT(player, birth_no_recall) = false;
 						break;
-					case 1:
-						OPT(player, birth_levels_persist) = false;
-						OPT(player, birth_force_descend) = true;
+					case GM_IRON:
+						OPT(player, birth_levels_persist) = true;
+						OPT(player, birth_force_descend) = false;
 						OPT(player, birth_no_recall) = true;
 						break;
-					case 2:
-						OPT(player, birth_levels_persist) = false;
+					case GM_IRON_STAIRSKIP3:
+						player->stair_skip = 3;
+						OPT(player, birth_levels_persist) = true;
 						OPT(player, birth_force_descend) = false;
-						OPT(player, birth_no_recall) = false;
+						OPT(player, birth_no_recall) = true;
 						break;
+					case MAX_GAME_MODES: break; // to shut up enum case warning...
 				}
-				cmdq_push(choice_command);
-				cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
 				next = current + 1;
 			} else {
 				cmdq_push(choice_command);

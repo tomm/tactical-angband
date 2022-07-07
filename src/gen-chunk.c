@@ -31,6 +31,7 @@
 #include "mon-group.h"
 #include "mon-make.h"
 #include "obj-util.h"
+#include "player-util.h"
 #include "trap.h"
 
 #define CHUNK_LIST_INCR 10
@@ -146,7 +147,7 @@ bool chunk_find(struct chunk *c)
  */
 struct chunk *chunk_find_adjacent(int depth, bool above)
 {
-	struct level *lev = level_by_depth(depth + ((above) ? -1 : 1));
+	struct level *lev = level_by_depth(dungeon_get_next_level(player, depth, above ? -1 : 1));
 
 	if (lev) {
 		return chunk_find_name(lev->name);

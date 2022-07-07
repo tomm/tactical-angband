@@ -934,7 +934,7 @@ static void build_staircase_rooms(struct chunk *c, const char *label)
 				"Cave with %d Rows and %d Columns", label,
 				join->grid.y, join->grid.x, c->height,
 				c->width), c);
-			quit("Failed to place stairs");
+			msg("Bug: Failed to place stairs");
 		}
 		++dun->nstair_room;
 	}

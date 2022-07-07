@@ -900,7 +900,7 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 	struct level *lev = NULL;
 
 	/* Check level above */
-	lev = level_by_depth(p->depth - 1);
+	lev = level_by_depth(dungeon_get_next_level(p, p->depth, -1));
 	if (lev) {
 		struct chunk *check = chunk_find_name(lev->name);
 		if (check) {
@@ -917,7 +917,7 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 				join = join->next;
 			}
 		}
-	} else if ((lev = level_by_depth(p->depth - 2))) {
+	} else if ((lev = level_by_depth(dungeon_get_next_level(p, p->depth, -2)))) {
 		/*
 		 * When there isn't a level above but there is one two levels
 		 * up, remember where the down staircases are so up staircases
@@ -944,7 +944,7 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 	}
 
 	/* Check level below */
-	lev = level_by_depth(p->depth + 1);
+	lev = level_by_depth(dungeon_get_next_level(p, p->depth, 1));
 	if (lev) {
 		struct chunk *check = chunk_find_name(lev->name);
 		if (check) {
@@ -961,7 +961,7 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 				join = join->next;
 			}
 		}
-	} else if ((lev = level_by_depth(p->depth + 2))) {
+	} else if ((lev = level_by_depth(dungeon_get_next_level(p, p->depth, 2)))) {
 		/* Same logic as above for looking one past the next level */
 		struct chunk *check = chunk_find_name(lev->name);
 

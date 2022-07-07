@@ -463,6 +463,7 @@ void wr_player(void)
 
 	wr_u32b(player->au);
 
+	wr_s16b(player->stair_skip);
 
 	wr_u32b(player->max_exp);
 	wr_u32b(player->exp);

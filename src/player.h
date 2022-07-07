@@ -516,6 +516,7 @@ struct player {
 
 	int32_t au;		/* Current Gold */
 
+	int16_t stair_skip;     /* Number of levels to skip for each down stair */
 	int16_t max_depth;	/* Max depth */
 	int16_t recall_depth;	/* Recall depth */
 	int16_t depth;		/* Cur depth */
