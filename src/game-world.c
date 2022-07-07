@@ -783,7 +783,7 @@ void process_world(struct chunk *c)
 		/* Activate the descent */
 		if (player->deep_descent == 0) {
 			/* Calculate target depth */
-			int target_increment = (4 / player->stair_skip) + 1;
+			int target_increment = (4 / player->opts.stair_skip) + 1;
 			int target_depth = dungeon_get_next_level(player,
 				player->max_depth, target_increment);
 			disturb(player);

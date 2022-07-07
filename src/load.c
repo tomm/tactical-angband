@@ -428,6 +428,8 @@ int rd_options(void)
 {
 	uint8_t b;
 
+	rd_s16b(&player->opts.stair_skip);
+
 	/*** Special info */
 
 	/* Read "delay_factor" */
@@ -759,8 +761,6 @@ int rd_player(void)
 	strip_bytes(4);
 
 	rd_s32b(&player->au);
-
-	rd_s16b(&player->stair_skip);
 
 	rd_s32b(&player->max_exp);
 	rd_s32b(&player->exp);

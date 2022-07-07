@@ -55,7 +55,7 @@ int dungeon_get_next_level(struct player *p, int dlev, int added)
 	int target_level, i;
 
 	/* Get target level */
-	target_level = dlev + added * p->stair_skip;
+	target_level = dlev + added * p->opts.stair_skip;
 
 	/* Don't allow levels below max */
 	if (target_level > z_info->max_depth - 1)

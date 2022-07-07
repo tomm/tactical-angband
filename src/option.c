@@ -156,6 +156,9 @@ void options_init_defaults(struct player_options *opts)
 	options_restore_custom(opts, OP_BIRTH);
 	options_restore_custom(opts, OP_INTERFACE);
 
+	/* Normal 1-level-per-stair descent */
+	(*opts).stair_skip = 1;
+
 	/* 40ms for the delay factor */
 	(*opts).delay_factor = 40;
 

@@ -315,6 +315,8 @@ void wr_options(void)
 {
 	int i;
 
+	wr_s16b(player->opts.stair_skip);
+
 	/* Special Options */
 	wr_byte(player->opts.delay_factor);
 	wr_byte(player->opts.hitpoint_warn);
@@ -462,8 +464,6 @@ void wr_player(void)
 	wr_u32b(0);
 
 	wr_u32b(player->au);
-
-	wr_s16b(player->stair_skip);
 
 	wr_u32b(player->max_exp);
 	wr_u32b(player->exp);

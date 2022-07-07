@@ -1083,7 +1083,7 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 	int i;
 
 	/* Calculate target depth */
-	int target_increment = (4 / player->stair_skip) + 1;
+	int target_increment = (4 / player->opts.stair_skip) + 1;
 	int target_depth = dungeon_get_next_level(player, player->max_depth,
 		target_increment);
 	for (i = 5; i > 0; i--) {

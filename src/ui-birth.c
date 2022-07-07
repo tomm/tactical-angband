@@ -886,7 +886,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 				}
 			} else if (current == BIRTH_GAME_MODE_CHOICE) {
 				OPT(player, birth_connect_stairs) = true;
-				player->stair_skip = 1;
+				player->opts.stair_skip = 1;
 				switch ((enum game_modes)current_menu->cursor) {
 					case GM_NORMAL:
 						OPT(player, birth_levels_persist) = true;
@@ -899,7 +899,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 						OPT(player, birth_no_recall) = true;
 						break;
 					case GM_IRON_STAIRSKIP3:
-						player->stair_skip = 3;
+						player->opts.stair_skip = 3;
 						OPT(player, birth_levels_persist) = true;
 						OPT(player, birth_force_descend) = false;
 						OPT(player, birth_no_recall) = true;

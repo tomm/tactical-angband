@@ -403,7 +403,7 @@ void player_init(struct player *p)
 	memset(p, 0, sizeof(struct player));
 
 	/* Default to descending 1 level on using down stairs */
-	p->stair_skip = 1;
+	p->opts.stair_skip = 1;
 
 	/* Start with no artifacts made yet */
 	for (i = 0; z_info && i < z_info->a_max; i++) {
