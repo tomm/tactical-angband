@@ -585,6 +585,12 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		player_inc_timed(p, TMD_SLOW, 100, true, false);
 	}
 
+	/* After paralysis, make sure player gets a move! Note this effectively
+	 * reduces paralysis duration by one speed +0 turn... */
+	if (idx == TMD_PARALYZED && v == 0) {
+		player->energy = z_info->move_energy;
+	}
+
 	if (notify) {
 		/* Disturb */
 		disturb(p);
