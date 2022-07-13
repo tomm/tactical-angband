@@ -2134,8 +2134,12 @@ static struct chunk *cavern_chunk(int depth, int h, int w,
 struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 	int i, k;
 
+#if 0
 	int h = rand_range(z_info->dungeon_hgt / 2, (z_info->dungeon_hgt * 3) / 4);
 	int w = rand_range(z_info->dungeon_wid / 2, (z_info->dungeon_wid * 3) / 4);
+#endif /* 0 */
+	int h = z_info->dungeon_hgt;
+	int w = z_info->dungeon_wid;
 
 	struct chunk *c;
 
@@ -2816,10 +2820,11 @@ static struct chunk *modified_chunk(struct player *p, int depth, int height,
  */
 struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	int i, k;
-	int size_percent, y_size, x_size;
+	int /*size_percent,*/ y_size, x_size;
 	struct chunk *c;
 
 	/* Scale the level */
+#if 0
 	i = randint1(10) + p->depth / 24;
 	if (dun->quest) size_percent = 100;
 	else if (i < 2) size_percent = 75;
@@ -2830,6 +2835,9 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
+#endif
+	y_size = z_info->dungeon_hgt;
+	x_size = z_info->dungeon_wid;
 
 	/* Enforce minimum dimensions */
 	y_size = MAX(y_size, min_height);
@@ -3043,10 +3051,11 @@ static struct chunk *moria_chunk(struct player *p, int depth, int height,
  */
 struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	int i, k;
-	int size_percent, y_size, x_size;
+	int /*size_percent,*/ y_size, x_size;
 	struct chunk *c;
 
 	/* Scale the level */
+#if 0
 	i = randint1(10) + p->depth / 24;
 	if (dun->quest) size_percent = 100;
 	else if (i < 2) size_percent = 75;
@@ -3057,6 +3066,9 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
+#endif
+	y_size = z_info->dungeon_hgt;
+	x_size = z_info->dungeon_wid;
 
 	/* Enforce minimum dimensions */
 	y_size = MAX(y_size, min_height);
@@ -3425,7 +3437,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
  */
 struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	int i, k;
-	int size_percent, y_size, x_size;
+	int /*size_percent,*/ y_size, x_size;
 	int left_width, normal_width, lair_width;
 	int normal_offset, lair_offset;
 	struct chunk *c;
@@ -3434,6 +3446,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	struct connector *cached_join;
 
 	/* Scale the level */
+#if 0
 	i = randint1(10) + p->depth / 24;
 	if (dun->quest) size_percent = 100;
 	else if (i < 2) size_percent = 75;
@@ -3444,6 +3457,9 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
+#endif
+	y_size = z_info->dungeon_hgt;
+	x_size = z_info->dungeon_wid;
 
 	/* Enforce minimum dimensions */
 	y_size = MAX(y_size, min_height);
@@ -3616,9 +3632,13 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	struct chunk *right;
 	int gauntlet_hgt = 2 * randint1(5) + 3;
 	int gauntlet_wid = 2 * randint1(10) + 19;
+#if 0
 	int y_size = z_info->dungeon_hgt - randint0(25 - gauntlet_hgt);
 	int x_size = (z_info->dungeon_wid - gauntlet_wid) / 2 -
 		randint0(45 - gauntlet_wid);
+#endif
+	int y_size = z_info->dungeon_hgt;
+	int x_size = z_info->dungeon_wid;
 	int line1, line2;
 
 	/* No persistent levels of this type for now */
