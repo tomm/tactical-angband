@@ -126,6 +126,7 @@ void do_cmd_wiz_summon_named(struct command *cmd);
 void do_cmd_wiz_summon_random(struct command *cmd);
 void do_cmd_wiz_teleport_random(struct command *cmd);
 void do_cmd_wiz_teleport_to(struct command *cmd);
+void do_cmd_wiz_toggle_combat_system(struct command *cmd);
 void do_cmd_wiz_tweak_item(struct command *cmd);
 void do_cmd_wiz_wipe_recall(struct command *cmd);
 void do_cmd_wiz_wizard_light(struct command *cmd);

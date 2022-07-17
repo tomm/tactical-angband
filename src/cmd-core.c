@@ -164,6 +164,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_SUMMON_RANDOM, "summon random monsters", do_cmd_wiz_summon_random, false, 0 },
 	{ CMD_WIZ_TELEPORT_RANDOM, "teleport", do_cmd_wiz_teleport_random, false, 0 },
 	{ CMD_WIZ_TELEPORT_TO, "teleport to location", do_cmd_wiz_teleport_to, false, 0 },
+	{ CMD_WIZ_TOGGLE_COMBAT_SYSTEM, "toggle birth_percent_damage", do_cmd_wiz_toggle_combat_system, false, 0 },
 	{ CMD_WIZ_TWEAK_ITEM, "modify item attributes", do_cmd_wiz_tweak_item, false, 0 },
 	{ CMD_WIZ_WIPE_RECALL, "erase monster recall", do_cmd_wiz_wipe_recall, false, 0 },
 	{ CMD_WIZ_WIZARD_LIGHT, "wizard light the level", do_cmd_wiz_wizard_light, false, 0 },

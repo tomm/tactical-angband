@@ -2719,6 +2719,12 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 	}
 }
 
+void do_cmd_wiz_toggle_combat_system(struct command *cmd)
+{
+	OPT(player, birth_percent_damage) = !OPT(player, birth_percent_damage);
+	msg("birth_percent_damage %s.", OPT(player, birth_percent_damage) ? "on" : "off");
+}
+
 
 /**
  * Tweak an item:  make it ego or artifact, give values for modifiers, to_a,

@@ -311,6 +311,7 @@ struct cmd_info cmd_debug_misc[] =
 	{ "Banish nearby monsters", { 'z' }, CMD_WIZ_BANISH, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Push objects from square", { '>' }, CMD_WIZ_PUSH_OBJECT, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Quit without saving", { 'X' }, CMD_NULL, wiz_confirm_quit_no_save, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Toggle birth_percent_damage", { 'O' }, CMD_WIZ_TOGGLE_COMBAT_SYSTEM, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 };
 
 /**
