@@ -1493,7 +1493,7 @@ void prepare_next_level(struct player *p)
 			int min_height = 0, min_width = 0;
 
 			/* Check level above */
-			lev = level_by_depth(p->depth - 1);
+			lev = level_by_depth(dungeon_get_next_level(p, p->depth, -1));
 			if (lev) {
 				struct chunk *check = chunk_find_name(lev->name);
 				if (check) {
@@ -1502,7 +1502,7 @@ void prepare_next_level(struct player *p)
 			}
 
 			/* Check level below */
-			lev = level_by_depth(p->depth + 1);
+			lev = level_by_depth(dungeon_get_next_level(p, p->depth, 1));
 			if (lev) {
 				struct chunk *check = chunk_find_name(lev->name);
 				if (check) {
