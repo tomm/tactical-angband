@@ -21,6 +21,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
+#include "mon-make.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-util.h"
@@ -612,6 +613,22 @@ bool square_isempty(struct chunk *c, struct loc grid) {
  * True if the square is empty (an open square without any items).
  */
 bool square_isarrivable(struct chunk *c, struct loc grid) {
+	if (square(c, grid)->mon > 0) {
+		//char m_name[80];
+		//monster_desc(m_name, sizeof(m_name), cave_monster(c, square(c, grid)->mon), MDESC_SHOW);
+		//msg("Target has %s sitting on it... erasing it.", m_name);
+		// sorry, my friend. we are arriving
+		delete_monster_idx(square(c, grid)->mon);
+	}
+	/*
+	msg("Debug square_isarrivable: %s %s %s %s %s.",
+		square(c, grid)->mon ? "F" : "t",
+		square_isplayertrap(c, grid) ? "F" : "t",
+		square_iswebbed(c, grid) ? "F" : "t",
+		square_isfloor(c, grid) ? "T" : "f",
+		square_isstairs(c, grid) ? "T" : "f");
+	*/
+
 	if (square(c, grid)->mon) return false;
 	if (square_isplayertrap(c, grid)) return false;
 	if (square_iswebbed(c, grid)) return false;
