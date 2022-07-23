@@ -2884,7 +2884,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(4) + k/2;
+	i = z_info->level_monster_min + randint1(4) + k/4;
 
 	/* Remove all monster restrictions. */
 	mon_restrict(NULL, c->depth, c->depth, true);
