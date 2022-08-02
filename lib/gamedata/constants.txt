@@ -101,10 +101,10 @@ world:max-depth:128
 world:day-length:10000
 
 # Max number of grids in each dungeon level (vertically)
-world:dungeon-hgt:33
+world:dungeon-hgt:30
 
 # Max number of grids in each dungeon level (horizontally)
-world:dungeon-wid:99
+world:dungeon-wid:80
 
 # Max number of grids in each town level (vertically)
 world:town-hgt:22
