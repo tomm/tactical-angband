@@ -1246,6 +1246,9 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 		/* Stun them */
 		mon_inc_timed(mon, MON_TMD_STUN, 15, 0);
 
+		/* Wake them */
+		monster_wake(mon, false, 100);
+
 		/* Push them away */
 		thrust_away(player->grid, mon->grid, r);
 	}
