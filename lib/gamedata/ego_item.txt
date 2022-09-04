@@ -222,7 +222,7 @@ slay:ORC_3
 slay:TROLL_3
 slay:GIANT_3
 
-name:of Extra Attacks
+name:of Extra Might
 info:10000:20
 alloc:10:10 to 127
 type:sword

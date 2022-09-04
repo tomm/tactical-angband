@@ -559,7 +559,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
-	int ap_cnt;
+	int might, ap_cnt;
 	char m_name[80];
 	char ddesc[80];
 	bool blinked = false;
@@ -573,8 +573,15 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	/* Get the "died from" information (i.e. "a kobold") */
 	monster_desc(ddesc, sizeof(ddesc), mon, MDESC_SHOW | MDESC_IND_VIS);
 
-	/* Scan through all blows */
-	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
+	/* Find number of monster blows (which will be used as might, a damage multiplier) */
+	for (might = 0; might < z_info->mon_blows_max; might++) {
+		struct blow_method *method = mon->race->blow[might].method;
+		if (!method) break;
+	}
+
+	/* Pick a single random blow to use */
+	ap_cnt = randint0(might);
+	do {
 		struct loc pgrid = p->grid;
 		bool visible = monster_is_visible(mon) || (mon->race->light > 0);
 		bool obvious = false;
@@ -632,6 +639,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			obvious = true;
 
 			/* Roll dice */
+			dice.dice *= might;
 			damage = randcalc(dice, rlev, RANDOMISE);
 
 			/* Reduce damage when stunned */
@@ -762,7 +770,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 		/* Skip the other blows if the player has moved */
 		if (!loc_eq(p->grid, pgrid)) break;
-	}
+	} while (0);
 
 	/* Blink away */
 	if (blinked) {

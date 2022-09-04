@@ -704,11 +704,10 @@ static bool describe_blows(textblock *tb, const struct object *obj)
 	if (num_entries == 0) return false;
 
 	/* First entry is always current blows (+0, +0) */
-	textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d ",
+	textblock_append_c(tb, COLOUR_L_GREEN, "x%d.%d ",
 			blow_info[0].centiblows / 100, 
 			(blow_info[0].centiblows / 10) % 10);
-	textblock_append(tb, "blow%s/round.\n",
-			(blow_info[0].centiblows > 100) ? "s" : "");
+	textblock_append(tb, "might.\n");
 
 	/* Then list combinations that give more blows / speed boost */
 	for (i = 1; i < num_entries; i++) {
@@ -716,13 +715,13 @@ static bool describe_blows(textblock *tb, const struct object *obj)
 
 		if (entry.centiblows % 10 == 0) {
 			textblock_append(tb, 
-				"With +%d STR and +%d DEX you would get %d.%d blows\n",
+				"With +%d STR and +%d DEX you would get x%d.%d might\n",
 				entry.str_plus, entry.dex_plus, 
 				(entry.centiblows / 100),
 				(entry.centiblows / 10) % 10);
 		} else {
 			textblock_append(tb, 
-				"With +%d STR and +%d DEX you would attack a bit faster\n",
+				"With +%d STR and +%d DEX you would attack slightly harder\n",
 				entry.str_plus, entry.dex_plus);
 		}
 	}

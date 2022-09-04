@@ -689,7 +689,7 @@ static const struct hit_types melee_hit_types[] = {
 /**
  * Attack the monster at the given location with a single blow.
  */
-bool py_attack_real(struct player *p, struct loc grid, bool *fear)
+bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool *fear)
 {
 	size_t i;
 
@@ -799,6 +799,9 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	if (!OPT(p, birth_percent_damage)) {
 		dmg += player_damage_bonus(&p->state);
 	}
+
+	/* Apply 'blows per round' as a multiplier */
+	dmg = dmg * num_blows_x100 / 100;
 
 	/* Substitute shape-specific blows for shapechanged players */
 	if (player_is_shapechanged(p)) {
@@ -959,9 +962,9 @@ static bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fea
  */
 void py_attack(struct player *p, struct loc grid)
 {
-	int avail_energy = MIN(p->energy, z_info->move_energy);
-	int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
-	bool slain = false, fear = false;
+	//int avail_energy = MIN(p->energy, z_info->move_energy);
+	//int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
+	bool /*slain = false,*/ fear = false;
 	struct monster *mon = square_monster(cave, grid);
 
 	/* Disturb the player */
@@ -986,10 +989,16 @@ void py_attack(struct player *p, struct loc grid)
 	/* Attack until the next attack would exceed energy available or
 	 * a full turn or until the enemy dies. We limit energy use
 	 * to avoid giving monsters a possible double move. */
+	/*
 	while (avail_energy - p->upkeep->energy_use >= blow_energy && !slain) {
 		slain = py_attack_real(p, grid, &fear);
 		p->upkeep->energy_use += blow_energy;
 	}
+	*/
+
+	/* Tactical angband uses one attack, and treats 'blows per round' as a multiplier (might) */
+	py_attack_real(p, grid, p->state.num_blows, &fear);
+	p->upkeep->energy_use += z_info->move_energy;;
 
 	/* Hack - delay fear messages */
 	if (fear && monster_is_visible(mon)) {

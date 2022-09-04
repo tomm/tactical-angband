@@ -1653,6 +1653,13 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 	described_count = 0;
 	total_centidamage = 99; // round up the final result to the next higher point
 
+
+	/* Find number of monster blows (which will be used as might, a damage multiplier) */
+	int might;
+	for (might = 0; might < z_info->mon_blows_max; might++) {
+		if (!race->blow[might].method) break;
+	}
+
 	/* Describe each melee attack */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
 		random_value dice;
@@ -1672,7 +1679,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		else if (described_count < known_attacks - 1)
 			textblock_append(tb, ", ");
 		else
-			textblock_append(tb, ", and ");
+			textblock_append(tb, ", or ");
 
 		/* Describe the method */
 		textblock_append(tb, "%s", race->blow[i].method->desc);
@@ -1688,13 +1695,13 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			/* Describe damage (if known) */
 			if (dice.base || (dice.dice && dice.sides) || dice.m_bonus) {
 				if (dice.base)
-					textblock_append_c(tb, COLOUR_L_GREEN, "%d", dice.base);
+					textblock_append_c(tb, COLOUR_L_GREEN, "%d", might * dice.base);
 
 				if (dice.dice && dice.sides)
-					textblock_append_c(tb, COLOUR_L_GREEN, "%dd%d", dice.dice, dice.sides);
+					textblock_append_c(tb, COLOUR_L_GREEN, "%dd%d", might * dice.dice, dice.sides);
 
 				if (dice.m_bonus)
-					textblock_append_c(tb, COLOUR_L_GREEN, "M%d", dice.m_bonus);
+					textblock_append_c(tb, COLOUR_L_GREEN, "M%d", might * dice.m_bonus);
 
 				textblock_append(tb, ", ");
 			}

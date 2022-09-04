@@ -746,7 +746,7 @@ static struct panel *get_panel_combat(void) {
 
 	panel_line(p, COLOUR_L_BLUE, "Melee", "%dd%d,%+d", melee_dice, melee_sides, dam);
 	panel_line(p, COLOUR_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
-	panel_line(p, COLOUR_L_BLUE, "Blows", "%d.%d/turn",
+	panel_line(p, COLOUR_L_BLUE, "Might", "dam x%d.%d",
 			player->state.num_blows / 100, (player->state.num_blows / 10 % 10));
 
 	/* Ranged */
