@@ -525,6 +525,35 @@ static void update_scent(void)
 	}
 }
 
+#include "mon-desc.h"
+static void reap_lost_uniques()
+{
+	for (int c_idx = 0; c_idx < chunk_list_max; c_idx++) {
+		bool need_compact = false;
+		struct chunk *c = chunk_list[c_idx];
+		for (int m_idx = 1; m_idx < cave_monster_max(c); m_idx++) {
+			struct monster *mon = cave_monster(c, m_idx);
+			if (!mon->race) continue;
+			if (!monster_is_unique(mon)) continue;
+
+			char m_name[80];
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_SHOW);
+
+			/* If the player is more than 3 levels deeper than this cave,
+			 * and the unique was out-of-depth on this cave, delete the
+			 * unique (so they can reappear on another level) */
+			if (player->depth > c->depth + 3) {
+				msg("DEBUG: reaping %s (native lvl %d) on dlvl %d.", m_name, mon->race->level, c->depth);
+				delete_cave_monster_idx(c, m_idx);
+				need_compact = true;
+			}
+		}
+		if (need_compact) {
+			compact_monsters(c, 0);
+		}
+	}
+}
+
 /**
  * Handle things that need updating once every 10 game turns
  */
@@ -731,8 +760,14 @@ void process_world(struct chunk *c)
 	recharge_objects();
 
 	/* Notice things after time */
-	if (!(turn % 100))
+	if (!(turn % 100)) {
 		equip_learn_after_time(player);
+	}
+
+	/* Periodically delete uniques encountered enough levels ago */
+	if (!(turn % 1000)) {
+		reap_lost_uniques();
+	}
 
 	/* Decrease trap timeouts */
 	for (y = 0; y < c->height; y++) {
