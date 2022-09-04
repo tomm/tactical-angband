@@ -1252,7 +1252,7 @@ weight:2
 cost:1
 pile:100:7d7
 alloc:30:3 to 100
-attack:1d4:0:0
+attack:2d4:0:0
 armor:0:0
 desc:It can be shot with a bow.
 
@@ -1290,7 +1290,7 @@ weight:3
 cost:2
 pile:100:5d7
 alloc:30:3 to 100
-attack:1d5:0:0
+attack:2d5:0:0
 armor:0:0
 desc:It can be shot with a crossbow.
 
@@ -1328,7 +1328,7 @@ weight:4
 cost:1
 pile:100:5d7
 alloc:30:0 to 100
-attack:1d2:0:0
+attack:2d2:0:0
 armor:0:0
 flags:THROWING
 desc:It can be shot with a sling or thrown.
@@ -1342,7 +1342,7 @@ weight:5
 cost:2
 pile:100:5d7
 alloc:25:3 to 100
-attack:1d4:0:0
+attack:2d4:0:0
 armor:0:0
 flags:THROWING
 desc:It can be shot with a sling or thrown.
@@ -1355,7 +1355,7 @@ weight:4
 cost:20
 pile:100:5d7
 alloc:20:40 to 100
-attack:2d4:5:5
+attack:3d4:5:5
 armor:0:0
 flags:THROWING
 desc:It can be shot with a sling or thrown.
@@ -5318,7 +5318,7 @@ graphics:-:d
 level:20
 weight:10
 cost:3500
-alloc:30:20 to 100
+alloc:50:10 to 100
 attack:1d1:0:0
 armor:0:0
 charges:6+d5
@@ -5378,8 +5378,8 @@ graphics:?:w
 level:10
 weight:5
 cost:40
-alloc:50:4 to 100
-pile:50:1d4
+alloc:50:1 to 100
+pile:50:2d4
 power:6
 effect:TOUCH:LOCK_DOOR
 dice:7+1d7
