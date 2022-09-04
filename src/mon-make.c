@@ -778,7 +778,11 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 	item_ok = (!rf_has(mon->race->flags, RF_ONLY_GOLD));
 
 	/* Determine how much we can drop */
-	number = mon_create_drop_count(mon->race, false, false, NULL);
+	number = 0;
+	/* 4x v-angband drops because dungeons are 1/4 area */
+	for (int rep=0; rep < 4; rep++) {
+		number += mon_create_drop_count(mon->race, false, false, NULL);
+	}
 
 	/* Uniques that have been stolen from get their quantity reduced */
 	if (rf_has(mon->race->flags, RF_UNIQUE)) {
