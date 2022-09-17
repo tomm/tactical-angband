@@ -788,9 +788,16 @@ bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
 {
 	int stat = context->subtype;
+	bool success = false;
 
 	/* Attempt to increase */
-	if (player_stat_inc(player, stat)) {
+	for (int i=0; i<player->opts.stair_skip; i++) {
+		if (player_stat_inc(player, stat)) {
+			success = true;
+		}
+	}
+
+	if (success) {
 		msg("You feel very %s!", desc_stat(stat, true));
 	}
 
