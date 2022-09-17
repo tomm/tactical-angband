@@ -1242,6 +1242,8 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		effect_simple(EF_SWAP_PLACES, context->origin, "", 0, 0, 0,
 					     context->grid.y, context->grid.x, NULL);
 
+		if (context->seen) context->obvious = true;
+
 		/* Wake the monster up, don't notice the player */
 		monster_wake(mon, false, 0);
 	} else {
