@@ -9,9 +9,9 @@ Use standard turns in the highscore table.
 
 ## Dungeon
 
-Map size has been reduced. Persistent dungeons are now on by default. Monsters
-fully heal when you enter a level to prevent stairs being used for easy
-healing during fights.
+Map size has been reduced, and some dungeon types (classic, labyrinth)
+have been disabled because they are incompatible with small level sizes,
+or don't work well with other game changes.
 
 ## Escape spells / items
 
