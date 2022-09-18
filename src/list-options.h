@@ -96,7 +96,7 @@ BIRTH, false)
 OP(birth_know_flavors,    "Know all flavors on birth",
 BIRTH, false)
 OP(birth_levels_persist,  "Persistent levels",
-BIRTH, true)
+BIRTH, false)
 OP(birth_percent_damage,  "To-damage is a percentage of dice (experimental)",
 BIRTH, true)
 
