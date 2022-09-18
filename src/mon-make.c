@@ -313,21 +313,11 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
  */
 void delete_monster_idx(int m_idx)
 {
-	delete_cave_monster_idx(cave, m_idx);
-}
-
-/**
- * Delete a monster from a specific chunk, by index.
- *
- * When a monster is deleted, all of its objects are deleted.
- */
-void delete_cave_monster_idx(struct chunk *c, int m_idx)
-{
-	struct monster *mon = cave_monster(c, m_idx);
+	struct monster *mon = cave_monster(cave, m_idx);
 	struct loc grid;
 
 	assert(m_idx > 0);
-	assert(square_in_bounds(c, mon->grid));
+	assert(square_in_bounds(cave, mon->grid));
 	grid = mon->grid;
 
 	/* Hack -- Reduce the racial counter */
@@ -336,7 +326,7 @@ void delete_cave_monster_idx(struct chunk *c, int m_idx)
 
 	/* Count the number of "reproducers" */
 	if (rf_has(mon->race->flags, RF_MULTIPLY)) {
-		c->num_repro--;
+		cave->num_repro--;
 	}
 
 	/* Affect light? */
@@ -357,8 +347,8 @@ void delete_cave_monster_idx(struct chunk *c, int m_idx)
 	}
 
 	/* Monster is gone from square and group */
-	square_set_mon(c, grid, 0);
-	monster_remove_from_groups(c, mon);
+	square_set_mon(cave, grid, 0);
+	monster_remove_from_groups(cave, mon);
 
 	/* Delete objects */
 	struct object *obj = mon->held_obj;
@@ -385,25 +375,26 @@ void delete_cave_monster_idx(struct chunk *c, int m_idx)
 				object_delete(player->cave, NULL, &obj->known);
 			}
 		}
-		delist_object(c, obj);
-		object_delete(c, c == cave ? player->cave : NULL, &obj);
+		delist_object(cave, obj);
+		object_delete(cave, player->cave, &obj);
 		obj = next;
 	}
 
 	/* Delete mimicked objects */
 	if (mon->mimicked_obj) {
-		square_delete_object(c, mon->grid, mon->mimicked_obj, true, false);
+		square_delete_object(cave, mon->grid, mon->mimicked_obj, true, false);
 	}
 
 	/* Wipe the Monster */
 	memset(mon, 0, sizeof(struct monster));
 
 	/* Count monsters */
-	c->mon_cnt--;
+	cave->mon_cnt--;
 
 	/* Visual update */
-	square_light_spot(c, grid);
+	square_light_spot(cave, grid);
 }
+
 
 /**
  * Deletes the monster, if any, at the given location.
@@ -423,7 +414,7 @@ void delete_monster(struct loc grid)
  *
  * This should only be called when there is an actual monster at i1
  */
-void monster_index_move(struct chunk *c, int i1, int i2)
+void monster_index_move(int i1, int i2)
 {
 	struct monster *mon;
 	struct object *obj;
@@ -432,19 +423,19 @@ void monster_index_move(struct chunk *c, int i1, int i2)
 	if (i1 == i2) return;
 
 	/* Old monster */
-	mon = cave_monster(c, i1);
+	mon = cave_monster(cave, i1);
 	if (!mon) return;
 
 	/* Update the cave */
-	square_set_mon(c, mon->grid, i2);
+	square_set_mon(cave, mon->grid, i2);
 
 	/* Update midx */
 	mon->midx = i2;
 
 	/* Update group */
-	if (!monster_group_change_index(c, i2, i1)) {
+	if (!monster_group_change_index(cave, i2, i1)) {
 		quit("Bad monster group info!") ;
-		monster_groups_verify(c);
+		monster_groups_verify(cave);
 	}
 
 	/* Repair objects being carried by monster */
@@ -457,19 +448,19 @@ void monster_index_move(struct chunk *c, int i1, int i2)
 
 	/* Update the target */
 	if (target_get_monster() == mon)
-		target_set_monster(cave_monster(c, i2));
+		target_set_monster(cave_monster(cave, i2));
 
 	/* Update the health bar */
 	if (player->upkeep->health_who == mon)
-		player->upkeep->health_who = cave_monster(c, i2);
+		player->upkeep->health_who = cave_monster(cave, i2);
 
 	/* Move monster */
-	memcpy(cave_monster(c, i2),
-			cave_monster(c, i1),
+	memcpy(cave_monster(cave, i2),
+			cave_monster(cave, i1),
 			sizeof(struct monster));
 
 	/* Wipe hole */
-	memset(cave_monster(c, i1), 0, sizeof(struct monster));
+	memset(cave_monster(cave, i1), 0, sizeof(struct monster));
 }
 
 
@@ -534,7 +525,7 @@ void compact_monsters(struct chunk *c, int num_to_compact)
 			if (randint0(100) < chance) continue;
 
 			/* Delete the monster */
-			delete_cave_monster_idx(c, m_idx);
+			delete_monster(mon->grid);
 
 			/* Count the monster */
 			num_compacted++;
@@ -550,7 +541,7 @@ void compact_monsters(struct chunk *c, int num_to_compact)
 		if (mon->race) continue;
 
 		/* Move last monster into open hole */
-		monster_index_move(c, cave_monster_max(c) - 1, m_idx);
+		monster_index_move(cave_monster_max(c) - 1, m_idx);
 
 		/* Compress "c->mon_max" */
 		c->mon_max--;
