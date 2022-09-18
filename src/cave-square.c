@@ -1387,12 +1387,14 @@ void square_earthquake(struct chunk *c, struct loc grid) {
 		return;
 	}
 
-	if (t < 20)
+	if (t < 10)
 		f = FEAT_GRANITE;
-	else if (t < 70)
+	else if (t < 35)
 		f = FEAT_QUARTZ;
-	else
+	else if (t < 50)
 		f = FEAT_MAGMA;
+	else
+		f = FEAT_PASS_RUBBLE;
 	square_set_feat(c, grid, f);
 }
 

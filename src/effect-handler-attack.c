@@ -1503,7 +1503,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (loc_is_zero(offset)) continue;
 
 			/* Skip most grids */
-			if (randint0(100) < 85) continue;
+			if (randint0(100) < 70) continue;
 
 			/* Damage this grid */
 			map[16 + grid.y - centre.y][16 + grid.x - centre.x] = true;
