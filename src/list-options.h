@@ -98,5 +98,5 @@ BIRTH, false)
 OP(birth_levels_persist,  "Persistent levels",
 BIRTH, false)
 OP(birth_percent_damage,  "To-damage is a percentage of dice (experimental)",
-BIRTH, true)
+BIRTH, false)
 
