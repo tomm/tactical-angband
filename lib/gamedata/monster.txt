@@ -7587,6 +7587,7 @@ rarity:2
 experience:300
 blow:HIT:POISON:3d4
 blow:HIT:LOSE_STR:3d4
+blow:HIT:LOSE_STR:3d4
 flags:MALE | EVIL
 flags:DROP_1
 flags:OPEN_DOOR
