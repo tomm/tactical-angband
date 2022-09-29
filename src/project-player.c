@@ -362,7 +362,7 @@ static int project_player_handler_NEXUS(project_player_handler_context_t *contex
 		effect_simple(EF_TELEPORT_LEVEL, context->origin, "0", 0, 0, 0, 0, 0,
 					  NULL);
 	} else { /* Teleport */
-		const char *miles = "50";
+		const char *miles = "20";
 		effect_simple(EF_TELEPORT, context->origin, miles, 1, 0, 0, 0, 0, NULL);
 	}
 	return 0;
