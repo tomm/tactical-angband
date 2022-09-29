@@ -2219,9 +2219,9 @@ graphics:=:d
 level:5
 weight:2
 cost:1000
-alloc:0:10 to 50
+alloc:20:10 to 50
 flags:EASY_KNOW
-#curse:teleportation:100
+curse:teleportation:100
 values:SPEED[2]
 
 name:Reckless Attacks
@@ -2487,9 +2487,9 @@ graphics:":d
 level:10
 weight:3
 cost:10
-alloc:0:10 to 40
+alloc:20:10 to 40
 flags:EASY_KNOW
-#curse:teleportation:100
+curse:teleportation:100
 
 name:Slow Digestion
 type:amulet
@@ -2535,11 +2535,11 @@ graphics:?:w
 level:1
 weight:5
 cost:15
-alloc:0:1 to 100
-pile:100:2d3
+alloc:50:1 to 100
+pile:100:1d3
 power:5
 effect:TELEPORT
-dice:10
+dice:7
 
 name:Teleportation
 type:scroll
@@ -2577,7 +2577,7 @@ alloc:50:5 to 100
 pile:70:1d3
 power:10
 effect:MAP_AREA
-effect-yx:22:40
+effect-yx:33:99
 
 name:Treasure Detection
 type:scroll
@@ -3024,8 +3024,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:30:30 to 100
-pile:10:2
+alloc:60:30 to 100
+pile:30:2
 power:20000
 effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
@@ -3036,8 +3036,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:30:30 to 100
-pile:10:2
+alloc:60:30 to 100
+pile:30:2
 power:20000
 effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
@@ -3048,8 +3048,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:30:30 to 100
-pile:10:2
+alloc:60:30 to 100
+pile:30:2
 power:20000
 effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
@@ -3060,8 +3060,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:30:30 to 100
-pile:10:2
+alloc:60:30 to 100
+pile:30:2
 power:20000
 effect:RESTORE_STAT:DEX
 effect:GAIN_STAT:DEX
@@ -3072,8 +3072,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:30:30 to 100
-pile:10:2
+alloc:60:30 to 100
+pile:30:2
 power:20000
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
@@ -3084,7 +3084,7 @@ graphics:!:d
 level:40
 weight:4
 cost:50000
-alloc:20:40 to 100
+alloc:50:40 to 100
 attack:1d1:0:0
 armor:0:0
 power:20000
@@ -4276,7 +4276,7 @@ armor:0:0
 charges:5+d5
 power:10
 effect:MAP_AREA
-effect-yx:22:40
+effect-yx:33:99
 
 
 ### Healing ###
@@ -5331,7 +5331,7 @@ graphics:":d
 level:40
 weight:3
 cost:10000
-alloc:40:40 to 80
+alloc:10:40 to 80
 flags:GOOD
 values:MOVES[1]
 
@@ -5398,6 +5398,20 @@ charges:8+d10
 power:14
 effect:SPHERE:WIND:6
 dice:10+d10
+
+name:Phase Door
+type:staff
+graphics:_:d
+level:20
+weight:50
+cost:1000
+alloc:50:20 to 100
+attack:1d2:0:0
+armor:0:0
+charges:5+d4
+power:6
+effect:TELEPORT
+dice:7
 
 #The "Special Artifacts" are now automatically generated from artifact.txt
 
