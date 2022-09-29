@@ -499,23 +499,23 @@ aim:0
 power:5
 msg:{name} twists space around you...
 effect:TELEPORT
-dice:10
-desc:teleports you randomly up to 10 squares away
+dice:7
+desc:teleports you randomly up to 7 squares away
 
-name:TELE_LONG
-aim:0
-power:6
-msg:Your {kind} twist{s} space around you.
-effect:TELEPORT
-dice:M60
-desc:teleports you randomly about 60 per cent of the largest distance you
-desc: could go
+#name:TELE_LONG
+#aim:0
+#power:6
+#msg:Your {kind} twist{s} space around you.
+#effect:TELEPORT
+#dice:M60
+#desc:teleports you randomly about 60 per cent of the largest distance you
+#desc: could go
 
-name:TELE_LEVEL
-aim:0
-power:15
-effect:TELEPORT_LEVEL
-desc:teleports you one level up or down
+#name:TELE_LEVEL
+#aim:0
+#power:15
+#effect:TELEPORT_LEVEL
+#desc:teleports you one level up or down
 
 name:CONFUSING
 aim:0
@@ -554,12 +554,12 @@ effect:RECHARGE
 dice:10
 desc:tries to recharge a wand or staff, destroying the wand or staff on failure
 
-name:BANISHMENT
-aim:0
-power:20
-msg:Your {kind} glow{s} deep blue...
-effect:BANISH
-desc:removes all non-unique monsters represented by a chosen symbol from the level, dealing you damage in the process
+#name:BANISHMENT
+#aim:0
+#power:20
+#msg:Your {kind} glow{s} deep blue...
+#effect:BANISH
+#desc:removes all non-unique monsters represented by a chosen symbol from the level, dealing you damage in the process
 
 name:PROTEVIL
 aim:0
@@ -647,12 +647,12 @@ effect:PROJECT_LOS:MON_CONF
 dice:5+1d5
 desc:confuses all non-unique creatures within line of sight
 
-name:LOSKILL
-aim:0
-power:25
-msg:Your {kind} let{s} out a long, shrill note...
-effect:MASS_BANISH
-desc:removes all non-unique monsters within 20 squares, dealing you damage in the process
+#name:LOSKILL
+#aim:0
+#power:25
+#msg:Your {kind} let{s} out a long, shrill note...
+#effect:MASS_BANISH
+#desc:removes all non-unique monsters within 20 squares, dealing you damage in the process
 
 name:ILLUMINATION
 aim:0
@@ -991,14 +991,14 @@ msg:Your {kind} pulsate{s}...
 effect:LINE:KILL_WALL
 dice:20+1d30
 
-name:TELE_OTHER
-aim:1
-power:11
-msg:Your {kind} glow{s} deep red...
-effect:BOLT_STATUS:AWAY_ALL
-dice:$B
-expr:B:MAX_SIGHT:* 5
-desc:teleports a target monster away
+#name:TELE_OTHER
+#aim:1
+#power:11
+#msg:Your {kind} glow{s} deep red...
+#effect:BOLT_STATUS:AWAY_ALL
+#dice:$B
+#expr:B:MAX_SIGHT:* 5
+#desc:teleports a target monster away
 
 name:CONFUSE2
 aim:1
