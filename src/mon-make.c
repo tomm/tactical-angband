@@ -695,7 +695,7 @@ int16_t mon_pop(struct chunk *c)
  * number of specific objects (either a random value or the maximum if maximize
  * is true).
  */
-int mon_create_drop_count(const struct monster_race *race, bool maximize,
+static int _mon_create_drop_count(const struct monster_race *race, bool maximize,
 	bool specific, int *specific_count)
 {
 	int number = 0;
@@ -741,6 +741,21 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize,
 	return number;
 }
 
+#define DROP_MULTIPLIER 3
+
+int mon_create_drop_count(const struct monster_race *race, bool maximize,
+	bool specific, int *specific_count)
+{
+	/* Determine how much we can drop */
+	int number = 0;
+	/* Increase drops because game is shorter*/
+	for (int rep=0; rep < DROP_MULTIPLIER; rep++) {
+		number += _mon_create_drop_count(race, false, false, NULL);
+	}
+	return number;
+}
+
+
 /**
  * Creates a specific monster's drop, including any drops specified
  * in the monster.txt file.
@@ -769,11 +784,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 	item_ok = (!rf_has(mon->race->flags, RF_ONLY_GOLD));
 
 	/* Determine how much we can drop */
-	number = 0;
-	/* 4x v-angband drops because dungeons are 1/4 area */
-	for (int rep=0; rep < 4; rep++) {
-		number += mon_create_drop_count(mon->race, false, false, NULL);
-	}
+	number = mon_create_drop_count(mon->race, false, false, NULL);
 
 	/* Uniques that have been stolen from get their quantity reduced */
 	if (rf_has(mon->race->flags, RF_UNIQUE)) {
