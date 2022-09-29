@@ -788,16 +788,9 @@ bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
 {
 	int stat = context->subtype;
-	bool success = false;
 
 	/* Attempt to increase */
-	for (int i=0; i<player->opts.stair_skip; i++) {
-		if (player_stat_inc(player, stat)) {
-			success = true;
-		}
-	}
-
-	if (success) {
+	if (player_stat_inc(player, stat)) {
 		msg("You feel very %s!", desc_stat(stat, true));
 	}
 
@@ -2698,6 +2691,11 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		else
 			aim = loc_offset(start, ddx[dir], ddy[dir]);
 
+		if (!square_isview(cave, aim)) {
+			msg("You fail to teleport beyond your visual range.");
+			return true;
+		}
+
 		/* Randomise the landing a bit if it's a vault */
 		if (square_isvault(cave, aim)) dis = 10;
 		dim_door = true;
@@ -3379,7 +3377,12 @@ bool effect_handler_DAMNATION(effect_handler_context_t *context)
 	}
 
 	if (!rf_has(mon->race->flags, RF_EVIL)) {
-		msg("Only the evil can be damned!");
+		msg("There is no evil to bring damnation.");
+		return true;
+	}
+
+	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+		msg("You sense the moment of judgement is yet to come.");
 		return true;
 	}
 
