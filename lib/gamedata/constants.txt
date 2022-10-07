@@ -87,7 +87,7 @@ dun-gen:amt-item:3
 dun-gen:amt-gold:3
 
 # Maximum number of pits or nests allowed per level
-dun-gen:pit-max:2
+dun-gen:pit-max:1
 
 #---------------------------------------------------------------------
 # Game World
