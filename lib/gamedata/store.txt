@@ -217,6 +217,7 @@ owner:25000:Durwin the Shifty (Half-Orc)
 owner:30000:Drago the Fair (Elf)
 slots:6:18
 turnover:9
+always:scroll:Acquirement
 
 store:8:Home
 owner:0:Your home

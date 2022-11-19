@@ -84,7 +84,7 @@ type:crown
 type:amulet
 type:ring
 effect:TELEPORT
-dice:20
+dice:40
 time:d100
 msg:Space warps around you.
 desc:randomly makes you teleport

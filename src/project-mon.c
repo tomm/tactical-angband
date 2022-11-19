@@ -838,6 +838,23 @@ static void project_monster_handler_TURN_EVIL(project_monster_handler_context_t 
 	project_monster_scare(context, RF_EVIL);
 }
 
+static void project_monster_handler_TURN_EVIL_IRRESISTIBLE(project_monster_handler_context_t *context)
+{
+	if (!rf_has(context->mon->race->flags, RF_UNIQUE)) {
+		context->flag |= MON_TMD_FLG_NOFAIL;
+	}
+	project_monster_scare(context, RF_EVIL);
+}
+
+static void project_monster_handler_TURN_SPIRIT_POWERFUL(project_monster_handler_context_t *context)
+{
+	if (context->origin.what == SRC_PLAYER &&
+	    context->mon->race->level + 1 < player->lev * 2) {
+		context->flag |= MON_TMD_FLG_NOFAIL;
+	}
+	project_monster_scare(context, RF_SPIRIT);
+}
+
 /* Turn living (Use "dam" as "power") */
 static void project_monster_handler_TURN_LIVING(project_monster_handler_context_t *context)
 {

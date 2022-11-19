@@ -672,6 +672,16 @@ static int project_player_handler_TURN_EVIL(project_player_handler_context_t *co
 	return 0;
 }
 
+static int project_player_handler_TURN_EVIL_IRRESISTIBLE(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
+static int project_player_handler_TURN_SPIRIT_POWERFUL(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
 static int project_player_handler_TURN_LIVING(project_player_handler_context_t *context)
 {
 	return 0;

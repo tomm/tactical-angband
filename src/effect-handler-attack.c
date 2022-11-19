@@ -2052,13 +2052,11 @@ bool effect_handler_SWEEP(effect_handler_context_t *context)
 	/* Players only for now */
 	if (context->origin.what != SRC_PLAYER)	return false;
 
-	/* Doing these like >1 blows means spinning around multiple times. */
-	while (blows-- > 0) {
-		for (i = 0; i < 8; i++) {
-			target = loc_sum(player->grid, clockwise_grid[i]);
-			if (square_monster(cave, target) != NULL)
-				py_attack_real(player, target, 100, &fear);
-		}
+	/* Attack all adjacent targets, using 'blows' of vanilla angband as might multiplier */
+	for (i = 0; i < 8; i++) {
+		target = loc_sum(player->grid, clockwise_grid[i]);
+		if (square_monster(cave, target) != NULL)
+			py_attack_real(player, target, 100 * blows, &fear);
 	}
 
 	/* Should return some energy if all enemies killed and blows remain? */

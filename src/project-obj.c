@@ -421,6 +421,14 @@ static void project_object_handler_TURN_ALL(project_object_handler_context_t *co
 {
 }
 
+static void project_object_handler_TURN_EVIL_IRRESISTIBLE(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_TURN_SPIRIT_POWERFUL(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_DISP_UNDEAD(project_object_handler_context_t *context)
 {
 }

@@ -2534,8 +2534,8 @@ type:scroll
 graphics:?:w
 level:1
 weight:5
-cost:15
-alloc:50:1 to 100
+cost:150
+alloc:25:1 to 100
 pile:100:1d3
 power:5
 effect:TELEPORT
@@ -2736,7 +2736,7 @@ type:scroll
 graphics:?:w
 level:20
 weight:5
-cost:5000
+cost:33333
 alloc:10:20 to 100
 power:20000
 effect:ACQUIRE
@@ -2747,7 +2747,7 @@ type:scroll
 graphics:?:w
 level:60
 weight:5
-cost:10000
+cost:66666
 alloc:5:60 to 100
 power:20000
 effect:ACQUIRE
@@ -2832,10 +2832,10 @@ type:scroll
 graphics:?:w
 level:40
 weight:5
-cost:200
-alloc:40:40 to 100
-pile:12:2d3
-power:11
+cost:400
+alloc:20:40 to 100
+pile:12:1d3
+power:22
 effect:RECHARGE
 dice:6
 
@@ -2947,6 +2947,8 @@ cost:1000
 alloc:30:40 to 100
 power:12
 effect:DESTRUCTION:LIGHT:10
+effect:DAMAGE
+dice:2d25
 
 ### Bad scrolls ###
 
@@ -4187,6 +4189,8 @@ armor:0:0
 charges:1+d3
 power:12
 effect:DESTRUCTION:LIGHT:10
+effect:DAMAGE
+dice:2d25
 
 ### Monster-affecting ###
 
@@ -4550,7 +4554,7 @@ attack:1d1:0:0
 armor:0:0
 power:10
 effect:MAP_AREA
-effect-yx:33:55
+effect-yx:33:99
 time:100
 
 name:Probing
@@ -4751,7 +4755,7 @@ effect:HEAL_HP
 dice:500
 effect:CURE:CUT
 effect:CURE:STUN
-time:1000
+time:250
 
 name:Restoration
 type:rod
@@ -5404,11 +5408,11 @@ type:staff
 graphics:_:d
 level:20
 weight:50
-cost:1000
-alloc:50:20 to 100
+cost:2000
+alloc:25:20 to 100
 attack:1d2:0:0
 armor:0:0
-charges:5+d4
+charges:2+d2
 power:6
 effect:TELEPORT
 dice:7

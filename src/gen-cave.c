@@ -3638,7 +3638,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 		randint0(45 - gauntlet_wid);
 #endif
 	int y_size = z_info->dungeon_hgt;
-	int x_size = z_info->dungeon_wid;
+	int x_size = (z_info->dungeon_wid - gauntlet_wid) / 2;
 	int line1, line2;
 
 	/* No persistent levels of this type for now */

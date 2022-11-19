@@ -95,9 +95,8 @@ enum birth_rollers
 enum game_modes
 {
 	GM_NORMAL = 0,
-	GM_IRON_STAIRSKIP1,
-	GM_IRON_STAIRSKIP2,
-	GM_IRON_STAIRSKIP3,
+	GM_FORCEDESC,
+	GM_IRON,
 	MAX_GAME_MODES
 };
 
@@ -331,16 +330,13 @@ static void game_mode_help(int i, void *db, const region *l)
 
 	switch ((enum game_modes)i) {
 		case GM_NORMAL:
-			text_out_e("Classic 100 dungeon levels with recall to town.");
+			text_out_e("Classic infinite dungeon with recall to town.");
 			break;
-		case GM_IRON_STAIRSKIP1:
-			text_out_e("Descend only, 100 dungeon levels, no recall to town.");
+		case GM_FORCEDESC:
+			text_out_e("Descend only, with recall to town.");
 			break;
-		case GM_IRON_STAIRSKIP2:
-			text_out_e("Descend only, 51 dungeon levels, no recall to town.");
-			break;
-		case GM_IRON_STAIRSKIP3:
-			text_out_e("Descend only, 34 dungeon levels, no recall to town.");
+		case GM_IRON:
+			text_out_e("Descend only, with no recall to town.");
 			break;
 		case MAX_GAME_MODES: break; // to shut up enum case warning...
 	}
@@ -598,9 +594,8 @@ static void setup_menus(void)
 
 	const char *game_mode_choices[MAX_GAME_MODES] = { 
 		"Classic", 
-		"Iron",
-		"Double-Iron",
-		"Triple-Iron"
+		"Dive",
+		"Iron"
 	};
 
 	struct birthmenu_data *mdata;
@@ -892,23 +887,17 @@ static enum birth_stage menu_question(enum birth_stage current,
 			} else if (current == BIRTH_GAME_MODE_CHOICE) {
 				OPT(player, birth_connect_stairs) = true;
 				OPT(player, birth_levels_persist) = false;
-				player->opts.stair_skip = 1;
+				player->opts.stair_skip = 2;
 				switch ((enum game_modes)current_menu->cursor) {
 					case GM_NORMAL:
 						OPT(player, birth_force_descend) = false;
 						OPT(player, birth_no_recall) = false;
 						break;
-					case GM_IRON_STAIRSKIP1:
+					case GM_FORCEDESC:
 						OPT(player, birth_force_descend) = true;
-						OPT(player, birth_no_recall) = true;
+						OPT(player, birth_no_recall) = false;
 						break;
-					case GM_IRON_STAIRSKIP2:
-						player->opts.stair_skip = 2;
-						OPT(player, birth_force_descend) = true;
-						OPT(player, birth_no_recall) = true;
-						break;
-					case GM_IRON_STAIRSKIP3:
-						player->opts.stair_skip = 3;
+					case GM_IRON:
 						OPT(player, birth_force_descend) = true;
 						OPT(player, birth_no_recall) = true;
 						break;

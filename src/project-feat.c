@@ -643,6 +643,14 @@ static void project_feature_handler_TURN_EVIL(project_feature_handler_context_t 
 {
 }
 
+static void project_feature_handler_TURN_EVIL_IRRESISTIBLE(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_TURN_SPIRIT_POWERFUL(project_feature_handler_context_t *context)
+{
+}
+
 static void project_feature_handler_TURN_LIVING(project_feature_handler_context_t *context)
 {
 }

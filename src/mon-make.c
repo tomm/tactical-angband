@@ -741,7 +741,7 @@ static int _mon_create_drop_count(const struct monster_race *race, bool maximize
 	return number;
 }
 
-#define DROP_MULTIPLIER 3
+#define DROP_MULTIPLIER 2
 
 int mon_create_drop_count(const struct monster_race *race, bool maximize,
 	bool specific, int *specific_count)

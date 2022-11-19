@@ -2439,7 +2439,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	} *spots = NULL;
 	int num_spots = 0;
 	int current_score = 2 * MAX(z_info->dungeon_wid, z_info->dungeon_hgt);
-	bool only_vault_grids_possible = true;
+	//bool only_vault_grids_possible = true;
 
 	bool is_player = (context->origin.what != SRC_MONSTER || context->subtype);
 	struct monster *t_mon = monster_target_monster(context);
@@ -2516,6 +2516,8 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 			if (!is_player && square_iswarded(cave, grid)) continue;
 
 			/* No teleporting into vaults and such, unless there's no choice */
+#if 0
+			/* TAngband -- disabled this prohibition */
 			if (square_isvault(cave, grid)) {
 				if (!only_vault_grids_possible) {
 					continue;
@@ -2528,6 +2530,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 				}
 				only_vault_grids_possible = false;
 			}
+#endif /* 0 */
 
 			/* Do we have better spots already? */
 			if (score > current_score) continue;
