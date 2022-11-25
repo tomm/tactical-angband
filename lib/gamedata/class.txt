@@ -429,7 +429,7 @@ spell:Inferno:40:13:60:30
 effect:SPHERE:FIRE:10:10
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 250
-desc:An icy maelstrom centred on the player.
+desc:An fiery tempest centred on the player.
 
 #spell:Banishment:35:45:95:25
 #effect:BANISH
