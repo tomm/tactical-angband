@@ -2256,7 +2256,7 @@ graphics:=:d
 level:30
 weight:2
 cost:4000
-alloc:50:20 to 80
+alloc:50:15 to 80
 flags:AFRAID | EASY_KNOW
 values:SPEED[2]
 
