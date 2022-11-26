@@ -109,6 +109,7 @@ accumulated 'movement energy' enough to take a turn yet.
 
 ### Priest
 
+* Portal now has the same range as Phase Door.
 * Banish Evil is replaced by Holy Terror, which causes irresistible
   fear in evil non-unique creatures.
 
@@ -134,7 +135,7 @@ Rangers have not been altered.
 
 * Teleport Self, Teleport Other and Teleport Level have been
   replaced with Locking, Swap Places and Imprisonment respectively.
-* "Hit and run" now teleports up to 5 squares (not 20).
+* "Hit and run" now teleports up to 7 squares (not 20).
 
 Enjoy!
 
