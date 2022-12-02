@@ -396,23 +396,23 @@ name:DETECT_TREASURE
 aim:0
 power:6
 effect:DETECT_GOLD
-effect-yx:22:40
+effect-yx:20:20
 effect:SENSE_OBJECTS
-effect-yx:22:40
+effect-yx:20:20
 desc:detects gold and objects nearby
 
 name:DETECT_INVIS
 aim:0
 power:6
 effect:DETECT_INVISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:detects invisible creatures nearby
 
 name:DETECT_EVIL
 aim:0
 power:6
 effect:DETECT_EVIL
-effect-yx:22:40
+effect-yx:20:20
 desc:detects evil creatures nearby
 
 name:DETECT_ALL
@@ -420,13 +420,13 @@ aim:0
 power:10
 msg:{name} forms an image in your mind...
 effect:DETECT_GOLD
-effect-yx:22:40
+effect-yx:20:20
 effect:SENSE_OBJECTS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_INVISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 effect:MAP_AREA
 effect-yx:11:11
 desc:detects treasure and all creatures and maps an area nearby
@@ -435,7 +435,7 @@ name:DETECT_OBJECTS
 aim:0
 power:10
 effect:DETECT_OBJECTS
-effect-yx:22:40
+effect-yx:20:20
 desc:detects all objects in the immediate area
 
 name:ENCHANT_TOHIT
@@ -529,7 +529,7 @@ aim:0
 power:10
 msg:The {kind} shine{s} brightly...
 effect:MAP_AREA
-effect-yx:22:40
+effect-yx:20:20
 desc:maps the area around you
 
 name:GLYPH

@@ -230,11 +230,11 @@ desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Find Traps, Doors & Stairs:1:1:20:2
 effect:DETECT_TRAPS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_DOORS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_STAIRS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Phase Door:2:2:22:4
@@ -252,7 +252,7 @@ desc: with player level.
 
 spell:Detect Monsters:3:2:24:4
 effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
@@ -281,9 +281,9 @@ desc:Reveals an unknown rune on an object.
 
 spell:Treasure Detection:10:3:60:5
 effect:DETECT_GOLD
-effect-yx:22:40
+effect-yx:20:20
 effect:SENSE_OBJECTS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects gold and senses objects in the immediate area.
 
 spell:Frost Bolt:13:5:40:6
@@ -297,9 +297,9 @@ desc:  The chance to get a beam goes up with your character level.
 
 spell:Reveal Monsters:15:6:40:8
 effect:DETECT_INVISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Acid Spray:20:5:30:12
@@ -371,19 +371,19 @@ desc:Surrounds the targeted monster with locked doors.
 
 spell:Detection:30:10:70:30
 effect:DETECT_TRAPS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_DOORS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_STAIRS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_GOLD
-effect-yx:22:40
+effect-yx:20:20
 effect:SENSE_OBJECTS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_INVISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all traps, doors, stairs, treasure, objects and monsters in the
 desc: immediate area.
 
@@ -494,7 +494,7 @@ equip:nature book:[Lesser Charms]:1:1:none
 
 spell:Detect Life:1:1:23:2
 effect:DETECT_LIVING_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all living monsters in the immediate area, for one turn only.
 
 spell:Fox Form:1:2:20:10
@@ -547,9 +547,7 @@ desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
 spell:Sense Surroundings:9:4:35:6
 effect:MAP_AREA
-dice:$Dd$S
-expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
-expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
+dice:20d20
 desc:Maps the nearby area.
 
 spell:Lightning Strike:12:6:35:8
@@ -743,7 +741,7 @@ desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Detect Evil:1:1:10:4
 effect:DETECT_EVIL
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all evil monsters in the immediate area,
 desc: for one turn only.
 
@@ -1029,7 +1027,7 @@ desc:  While shapechanged you cannot use items.
 
 spell:Read Minds:4:4:10:6
 effect:DETECT_SOUL
-effect-yx:22:40
+effect-yx:20:20
 effect:READ_MINDS
 dice:$Dd$S
 expr:D:PLAYER_LEVEL:/ 10
@@ -1277,7 +1275,7 @@ desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
 
 spell:Detect Evil:3:2:10:4
 effect:DETECT_EVIL
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all evil monsters in the immediate area,
 desc: for one turn only.
 
@@ -1432,7 +1430,7 @@ book:magic book:town:[First Spells]:7:arcane
 
 spell:Detect Monsters:5:1:50:4
 effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
@@ -1443,14 +1441,14 @@ desc:Teleports you randomly up to 7 squares away.
 
 spell:Object Detection:10:3:60:5
 effect:DETECT_GOLD
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_OBJECTS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all objects in the immediate area.
 
 spell:Detect Stairs:12:3:50:5
 effect:DETECT_STAIRS
-effect-yx:44:60
+effect-yx:33:99
 desc:Detects all stairs in a wide area.
 
 spell:Recharging:20:10:50:6
@@ -1464,9 +1462,9 @@ desc:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 spell:Reveal Monsters:25:3:40:8
 effect:DETECT_INVISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all monsters in the immediate area, for one turn only.
 
 book:magic book:dungeon:[Arcane Control]:4:arcane
@@ -1539,7 +1537,7 @@ desc:Magically renders you comfortably fed (but not satiated).
 
 spell:Detect Life:5:2:23:2
 effect:DETECT_LIVING_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all living monsters in the immediate area, for one turn only.
 
 spell:Herbal Curing:9:6:30:4
@@ -1563,9 +1561,7 @@ desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
 spell:Sense Surroundings:20:8:35:8
 effect:MAP_AREA
-dice:$Dd$S
-expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
-expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
+dice:20d20
 desc:Maps the nearby area.
 
 
@@ -1646,7 +1642,7 @@ book:shadow book:town:[Into the Shadows]:6:shadow
 
 spell:Seek Battle:1:1:15:2
 effect:DETECT_FEARFUL_MONSTERS
-effect-yx:22:40
+effect-yx:20:20
 desc:Detects all monsters susceptible to fear in the immediate area,
 desc: for one turn only.
 
