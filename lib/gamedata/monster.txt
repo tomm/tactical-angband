@@ -4937,7 +4937,7 @@ desc: seeks to taste your juicy insides.
 name:Bolg, Son of Azog
 base:orc
 color:P
-speed:115
+speed:120
 hit-points:500
 hearing:20
 smell:20
@@ -7238,7 +7238,7 @@ desc: carapace.
 name:ogre chieftain
 base:ogre
 color:b
-speed:115
+speed:120
 hit-points:240
 hearing:20
 smell:20
@@ -9455,7 +9455,7 @@ desc: more than a hatred of all that lives.
 name:beholder
 base:eye
 color:U
-speed:115
+speed:120
 hit-points:1400
 hearing:40
 armor-class:96
@@ -9674,7 +9674,7 @@ desc: corridors.
 name:minotaur
 base:hybrid
 color:s
-speed:125
+speed:130
 hit-points:550
 hearing:13
 smell:20
@@ -10484,7 +10484,7 @@ desc: its length.
 name:undead beholder
 base:eye
 color:u
-speed:115
+speed:120
 hit-points:2376
 hearing:30
 armor-class:120
