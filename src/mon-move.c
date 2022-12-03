@@ -103,7 +103,7 @@ static bool monster_can_see_player(struct monster *mon)
 static bool monster_can_hear(struct monster *mon)
 {
 	int base_hearing = mon->race->hearing
-		- player->state.skills[SKILL_STEALTH] / 3;
+		- player->state.skills[SKILL_STEALTH] / 6;
 	if (cave->noise.grids[mon->grid.y][mon->grid.x] == 0) {
 		return false;
 	}
@@ -396,7 +396,7 @@ static bool get_move_advance(struct monster *mon, bool *track)
 		player->grid;
 
 	int base_hearing = mon->race->hearing
-		- player->state.skills[SKILL_STEALTH] / 3;
+		- player->state.skills[SKILL_STEALTH] / 6;
 	int current_noise = base_hearing
 		- cave->noise.grids[mon->grid.y][mon->grid.x];
 	int best_scent = 0;
