@@ -1156,13 +1156,18 @@ static enum parser_error parse_monster_light(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static inline int ceil_div(int dividend, int divisor) {
+	return dividend % divisor ? dividend / divisor + 1 : dividend / divisor;
+}
+
 static enum parser_error parse_monster_hearing(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	/* Assumes max_sight is 20, so we adjust in case it isn't */
-	r->hearing = parser_getint(p, "hearing") * z_info->max_sight / 20;
+	r->hearing = ceil_div(parser_getint(p, "hearing") * z_info->max_sight, 20);
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -1172,7 +1177,7 @@ static enum parser_error parse_monster_smell(struct parser *p) {
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	/* Assumes max_sight is 20, so we adjust in case it isn't */
-	r->smell = parser_getint(p, "smell") * z_info->max_sight / 20;
+	r->smell = ceil_div(parser_getint(p, "smell") * z_info->max_sight, 20);
 	return PARSE_ERROR_NONE;
 }
 
