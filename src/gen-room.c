@@ -2006,8 +2006,8 @@ bool build_simple(struct chunk *c, struct loc centre, int rating)
 	int light = false;
 
 	/* Pick a room size */
-	int height = 1 + randint1(4) + randint1(3);
-	int width = 1 + randint1(11) + randint1(11);
+	int height = 1 + randint1(2) + randint1(2);
+	int width = 1 + randint1(6) + randint1(6);
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	event_signal_size(EVENT_GEN_ROOM_CHOOSE_SIZE, height + 2, width + 2);
@@ -2122,16 +2122,16 @@ bool build_overlap(struct chunk *c, struct loc centre, int rating)
 	if (c->depth <= randint1(25)) light = true;
 
 	/* Determine extents of room (a) */
-	y1a = randint1(4);
-	x1a = randint1(11);
-	y2a = randint1(3);
-	x2a = randint1(10);
+	y1a = randint1(2);
+	x1a = randint1(6);
+	y2a = randint1(2);
+	x2a = randint1(5);
 
 	/* Determine extents of room (b) */
-	y1b = randint1(3);
-	x1b = randint1(10);
-	y2b = randint1(4);
-	x2b = randint1(11);
+	y1b = randint1(2);
+	x1b = randint1(5);
+	y2b = randint1(2);
+	x2b = randint1(6);
 
 	/* Calculate height and width */
 	height = 2 * MAX(MAX(y1a, y2a), MAX(y1b, y2b)) + 1;
