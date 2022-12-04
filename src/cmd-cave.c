@@ -65,7 +65,7 @@ void do_cmd_go_up(struct command *cmd)
 
 	/* Force descend */
 	if (OPT(player, birth_force_descend)) {
-		msg("Nothing happens!");
+		msg("You have vowed not to return until you have slain Morgoth.");
 		return;
 	}
 	
