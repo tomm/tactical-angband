@@ -94,9 +94,9 @@ enum birth_rollers
 
 enum game_modes
 {
-	GM_NORMAL = 0,
-	GM_FORCEDESC,
-	GM_IRON,
+	GM_NORMAL,
+	GM_SHOPPING,
+	GM_GRINDING,
 	MAX_GAME_MODES
 };
 
@@ -330,13 +330,13 @@ static void game_mode_help(int i, void *db, const region *l)
 
 	switch ((enum game_modes)i) {
 		case GM_NORMAL:
-			text_out_e("Classic infinite dungeon with recall to town.");
+			text_out_e("Descend only, with no return to town.");
 			break;
-		case GM_FORCEDESC:
-			text_out_e("Descend only, with recall to town.");
+		case GM_SHOPPING:
+			text_out_e("Descend only, with shopping trips to town.");
 			break;
-		case GM_IRON:
-			text_out_e("Descend only, with no recall to town.");
+		case GM_GRINDING:
+			text_out_e("Classic infinite dungeon with shopping trips to town.");
 			break;
 		case MAX_GAME_MODES: break; // to shut up enum case warning...
 	}
@@ -593,9 +593,9 @@ static void setup_menus(void)
 	};
 
 	const char *game_mode_choices[MAX_GAME_MODES] = { 
-		"Classic", 
-		"Dive",
-		"Iron"
+		"Normal", 
+		"With recall",
+		"Classic grind"
 	};
 
 	struct birthmenu_data *mdata;
@@ -635,7 +635,7 @@ static void setup_menus(void)
 	mdata->hint = "Choose how to generate your intrinsic stats. Point-based is recommended.";
 
 	/* Game mode menu */
-	init_birth_menu(&game_mode_menu, MAX_GAME_MODES, 0, &game_mode_region, false,
+	init_birth_menu(&game_mode_menu, MAX_GAME_MODES, GM_NORMAL, &game_mode_region, false,
 					game_mode_help);
 	mdata = game_mode_menu.menu_data;
 	for (i = 0; i < MAX_GAME_MODES; i++)
@@ -890,16 +890,16 @@ static enum birth_stage menu_question(enum birth_stage current,
 				player->opts.stair_skip = 2;
 				switch ((enum game_modes)current_menu->cursor) {
 					case GM_NORMAL:
-						OPT(player, birth_force_descend) = false;
-						OPT(player, birth_no_recall) = false;
-						break;
-					case GM_FORCEDESC:
-						OPT(player, birth_force_descend) = true;
-						OPT(player, birth_no_recall) = false;
-						break;
-					case GM_IRON:
 						OPT(player, birth_force_descend) = true;
 						OPT(player, birth_no_recall) = true;
+						break;
+					case GM_SHOPPING:
+						OPT(player, birth_force_descend) = true;
+						OPT(player, birth_no_recall) = false;
+						break;
+					case GM_GRINDING:
+						OPT(player, birth_force_descend) = false;
+						OPT(player, birth_no_recall) = false;
 						break;
 					case MAX_GAME_MODES: break; // to shut up enum case warning...
 				}
