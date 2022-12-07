@@ -752,6 +752,10 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize,
 	for (int rep=0; rep < DROP_MULTIPLIER; rep++) {
 		number += _mon_create_drop_count(race, false, false, NULL);
 	}
+	/* Go on, have another try ;) */
+	if (number == 0) {
+		number += _mon_create_drop_count(race, false, false, NULL);
+	}
 	return number;
 }
 
