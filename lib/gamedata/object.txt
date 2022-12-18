@@ -3027,7 +3027,7 @@ level:30
 weight:4
 cost:8000
 alloc:60:30 to 100
-pile:30:2
+pile:60:2
 power:20000
 effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
@@ -3039,7 +3039,7 @@ level:30
 weight:4
 cost:8000
 alloc:60:30 to 100
-pile:30:2
+pile:60:2
 power:20000
 effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
@@ -3051,7 +3051,7 @@ level:30
 weight:4
 cost:8000
 alloc:60:30 to 100
-pile:30:2
+pile:60:2
 power:20000
 effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
@@ -3063,7 +3063,7 @@ level:30
 weight:4
 cost:8000
 alloc:60:30 to 100
-pile:30:2
+pile:60:2
 power:20000
 effect:RESTORE_STAT:DEX
 effect:GAIN_STAT:DEX
@@ -3075,7 +3075,7 @@ level:30
 weight:4
 cost:8000
 alloc:60:30 to 100
-pile:30:2
+pile:60:2
 power:20000
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
@@ -3086,7 +3086,7 @@ graphics:!:d
 level:40
 weight:4
 cost:50000
-alloc:50:40 to 100
+alloc:60:40 to 100
 attack:1d1:0:0
 armor:0:0
 power:20000
@@ -3284,7 +3284,7 @@ level:3
 weight:4
 cost:1000
 alloc:60:20 to 40
-pile:30:2
+pile:60:2
 power:30
 effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
@@ -3297,7 +3297,7 @@ level:20
 weight:4
 cost:1000
 alloc:60:20 to 40
-pile:30:2
+pile:60:2
 power:25
 effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
@@ -3310,7 +3310,7 @@ level:20
 weight:4
 cost:1000
 alloc:60:20 to 40
-pile:30:2
+pile:60:2
 power:25
 effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
@@ -3323,7 +3323,7 @@ level:5
 weight:4
 cost:1000
 alloc:60:20 to 40
-pile:30:2
+pile:60:2
 power:25
 effect:RESTORE_STAT:DEX
 effect:GAIN_STAT:DEX
@@ -3336,7 +3336,7 @@ level:10
 weight:4
 cost:1000
 alloc:60:20 to 40
-pile:30:2
+pile:60:2
 power:30
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
