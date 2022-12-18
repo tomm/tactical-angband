@@ -2381,6 +2381,13 @@ bool effect_handler_SWAP_PLACES(effect_handler_context_t *context)
 	struct monster *mon_a = cave_monster(cave, square(cave, point_a)->mon);
 
 	if (context->origin.what == SRC_PLAYER) {
+		/* Check for a no teleport curse */
+		if (player_of_has(player, OF_NO_TELEPORT)) {
+			equip_learn_flag(player, OF_NO_TELEPORT);
+			msg("Teleportation forbidden!");
+			return true;
+		}
+
 		point_b = player->grid;
 
 		monster_desc(ma_name, sizeof(ma_name), mon_a, MDESC_TARG);
