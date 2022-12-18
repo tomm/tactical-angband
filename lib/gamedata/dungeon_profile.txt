@@ -75,7 +75,7 @@ alloc:-1
 ## To completely turn them off, set alloc to zero
 name:labyrinth
 params:1:0:200:0
-alloc:0
+alloc:-1
 
 ## Cavern
 name:cavern
@@ -159,7 +159,7 @@ name:moria
 params:1:50:250:2
 tunnel:10:30:15:25:30
 streamer:5:2:3:90:2:40
-alloc:0
+alloc:-1
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:50
@@ -231,4 +231,4 @@ alloc:1
 name:hard centre
 params:1:0:200:0
 min-level:50
-alloc:-1
+alloc:1
