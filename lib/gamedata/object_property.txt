@@ -189,24 +189,7 @@ bindui:shooting_power_ui_compact_0:0
 name:extra moves
 type:mod
 code:MOVES
-power:0
-mult:50
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:light:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
+power:40
 bindui:movement_speed_ui_compact_0:0
 
 name:light
