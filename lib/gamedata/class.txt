@@ -546,9 +546,10 @@ desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
 spell:Sense Surroundings:9:4:35:6
-effect:MAP_AREA
-dice:20d20
-desc:Maps the nearby area.
+effect:TIMED_INC:SENSE_SURROUNDINGS:0:0
+dice:100+d$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Senses the rock and earth around you for a level-dependent duration.
 
 spell:Lightning Strike:12:6:35:8
 effect:STRIKE:ELEC:0
@@ -1560,9 +1561,10 @@ desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
 spell:Sense Surroundings:20:8:35:8
-effect:MAP_AREA
-dice:20d20
-desc:Maps the nearby area.
+effect:TIMED_INC:SENSE_SURROUNDINGS:0:0
+dice:100+d$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Senses the rock and earth around you for a level-dependent duration.
 
 
 book:nature book:dungeon:[Nature Craft]:5:nature

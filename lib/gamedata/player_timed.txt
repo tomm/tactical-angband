@@ -432,3 +432,8 @@ desc:running
 grade:G:10000:Running:You prepare to run!
 on-end:You stop running.
 msgt:SPEED
+
+name:SENSE_SURROUNDINGS
+desc:sense
+grade:u:10000:Mapping:You become attuned to the earth.
+on-end:You feel less attuned to the earth.
