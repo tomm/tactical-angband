@@ -1,32 +1,37 @@
 # Tactical Angband
 
+## What??
+
+Tactical Angband is a variant of the classic roguelike game Angband.
+Tactical Angband reduces the grind and increases the tactical depth,
+while maintaining the feel of Angband.
+
 The following is a (possibly incomplete) list of changes made to Tactical
 Angband relative to (Vanilla) Angband 4.2.4.
 
 ## General
 
+The dungeon is now 50 levels deep rather than 100, and each level is one-fourth
+the area of a classic Angband level.
+
 Standard turns are used in the highscore table.
-
-## Town 
-
-The Black Market now always stocks Acquirement scrolls.
 
 ## Dungeon
 
-The dungeon has half as many levels as Vanilla Angband (but still counts
-level 2, 4, 6, ..., 100, for consistency with Vanilla monster and item depths).
+Although the dungeon has half as many levels as Vanilla Angband, levels are
+counted 2, 4, 6, ..., 100 for consistency with Vanilla monster and item depths.
 
 Player and monster line-of-sight is reduced to 10 squares.
-
-Map size is reduced, and some dungeon types (classic, labyrinth) are disabled because they are
-incompatible with small level sizes, or don't work well with other game
-changes.
 
 Nests and pits are smaller, and restricted to one per level.
 
 Teleportation in vaults is no longer restricted.
 
 Monster drops are a bit more generous, to counterbalance the reduced game length.
+
+## Town 
+
+The Black Market now always stocks Acquirement scrolls.
 
 ## Spellcasting
 
@@ -106,6 +111,8 @@ accumulated 'movement energy' enough to take a turn yet.
 ### Druid
 
 * Portal now has the same range as Phase Door.
+* Sense Surroundings spell is now a timed effect that detects nearby
+dungeon features by walk distance from the player.
 
 ### Priest
 
@@ -129,7 +136,8 @@ accumulated 'movement energy' enough to take a turn yet.
 
 ### Ranger
 
-Rangers have not been altered.
+* As with the Druid, Sense Surroundings spell is now a timed effect that
+detects nearby dungeon features by walk distance from the player.
 
 ### Rogue
 
