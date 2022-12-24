@@ -5347,7 +5347,7 @@ weight:10
 cost:1500
 alloc:50:20 to 100
 armor:0:0
-charges:9+d8
+charges:4+d4
 power:11
 effect:BEAM:WIND
 dice:3d3
@@ -5358,7 +5358,7 @@ graphics:-:d
 level:45
 weight:15
 cost:5000
-alloc:20:45 to 100
+alloc:40:45 to 100
 armor:0:0
 power:11
 effect:BEAM:WIND
@@ -5398,10 +5398,10 @@ cost:4000
 alloc:40:30 to 100
 attack:1d2:0:0
 armor:0:0
-charges:8+d10
+charges:4+d4
 power:14
 effect:SPHERE:WIND:6
-dice:10+d10
+dice:3d3
 
 name:Phase Door
 type:staff
