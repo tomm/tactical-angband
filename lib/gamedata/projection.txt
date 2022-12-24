@@ -483,6 +483,13 @@ blind-desc:something
 obvious:0
 color:WHITE
 
+code:LOCK_DOOR
+type:environs
+desc:locks doors
+blind-desc:something
+obvious:0
+color:WHITE
+
 code:MAKE_DOOR
 type:environs
 desc:creates doors
@@ -674,7 +681,7 @@ color:White
 
 code:SWAP_PLACES
 type:monster
-desc:swaps places with a monster
+desc:causes the user to swap places with the target
 blind-desc:something
 obvious:1
 wake:1
