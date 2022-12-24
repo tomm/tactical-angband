@@ -201,4 +201,4 @@ player:start-gold:600
 player:food-value:100
 
 # Detection range of telepathy
-player:esp-range:12
+player:esp-range:10
