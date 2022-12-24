@@ -5335,7 +5335,7 @@ graphics:":d
 level:40
 weight:3
 cost:10000
-alloc:10:40 to 80
+alloc:2:40 to 80
 flags:GOOD
 values:MOVES[1]
 
@@ -5416,6 +5416,16 @@ charges:2+d2
 power:6
 effect:TELEPORT
 dice:7
+
+name:Sure Movement
+type:amulet
+graphics:":d
+level:40
+weight:3
+cost:2000
+alloc:10:40 to 80
+curse:anti-teleportation:100
+values:MOVES[1] | RES_NEXUS[1]
 
 #The "Special Artifacts" are now automatically generated from artifact.txt
 
