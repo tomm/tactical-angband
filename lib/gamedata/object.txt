@@ -5325,7 +5325,7 @@ cost:3500
 alloc:50:10 to 100
 attack:1d1:0:0
 armor:0:0
-charges:6+d5
+charges:3+d2
 power:11
 effect:BOLT_STATUS:SWAP_PLACES
 
