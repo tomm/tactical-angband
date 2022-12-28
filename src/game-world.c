@@ -794,6 +794,38 @@ void process_world(struct chunk *c)
 	}
 }
 
+/**
+ * The druid/ranger sense surroundings power.
+ *
+ * It maps all areas within a particular travel distance from the player.
+ */
+void sense_surroundings(struct chunk *c) {
+	int x, y;
+
+	/* Update each grid */
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			struct loc grid = loc(x, y);
+			if (square_isno_map(c, grid)) continue;
+			if (square_seemslikewall(c, grid)) continue;
+
+			/* noise isn't quite distance from the player. It is *4 when
+			 * the 'cover tracks' power is being used, so account for this */
+			int distance = c->noise.grids[grid.y][grid.x] / (player->timed[TMD_COVERTRACKS] ? 4 : 1);
+			if (distance > 0 && distance <= 5 + player->lev / 5) {
+				/* Memorize known walls */
+				for (int i = 0; i < 8; i++) {
+					int yy = grid.y + ddy_ddd[i];
+					int xx = grid.x + ddx_ddd[i];
+
+					/* Memorize walls (etc) */
+					if (square_seemslikewall(c, loc(xx, yy)))
+						square_memorize(c, loc(xx, yy));
+				}
+			}
+		}
+	}
+}
 
 /**
  * Housekeeping after the processing of a player command
@@ -812,6 +844,18 @@ static void process_player_cleanup(void)
 
 		/* Player can be damaged by terrain */
 		player_take_terrain_damage(player, player->grid);
+
+		/* Update noise and scent (not if resting) */
+		if (!player_is_resting(player)) {
+			make_noise(player);
+			update_scent();
+		}
+
+		/* Druid/ranger sense surroundings */
+		if (player->timed[TMD_SENSE_SURROUNDINGS]) {
+			sense_surroundings(cave);
+			player->upkeep->redraw |= PR_MAP;
+		}
 
 		/* Do nothing else if player has auto-dropped stuff */
 		if (!player->upkeep->dropping) {
@@ -855,39 +899,6 @@ static void process_player_cleanup(void)
 	redraw_stuff(player);
 }
 
-/*
- * The druid/ranger sense surroundings power.
- *
- * It maps all areas within a particular travel distance from the player.
- */
-void sense_surroundings(struct chunk *c) {
-	int x, y;
-
-	/* Update each grid */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			struct loc grid = loc(x, y);
-			if (square_isno_map(c, grid)) continue;
-			if (square_seemslikewall(c, grid)) continue;
-
-			/* noise isn't quite distance from the player. It is *4 when
-			 * the 'cover tracks' power is being used, so account for this */
-			int distance = c->noise.grids[grid.y][grid.x] / (player->timed[TMD_COVERTRACKS] ? 4 : 1);
-			if (distance > 0 && distance <= 15) {
-				/* Memorize known walls */
-				for (int i = 0; i < 8; i++) {
-					int yy = grid.y + ddy_ddd[i];
-					int xx = grid.x + ddx_ddd[i];
-
-					/* Memorize walls (etc) */
-					if (square_seemslikewall(c, loc(xx, yy)))
-						square_memorize(c, loc(xx, yy));
-				}
-			}
-		}
-	}
-}
-
 /**
  * Process player commands from the command queue, finishing when there is a
  * command using energy (any regular game command), or we run out of commands
@@ -909,18 +920,6 @@ void process_player(void)
 	/* Check for interrupts */
 	player_resting_complete_special(player);
 	event_signal(EVENT_CHECK_INTERRUPT);
-
-	/* Update noise and scent (not if resting) */
-	if (!player_is_resting(player)) {
-		make_noise(player);
-		update_scent();
-	}
-
-	/* Druid/ranger sense surroundings */
-	if (player->timed[TMD_SENSE_SURROUNDINGS]) {
-		sense_surroundings(cave);
-		player->upkeep->redraw |= PR_MAP;
-	}
 
 	/* Repeat until energy is reduced */
 	do {
