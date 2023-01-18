@@ -753,7 +753,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_RESTOREMANA_POTIONS, vault, mon, number);
 			} else if ((strstr(obj->kind->name, "Life")) ||
 					   (strstr(obj->kind->name, "*Healing*"))) {
-				add_stats(ST_ELVEN_RINGS, vault, mon, number);
+				add_stats(ST_BIGHEAL_POTIONS, vault, mon, number);
 			} else if (strstr(obj->kind->name, "Healing")) {
 				add_stats(ST_HEALING_POTIONS, vault, mon, number);
 			}
@@ -1229,6 +1229,12 @@ static void print_stats(int lvl)
 	file_putf(stats_log,"******** LEVEL %d , %d tries********* \n",lvl, tries);
 	file_putf(stats_log,"\n");
 
+	/* print gold info */
+	file_putf(stats_log," GOLD INFO \n");
+	file_putf(stats_log," Gold total: %f\n", gold_total[lvl]);
+	file_putf(stats_log," Gold monster: %f\n", gold_mon[lvl]);
+	file_putf(stats_log," Gold floor: %f\n", gold_floor[lvl]);
+
 	/* print monster heading */
 	file_putf(stats_log," MONSTER INFO \n");
 	file_putf(stats_log," Total monsters: %f OOD: %f Deadly: %f \n",
@@ -1256,7 +1262,7 @@ static void print_stats(int lvl)
 		art_uniq[lvl], art_mon[lvl], art_mon_vault[lvl]);
 
 		
-	for (i=ST_BEGIN; i<ST_END; i++){	
+	for (i=ST_BEGIN+1; i<ST_END; i++){	
 		file_putf(stats_log, "%s%f From Monsters: %f In Vaults: %f \n",	stat_message[i].name, stat_all[i][0][lvl], stat_all[i][1][lvl], stat_all[i][2][lvl]);
 	}	
 
@@ -1538,7 +1544,7 @@ static void clearing_stats(void)
 		}
 
 		/* Do game iterations */
-		for (depth = 1 ; depth < MAX_LVL; depth++) {
+		for (depth = 2 ; depth < MAX_LVL; depth+=2) {
 			/* Debug 
 			msg_format("Attempting level %d",depth); */
 
