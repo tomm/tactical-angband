@@ -949,7 +949,7 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 	 * This change is meant to go in conjunction with the changes
 	 * to ego item allocation levels. (-fizzix)
 	 */
-	int good_chance = (33 + lev);
+	int good_chance = (50 + lev);
 	int great_chance = 30;
 
 	/* Roll for "good" */
@@ -965,11 +965,11 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 	if (allow_artifacts) {
 		int rolls = 0;
 
-		/* Get one roll if excellent */
-		if (power >= 2) rolls = 1;
+		/* Get two rolls if excellent */
+		if (power >= 2) rolls = 3;
 
-		/* Get two rolls if forced great */
-		if (great) rolls = 2;
+		/* Get three rolls if forced great */
+		if (great) rolls = 4;
 		
 		/* Give some extra rolls for uniques and acq scrolls */
 		if (extra_roll) rolls += 2;
@@ -1289,7 +1289,7 @@ struct object_kind *money_kind(const char *name, int value)
 struct object *make_gold(int lev, const char *coin_type)
 {
 	/* This average is 16 at dlev0, 80 at dlev40, 176 at dlev100. */
-	int avg = (16 * lev)/10 + 16;
+	int avg = (16 * lev)/5 + 16;
 	int spread = lev + 10;
 	int value = rand_spread(avg, spread);
 	struct object *new_gold = mem_zalloc(sizeof(*new_gold)); 

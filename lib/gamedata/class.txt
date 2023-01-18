@@ -207,7 +207,7 @@ magic:1:300:5
 
 book:magic book:town:[First Spells]:7:arcane
 book-graphics:?:R
-book-properties:25:40:1 to 100
+book-properties:25:100:1 to 100
 equip:magic book:[First Spells]:1:1:none
 
 spell:Magic Missile:1:1:22:4
@@ -264,7 +264,7 @@ desc:Shoots a radius-2 fire ball.
 
 book:magic book:town:[Attacks and Knowledge]:6:arcane
 book-graphics:?:R
-book-properties:400:40:10 to 100
+book-properties:400:100:10 to 100
 
 spell:Recharging:5:5:28:6
 effect:RECHARGE
@@ -310,7 +310,7 @@ desc:Sprays acid in a 60-degree cone, hitting all monsters up to 10 grids away.
 
 book:magic book:town:[Magical Defences]:6:arcane
 book-graphics:?:R
-book-properties:1600:20:30 to 100
+book-properties:1600:75:30 to 100
 
 spell:Disable Traps, Destroy Doors:5:5:30:6
 effect:TOUCH:KILL_DOOR
@@ -348,7 +348,7 @@ desc:Doubles spellcasting speed for 5+1d5 turns.
 
 book:magic book:dungeon:[Arcane Control]:6:arcane
 book-graphics:?:r
-book-properties:30000:15:40 to 100
+book-properties:30000:42:40 to 100
 
 spell:Door Creation:13:9:40:12
 effect:TOUCH:MAKE_DOOR
@@ -399,7 +399,7 @@ desc:Fires a short range beam of force.
 
 book:magic book:dungeon:[Wizard's Tome of Power]:5:arcane
 book-graphics:?:r
-book-properties:50000:10:60 to 100
+book-properties:50000:28:60 to 100
 
 spell:Shock Wave:20:5:40:16
 effect:BALL:SOUND:2
@@ -489,7 +489,7 @@ magic:1:350:5
 
 book:nature book:town:[Lesser Charms]:6:nature
 book-graphics:?:y
-book-properties:25:40:1 to 100
+book-properties:25:100:1 to 100
 equip:nature book:[Lesser Charms]:1:1:none
 
 spell:Detect Life:1:1:23:2
@@ -527,7 +527,7 @@ desc:Slows down a monster; more effective against animals.
 
 book:nature book:town:[Gifts of Nature]:6:nature
 book-graphics:?:y
-book-properties:400:40:10 to 100
+book-properties:400:100:10 to 100
 
 spell:Cure Poison:4:4:30:4
 effect:CURE:POISONED
@@ -571,7 +571,7 @@ desc: monsters.  Length of the line increases with player level.
 
 book:nature book:dungeon:[Creature Dominion]:5:nature
 book-graphics:?:o
-book-properties:10000:20:30 to 100
+book-properties:10000:75:30 to 100
 
 spell:Trance:20:10:45:15
 effect:TOUCH_AWARE:MON_HOLD
@@ -602,7 +602,7 @@ desc: aside your enemies with your mighty paws.
 
 book:nature book:dungeon:[Nature Craft]:5:nature
 book-graphics:?:o
-book-properties:30000:15:40 to 100
+book-properties:30000:42:40 to 100
 
 spell:Tremor:20:20:60:16
 effect:EARTHQUAKE:TARGETED:4
@@ -645,7 +645,7 @@ desc: well-nourished.
 
 book:nature book:dungeon:[Wild Forces]:5:nature
 book-graphics:?:o
-book-properties:50000:10:60 to 100
+book-properties:50000:28:60 to 100
 
 spell:Meteor Swarm:30:14:85:20
 effect:SWARM:METEOR:1
@@ -728,7 +728,7 @@ magic:1:350:5
 
 book:prayer book:town:[Novice's Handbook]:6:divine
 book-graphics:?:G
-book-properties:25:40:1 to 100
+book-properties:25:100:1 to 100
 equip:prayer book:[Novice's Handbook]:1:1:none
 
 spell:Call Light:1:1:10:2
@@ -784,7 +784,7 @@ desc: for a level-dependent duration.
 
 book:prayer book:town:[Cleansing Power]:6:divine
 book-graphics:?:G
-book-properties:100:40:5 to 100
+book-properties:100:100:5 to 100
 
 spell:Orb of Draining:7:7:40:4
 effect:BALL:HOLY_ORB:2:30
@@ -831,7 +831,7 @@ desc: character levels.
 
 book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
 book-graphics:?:g
-book-properties:10000:20:30 to 100
+book-properties:10000:75:30 to 100
 
 spell:Portal:10:4:30:8
 effect:TELEPORT
@@ -877,7 +877,7 @@ desc: dungeon level.
 
 book:prayer book:dungeon:[Battle Blessings]:5:divine
 book-graphics:?:g
-book-properties:30000:15:40 to 100
+book-properties:30000:42:40 to 100
 
 spell:Enchant Weapon:35:50:80:230
 effect:ENCHANT:TOBOTH
@@ -911,7 +911,7 @@ desc:Temporarily makes your melee attacks powerfully slay demons.
 
 book:prayer book:dungeon:[Wrath of the Valar]:5:divine
 book-graphics:?:g
-book-properties:50000:10:60 to 100
+book-properties:50000:28:60 to 100
 
 spell:Holy Terror:25:15:80:250
 effect:PROJECT_LOS:TURN_EVIL_IRRESISTIBLE
@@ -1000,7 +1000,7 @@ magic:1:300:5
 
 book:shadow book:town:[Into the Shadows]:5:shadow
 book-graphics:?:P
-book-properties:25:40:1 to 100
+book-properties:25:100:1 to 100
 equip:shadow book:[Into the Shadows]:1:1:none
 
 spell:Nether Bolt:1:1:22:2
@@ -1039,7 +1039,7 @@ desc: character level.
 
 book:shadow book:town:[Dark Rituals]:5:shadow
 book-graphics:?:P
-book-properties:400:40:10 to 100
+book-properties:400:100:10 to 100
 
 spell:Tap Unlife:7:0:50:3
 effect:TAP_UNLIFE
@@ -1083,7 +1083,7 @@ desc: in casting spells.
 
 book:shadow book:town:[Fear and Torment]:5:shadow
 book-graphics:?:P
-book-properties:1600:20:30 to 100
+book-properties:1600:75:30 to 100
 
 spell:Frighten:17:4:40:12
 effect:BOLT_AWARE:TURN_ALL
@@ -1119,7 +1119,7 @@ desc: strength, at the cost of some hitpoints.
 
 book:shadow book:dungeon:[Deadly Powers]:6:shadow
 book-graphics:?:p
-book-properties:30000:15:40 to 100
+book-properties:30000:42:40 to 100
 
 spell:Mass Terror:25:25:80:25
 effect:PROJECT_LOS:TURN_SPIRIT_POWERFUL
@@ -1182,7 +1182,7 @@ desc:Invokes a radius-4 darkness ball.
 
 book:shadow book:dungeon:[Corruption of Spirit]:5:shadow
 book-graphics:?:p
-book-properties:50000:10:60 to 100
+book-properties:50000:28:60 to 100
 
 spell:Power Sacrifice:27:0:20:20
 effect:DAMAGE

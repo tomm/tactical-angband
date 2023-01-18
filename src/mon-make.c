@@ -741,7 +741,7 @@ static int _mon_create_drop_count(const struct monster_race *race, bool maximize
 	return number;
 }
 
-#define DROP_MULTIPLIER 2
+#define DROP_MULTIPLIER 1
 
 int mon_create_drop_count(const struct monster_race *race, bool maximize,
 	bool specific, int *specific_count)
@@ -750,10 +750,6 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize,
 	int number = 0;
 	/* Increase drops because game is shorter*/
 	for (int rep=0; rep < DROP_MULTIPLIER; rep++) {
-		number += _mon_create_drop_count(race, false, false, NULL);
-	}
-	/* Go on, have another try ;) */
-	if (number == 0) {
 		number += _mon_create_drop_count(race, false, false, NULL);
 	}
 	return number;
@@ -880,7 +876,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 
 	/* Make some objects */
 	for (j = 0; j < number; j++) {
-		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
+		if (gold_ok && (!item_ok || (randint0(100) < 25))) {
 			obj = make_gold(level, "any");
 		} else {
 			obj = make_object(c, level, good, great, extra_roll, NULL, 0);

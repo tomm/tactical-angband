@@ -3026,8 +3026,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:60:30 to 100
-pile:60:2
+alloc:54:30 to 100
+pile:100:1d3
 power:20000
 effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
@@ -3038,8 +3038,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:60:30 to 100
-pile:60:2
+alloc:54:30 to 100
+pile:100:1d3
 power:20000
 effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
@@ -3050,8 +3050,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:60:30 to 100
-pile:60:2
+alloc:54:30 to 100
+pile:100:1d3
 power:20000
 effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
@@ -3062,8 +3062,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:60:30 to 100
-pile:60:2
+alloc:54:30 to 100
+pile:100:1d3
 power:20000
 effect:RESTORE_STAT:DEX
 effect:GAIN_STAT:DEX
@@ -3074,8 +3074,8 @@ graphics:!:d
 level:30
 weight:4
 cost:8000
-alloc:60:30 to 100
-pile:60:2
+alloc:54:30 to 100
+pile:100:1d3
 power:20000
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
@@ -3086,7 +3086,7 @@ graphics:!:d
 level:40
 weight:4
 cost:50000
-alloc:60:40 to 100
+alloc:45:40 to 100
 attack:1d1:0:0
 armor:0:0
 power:20000
@@ -3176,8 +3176,8 @@ graphics:!:d
 level:15
 weight:4
 cost:800
-alloc:64:30 to 100
-pile:25:2
+alloc:75:30 to 100
+pile:50:1d3
 power:12
 effect:HEAL_HP
 dice:300+m35
@@ -3196,7 +3196,8 @@ graphics:!:d
 level:40
 weight:4
 cost:1500
-alloc:40:40 to 100
+alloc:45:40 to 100
+pile:33:1d3
 attack:1d1:0:0
 armor:0:0
 power:18
@@ -3215,7 +3216,7 @@ graphics:!:d
 level:60
 weight:4
 cost:5000
-alloc:20:60 to 100
+alloc:35:60 to 100
 attack:1d1:0:0
 armor:0:0
 msg:You feel life flow through your body!
@@ -3283,8 +3284,8 @@ graphics:!:d
 level:3
 weight:4
 cost:1000
-alloc:60:20 to 40
-pile:60:2
+alloc:54:20 to 40
+pile:100:1d3
 power:30
 effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
@@ -3296,8 +3297,8 @@ graphics:!:d
 level:20
 weight:4
 cost:1000
-alloc:60:20 to 40
-pile:60:2
+alloc:54:20 to 40
+pile:100:1d3
 power:25
 effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
@@ -3309,8 +3310,8 @@ graphics:!:d
 level:20
 weight:4
 cost:1000
-alloc:60:20 to 40
-pile:60:2
+alloc:54:20 to 40
+pile:100:1d3
 power:25
 effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
@@ -3322,8 +3323,8 @@ graphics:!:d
 level:5
 weight:4
 cost:1000
-alloc:60:20 to 40
-pile:60:2
+alloc:54:20 to 40
+pile:100:1d3
 power:25
 effect:RESTORE_STAT:DEX
 effect:GAIN_STAT:DEX
@@ -3335,8 +3336,8 @@ graphics:!:d
 level:10
 weight:4
 cost:1000
-alloc:60:20 to 40
-pile:60:2
+alloc:54:20 to 40
+pile:100:1d3
 power:30
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON

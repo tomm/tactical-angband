@@ -1552,7 +1552,7 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
 	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Put some monsters in the dungeon */
-	for (i = z_info->level_monster_min + randint1(4) + k/2; i > 0; i--)
+	for (i = z_info->level_monster_min + randint1(4) + k; i > 0; i--)
 		pick_and_place_distant_monster(c, p, 0, true, c->depth);
 
 	/* Put some objects/gold in the dungeon */
@@ -2162,7 +2162,7 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Scale number of monsters items by cavern size */
-	k = MAX((2 * k * (h * w)) / (z_info->dungeon_hgt * z_info->dungeon_wid), 6);
+	k = MAX((4 * k * (h * w)) / (z_info->dungeon_hgt * z_info->dungeon_wid), 6);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
@@ -2884,7 +2884,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(4) + k/4;
+	i = z_info->level_monster_min + randint1(4) + k/2;
 
 	/* Remove all monster restrictions. */
 	mon_restrict(NULL, c->depth, c->depth, true);
@@ -3115,7 +3115,7 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(4) + k/4;
+	i = z_info->level_monster_min + randint1(4) + k/2;
 
 	/* Moria levels have a high proportion of cave dwellers. */
 	mon_restrict("Moria dwellers", c->depth, c->depth, true);
