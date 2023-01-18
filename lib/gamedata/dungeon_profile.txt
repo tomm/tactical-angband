@@ -231,4 +231,4 @@ alloc:1
 name:hard centre
 params:1:0:200:0
 min-level:50
-alloc:1
+alloc:0
