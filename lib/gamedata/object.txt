@@ -2025,7 +2025,7 @@ graphics:=:d
 level:75
 weight:2
 cost:100000
-alloc:40:75 to 100
+alloc:85:75 to 100
 flags:GOOD
 values:SPEED[4+M6]
 
