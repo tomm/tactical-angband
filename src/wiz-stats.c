@@ -108,11 +108,14 @@ typedef enum stat_code
 	ST_BAD_ARMOR,
 	ST_AVERAGE_ARMOR,
 	ST_GOOD_ARMOR,	
+	ST_EGO_ARMOR,
 	ST_STR_ARMOR,
 	ST_INT_ARMOR,
 	ST_WIS_ARMOR,
 	ST_DEX_ARMOR,
 	ST_CON_ARMOR,
+	ST_BOOTS_SPEED,
+	ST_BOOTS_RUNNING,
 	ST_CURSED_ARMOR,
 	ST_WEAPONS,
 	ST_BAD_WEAPONS,
@@ -172,6 +175,7 @@ typedef enum stat_code
 	ST_ONE_RINGS,
 	ST_CURSED_RINGS,
 	ST_AMULETS,
+	ST_RUNNING_AMULETS,
 	ST_WIS_AMULETS,
 	ST_TELEP_AMULETS,
 	ST_ENDGAME_AMULETS,
@@ -224,11 +228,14 @@ static const struct stat_data stat_message[] =
 	{ST_BAD_ARMOR, " Bad         "},
 	{ST_AVERAGE_ARMOR, " Average     "},
 	{ST_GOOD_ARMOR, " Good        "},	
+	{ST_EGO_ARMOR, " Ego-armor  "},	
 	{ST_STR_ARMOR, " +Strength   "},
 	{ST_INT_ARMOR, " +Intel.     "},
 	{ST_WIS_ARMOR, " +Wisdom     "},
 	{ST_DEX_ARMOR, " +Dexterity  "},
 	{ST_CON_ARMOR, " +Const.     "},
+	{ST_BOOTS_SPEED, " Boots-Speed "},
+	{ST_BOOTS_RUNNING, " Boots-Running "},
 	{ST_CURSED_ARMOR, " Cursed       "},
 	{ST_WEAPONS, "\n ***WEAPONS***   \n All:       "},
 	{ST_BAD_WEAPONS, " Bad         "},
@@ -278,16 +285,17 @@ static const struct stat_data stat_message[] =
 	{ST_WANDS, "\n ***WANDS***     \n All:        "},
 	{ST_TELEPOTHER_WANDS, " Tele Other  "},
 	{ST_RINGS, "\n ***RINGS***     \n All:        "},
-	{ST_SPEEDS_RINGS, " Speed       "},
-	{ST_STAT_RINGS, " Stat        "},//str, dex, con, int
-	{ST_RPOIS_RINGS, " Res. Pois.  "},
-	{ST_FA_RINGS, " Free Action "},
-	{ST_SI_RINGS, " See Invis.  "},
-	{ST_BRAND_RINGS, " Brand       "},
-	{ST_ELVEN_RINGS, " Elven       "},
-	{ST_ONE_RINGS, " The One     "},
-	{ST_CURSED_RINGS, " Cursed      "},
+	{ST_SPEEDS_RINGS, " Ring-Speed       "},
+	{ST_STAT_RINGS, " Ring-Stat        "},//str, dex, con, int
+	{ST_RPOIS_RINGS, " Ring-Res. Pois.  "},
+	{ST_FA_RINGS, " Ring-Free Action "},
+	{ST_SI_RINGS, " Ring-See Invis.  "},
+	{ST_BRAND_RINGS, " Ring-Brand       "},
+	{ST_ELVEN_RINGS, " Ring-Elven       "},
+	{ST_ONE_RINGS, " Ring-The One     "},
+	{ST_CURSED_RINGS, " Ring-Cursed      "},
 	{ST_RINGS, "\n ***AMULETS***   \n All:        "},
+	{ST_RUNNING_AMULETS, " Amulet-Running  "},
 	{ST_WIS_AMULETS, " Wisdom      "},
 	{ST_TELEP_AMULETS, " Telepathy   "},
 	{ST_ENDGAME_AMULETS, " Endgame     "},//Trickery, weaponmastery, magi
@@ -561,7 +569,6 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:{
-
 			/* do not include artifacts */
 			if (obj->artifact) break;
 
@@ -575,6 +582,8 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_AVERAGE_ARMOR, vault, mon, number);
 			if (obj->to_h > 0)
 				add_stats(ST_GOOD_ARMOR, vault, mon, number);
+			if (obj->ego)
+				add_stats(ST_EGO_ARMOR, vault, mon, number);
 
 			/* has str boost */
 			if (obj->modifiers[OBJ_MOD_STR] != 0)
@@ -596,6 +605,14 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 
 			if (obj->curses)
 				add_stats(ST_CURSED_ARMOR, vault, mon, number);
+
+			if (obj->tval == TV_BOOTS && obj->modifiers[OBJ_MOD_SPEED] != 0) {
+				add_stats(ST_BOOTS_SPEED, vault, mon, number);
+			}
+
+			if (obj->tval == TV_BOOTS && obj->modifiers[OBJ_MOD_MOVES] != 0) {
+				add_stats(ST_BOOTS_RUNNING, vault, mon, number);
+			}
 
 			break;
 		}
@@ -877,6 +894,8 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 
 			if (strstr(obj->kind->name, "Wisdom")) {
 				add_stats(ST_WIS_AMULETS, vault, mon, number);
+			} else if (strstr(obj->kind->name, "Running")) {
+				add_stats(ST_RUNNING_AMULETS, vault, mon, number);
 			} else if ((strstr(obj->kind->name, "Magi")) || 
 					   (strstr(obj->kind->name, "Trickery")) ||
 					   (strstr(obj->kind->name, "Weaponmastery"))) {
