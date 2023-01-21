@@ -877,7 +877,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon,
 	/* Make some objects */
 	for (j = 0; j < number; j++) {
 		if (gold_ok && (!item_ok || (randint0(100) < 25))) {
-			obj = make_gold(level, "any");
+			obj = make_gold(level * 3, "any");
 		} else {
 			obj = make_object(c, level, good, great, extra_roll, NULL, 0);
 			if (!obj) continue;
