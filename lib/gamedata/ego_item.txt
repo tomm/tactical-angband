@@ -715,7 +715,7 @@ flags:FEATHER
 
 name:of Stealth
 info:500:16
-alloc:20:15 to 100
+alloc:20:15 to 50
 item:boots:Pair of Leather Sandals
 item:boots:Pair of Leather Boots
 item:boots:Pair of Ethereal Slippers
@@ -730,21 +730,21 @@ flags:FREE_ACT
 
 name:of Speed
 info:100000:25
-alloc:3:20 to 127
+alloc:5:20 to 127
 type:boots
 values:SPEED[2+M8]
 min-values:SPEED[0]
 
 name:of Stability
 info:5000:20
-alloc:10:15 to 100
+alloc:10:15 to 50
 type:boots
 flags:FEATHER
 values:RES_NEXUS[1]
 
 name:of Elvenkind
 info:200000:30
-alloc:3:60 to 127
+alloc:5:60 to 127
 item:boots:Pair of Leather Boots
 item:boots:Pair of Iron Shod Boots
 flags:FEATHER | IGNORE_ACID | IGNORE_FIRE
