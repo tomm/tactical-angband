@@ -2538,7 +2538,7 @@ alloc:25:1 to 100
 pile:100:1d3
 power:5
 effect:TELEPORT
-dice:7
+dice:5
 
 name:Teleportation
 type:scroll
@@ -4170,7 +4170,7 @@ graphics:_:d
 level:40
 weight:50
 cost:350
-alloc:20:40 to 100
+alloc:40:40 to 100
 attack:1d2:0:0
 armor:0:0
 charges:3+d5
@@ -5415,7 +5415,7 @@ armor:0:0
 charges:2+d2
 power:6
 effect:TELEPORT
-dice:7
+dice:5
 
 name:Sure Movement
 type:amulet

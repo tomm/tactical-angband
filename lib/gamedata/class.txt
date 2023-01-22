@@ -239,8 +239,8 @@ desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Phase Door:2:2:22:4
 effect:TELEPORT
-dice:7
-desc:Teleports you randomly up to 7 squares away.
+dice:5
+desc:Teleports you randomly up to 5 squares away.
 
 spell:Electric Arc:2:2:34:4
 effect:SHORT_BEAM:ELEC:0:1
@@ -836,8 +836,8 @@ book-properties:10000:75:30 to 100
 
 spell:Portal:10:4:30:8
 effect:TELEPORT
-dice:7
-desc:Teleports you randomly up to 7 squares away.
+dice:5
+desc:Teleports you randomly up to 5 squares away.
 
 spell:Remembrance:20:30:90:50
 effect:RESTORE_EXP
@@ -1068,7 +1068,7 @@ desc:  Monsters that resist confusion are not affected.
 
 spell:Shadow Shift:15:10:50:10
 effect:TELEPORT
-dice:7
+dice:5
 effect:DAMAGE
 dice:2d5
 effect-msg:shadow shifting
@@ -1439,8 +1439,8 @@ desc: for one turn only.
 
 spell:Phase Door:7:2:55:4
 effect:TELEPORT
-dice:7
-desc:Teleports you randomly up to 7 squares away.
+dice:5
+desc:Teleports you randomly up to 5 squares away.
 
 spell:Object Detection:10:3:60:5
 effect:DETECT_GOLD

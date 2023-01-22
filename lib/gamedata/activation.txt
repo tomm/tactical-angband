@@ -499,8 +499,8 @@ aim:0
 power:5
 msg:{name} twists space around you...
 effect:TELEPORT
-dice:7
-desc:teleports you randomly up to 7 squares away
+dice:5
+desc:teleports you randomly up to 5 squares away
 
 #name:TELE_LONG
 #aim:0
