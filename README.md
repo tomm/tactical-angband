@@ -7,7 +7,7 @@ Tactical Angband reduces the grind and increases the tactical depth,
 while maintaining the feel of Angband.
 
 The following is a (possibly incomplete) list of changes made to Tactical
-Angband relative to (Vanilla) Angband 4.2.4.
+Angband relative to (Vanilla) Angband 4.2.4 (4.2.4-232-g6e34fd35f).
 
 ## General
 
@@ -87,16 +87,9 @@ dependent. Summon group sizes are greatly reduced.
 
 ## Status effects
 
-Status effects are always dangerous (even with resist). Now rConf, rBlind, etc have
-the following behaviours:
-
-Player: 1 in 6 chance of being effected. Duration reduced to 16%
-Monster: 1 in 6 chance of being effected. Duration reduced to 33%
-
-Free action is still 100% effective for the player. When paralyzed the player
-is now guaranteed a move at the end of paralysis, whereas in Vanilla Angband you
-can be re-paralyzed when paralysis has ended but the player has not
-accumulated 'movement energy' enough to take a turn yet.
+When paralyzed the player is now guaranteed a move at the end of paralysis,
+whereas in Vanilla Angband you can be re-paralyzed when paralysis has ended but
+the player has not accumulated 'movement energy' enough to take a turn yet.
 
 ## Class changes
 
