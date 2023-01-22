@@ -20,6 +20,13 @@
 #ifndef PLAYER_PROPS_H
 #define PLAYER_PROPS_H
 
+enum {
+    PLAYER_FLAG_NONE,
+    PLAYER_FLAG_SPECIAL,
+    PLAYER_FLAG_RACE,
+    PLAYER_FLAG_CLASS
+};
+
 bool class_has_ability(const struct player_class *class,
 					   struct player_ability *ability);
 bool race_has_ability(const struct player_race *race,

@@ -456,6 +456,7 @@ void square_memorize_traps(struct chunk *c, struct loc grid)
 
 	/* Clear current knowledge */
 	square_remove_all_traps(player->cave, grid);
+	sqinfo_off(square(player->cave, grid)->info, SQUARE_TRAP);
 
 	/* Copy all visible traps to the known cave */
 	while (trap) {
@@ -474,6 +475,9 @@ void square_memorize_traps(struct chunk *c, struct loc grid)
 		}
 		trap = trap->next;
 	}
+	if (square(player->cave, grid)->trap) {
+		sqinfo_on(square(player->cave, grid)->info, SQUARE_TRAP);
+	}
 }
 
 /**
@@ -484,9 +488,6 @@ extern void hit_trap(struct loc grid, int delayed)
 	bool ident = false;
 	struct trap *trap;
 	struct effect *effect;
-
-	/* The player is safe from all traps */
-	if (player_is_trapsafe(player)) return;
 
 	/* Look at the traps in this grid */
 	for (trap = square_trap(cave, grid); trap; trap = trap->next) {
@@ -501,14 +502,18 @@ extern void hit_trap(struct loc grid, int delayed)
 		    delayed != -1)
 			continue;
 
+		if (player_is_trapsafe(player)) {
+			/* Trap immune player learns the rune */
+			if (player_of_has(player, OF_TRAP_IMMUNE)) {
+				equip_learn_flag(player, OF_TRAP_IMMUNE);
+			}
+			/* Trap becomes visible. */
+			trf_on(trap->flags, TRF_VISIBLE);
+			continue;
+		}
+
 		/* Disturb the player */
 		disturb(player);
-
-		/* Trap immune player learns the rune */
-		if (player_of_has(player, OF_TRAP_IMMUNE)) {
-			equip_learn_flag(player, OF_TRAP_IMMUNE);
-			break;
-		}
 
 		/* Give a message */
 		if (trap->kind->msg)
@@ -566,8 +571,16 @@ extern void hit_trap(struct loc grid, int delayed)
 				player->depth, 1));
 
 		/* Some traps drop you onto them */
-		if (trf_has(trap->kind->flags, TRF_PIT))
+		if (trf_has(trap->kind->flags, TRF_PIT)
+				&& !loc_eq(player->grid, trap->grid)) {
 			monster_swap(player->grid, trap->grid);
+			/*
+			 * Don't retrigger the trap, but handle the
+			 * other side effects of an involuntary move of the
+			 * player.
+			 */
+			player_handle_post_move(player, false, true);
+		}
 
 		/* Some traps disappear after activating, all have a chance to */
 		if (trf_has(trap->kind->flags, TRF_ONETIME) || one_in_(3)) {

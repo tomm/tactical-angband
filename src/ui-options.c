@@ -27,6 +27,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-calcs.h"
+#include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
@@ -48,8 +49,13 @@ static bool get_pref_path(const char *what, int row, char *buf, size_t max)
 	screen_save();
 
 	/* Prompt */
+	if (row > 0) {
+		prt("", row - 1, 0);
+	}
 	prt(format("%s to a pref file", what), row, 0);
+	prt("", row + 1, 0);
 	prt("File: ", row + 2, 0);
+	prt("", row + 3, 0);
 
 	/* Get the filesystem-safe name and append .prf */
 	player_safe_name(ftmp, sizeof(ftmp), player->full_name, true);
@@ -303,6 +309,7 @@ static const menu_iter option_toggle_iter = {
  */
 static void option_toggle_menu(const char *name, int page)
 {
+	static const char selections[] = "abcdefgimopquvwzABCDEFGHIJKLMOPQUVWZ";
 	int i;
 	
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &option_toggle_iter);
@@ -310,7 +317,7 @@ static void option_toggle_menu(const char *name, int page)
 	/* for all menus */
 	m->prompt = "Set option (y/n/t), select with movement keys or index";
 	m->cmd_keys = "YyNnTt";
-	m->selections = "abcdefghijklmopqrsuvwxz";
+	m->selections = selections;
 	m->flags = MN_DBL_TAP;
 
 	/* We add 10 onto the page amount to indicate we're at birth */
@@ -321,7 +328,6 @@ static void option_toggle_menu(const char *name, int page)
 	} else if (page == OPT_PAGE_BIRTH + 10 || page == OP_INTERFACE) {
 		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'x' to reset";
 		m->cmd_keys = "YyNnTtSsRrXx";
-		m->selections = "abcdefghijklmopquvwzABC";
 		/* Provide a context menu for equivalents to 's', 'r', .... */
 		m->context_hook = use_option_context_menu;
 		if (page == OPT_PAGE_BIRTH + 10) {
@@ -425,7 +431,7 @@ static void do_cmd_options_win(const char *name, int row)
 				if ((i == y) && (j == x)) a = COLOUR_L_BLUE;
 
 				/* Active flag */
-				if (new_flags[j] & (1L << i)) c = L'X';
+				if (new_flags[j] & ((uint32_t) 1 << i)) c = L'X';
 
 				/* Flag value */
 				Term_putch(35 + j * 5, i + 5, a, c);
@@ -450,12 +456,14 @@ static void do_cmd_options_win(const char *name, int row)
 				&& (choicex > 0) && (choicex < ANGBAND_TERM_MAX)
 				&& !(ke.mouse.x % 5)) {
 				if ((choicey == y) && (choicex == x)) {
+					uint32_t flag = ((uint32_t) 1) << y;
+
 					/* Toggle flag (off) */
-					if (new_flags[x] & (1L << y))
-						new_flags[x] &= ~(1L << y);
+					if (new_flags[x] & flag)
+						new_flags[x] &= ~flag;
 					/* Toggle flag (on) */
 					else
-						new_flags[x] |= (1L << y);
+						new_flags[x] |= flag;
 				} else {
 					y = choicey;
 					x = (ke.mouse.x - 35)/5;
@@ -473,12 +481,12 @@ static void do_cmd_options_win(const char *name, int row)
 					bell();
 
 				/* Toggle flag (off) */
-				else if (new_flags[x] & (1L << y))
-					new_flags[x] &= ~(1L << y);
+				else if (new_flags[x] & (((uint32_t) 1) << y))
+					new_flags[x] &= ~(((uint32_t) 1) << y);
 
 				/* Toggle flag (on) */
 				else
-					new_flags[x] |= (1L << y);
+					new_flags[x] |= (((uint32_t) 1) << y);
 
 				/* Continue */
 				continue;
@@ -626,7 +634,7 @@ static void ui_keymap_create(const char *title, int row)
 		c_prt(color, format("Action: %s", tmp), 15, 0);
 
 		c_prt(COLOUR_L_BLUE, "  Press '=' when finished.", 17, 0);
-		c_prt(COLOUR_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
+		c_prt(COLOUR_L_BLUE, "  Use 'CTRL-u' to reset.", 18, 0);
 		c_prt(COLOUR_L_BLUE, format("(Maximum keymap length is %d keys.)",
 									KEYMAP_ACTION_MAX), 19, 0);
 
@@ -911,10 +919,18 @@ static void colors_modify(const char *title, int row)
 		if (cx.code == ESCAPE) break;
 
 		/* Analyze */
-		if (cx.code == 'n')
+		if (cx.code == 'n') {
 			a = (uint8_t)(a + 1);
-		if (cx.code == 'N')
+			if (a >= MAX_COLORS) {
+				a = 0;
+			}
+		}
+		if (cx.code == 'N') {
 			a = (uint8_t)(a - 1);
+			if (a >= MAX_COLORS) {
+				a = MAX_COLORS - 1;
+			}
+		}
 		if (cx.code == 'k')
 			angband_color_table[a][0] =
 				(uint8_t)(angband_color_table[a][0] + 1);
@@ -1024,7 +1040,7 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 /**
  * Set base delay factor
  */
-static void do_cmd_delay(const char *name, int row)
+static void do_cmd_delay(const char *name, int unused)
 {
 	char tmp[4] = "";
 	int msec = player->opts.delay_factor;
@@ -1034,11 +1050,11 @@ static void do_cmd_delay(const char *name, int row)
 	screen_save();
 
 	/* Prompt */
+	prt("", 19, 0);
 	prt("Command: Base Delay Factor", 20, 0);
-
-	prt(format("Current base delay factor: %d msec",
-			   player->opts.delay_factor, msec), 22, 0);
 	prt("New base delay factor (0-255): ", 21, 0);
+	prt(format("Current base delay factor: %d msec", msec), 22, 0);
+	prt("", 23, 0);
 
 	/* Ask for a numeric value */
 	if (askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers)) {
@@ -1052,7 +1068,7 @@ static void do_cmd_delay(const char *name, int row)
 /**
  * Set sidebar mode
  */
-static void do_cmd_sidebar_mode(const char *name, int row)
+static void do_cmd_sidebar_mode(const char *name, int unused)
 {
 	char tmp[20] = "";	
 	const char *names[SIDEBAR_MAX] = {"Left", "Top", "None"};
@@ -1066,11 +1082,11 @@ static void do_cmd_sidebar_mode(const char *name, int row)
 		my_strcpy(tmp, names[SIDEBAR_MODE % SIDEBAR_MAX], sizeof(tmp));
 
 		/* Prompt */
+		prt("", 19, 0);
 		prt("Command: Sidebar Mode", 20, 0);
-
-		prt("ESC: go back, other: cycle", 22, 0);
-
 		prt(format("Current mode: %s", tmp), 21, 0);
+		prt("ESC: go back, other: cycle", 22, 0);
+		prt("", 23, 0);
 
 		/* Get a command */
 		cx = inkey();
@@ -1089,7 +1105,7 @@ static void do_cmd_sidebar_mode(const char *name, int row)
 /**
  * Set hitpoint warning level
  */
-static void do_cmd_hp_warn(const char *name, int row)
+static void do_cmd_hp_warn(const char *name, int unused)
 {
 	bool res;
 	char tmp[4] = "";
@@ -1100,11 +1116,13 @@ static void do_cmd_hp_warn(const char *name, int row)
 	screen_save();
 
 	/* Prompt */
+	prt("", 19, 0);
 	prt("Command: Hitpoint Warning", 20, 0);
-
-	prt(format("Current hitpoint warning: %d (%d%%)",
-			   player->opts.hitpoint_warn, player->opts.hitpoint_warn * 10), 22, 0);
 	prt("New hitpoint warning (0-9): ", 21, 0);
+	prt(format("Current hitpoint warning: %d (%d%%)",
+		player->opts.hitpoint_warn, player->opts.hitpoint_warn * 10),
+		22, 0);
+	prt("", 23, 0);
 
 	/* Ask the user for a string */
 	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
@@ -1127,7 +1145,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 /**
  * Set "lazy-movement" delay
  */
-static void do_cmd_lazymove_delay(const char *name, int row)
+static void do_cmd_lazymove_delay(const char *name, int unused)
 {
 	bool res;
 	char tmp[4] = "";
@@ -1137,11 +1155,13 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	screen_save();
 
 	/* Prompt */
+	prt("", 19, 0);
 	prt("Command: Movement Delay Factor", 20, 0);
-
-	prt(format("Current movement delay: %d (%d msec)",
-			   player->opts.lazymove_delay, player->opts.lazymove_delay * 10), 22, 0);
 	prt("New movement delay: ", 21, 0);
+	prt(format("Current movement delay: %d (%d msec)",
+		player->opts.lazymove_delay, player->opts.lazymove_delay * 10),
+		22, 0);
+	prt("", 23, 0);
 
 	/* Ask the user for a string */
 	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
@@ -1173,10 +1193,13 @@ static void do_cmd_pref_file_hack(long row)
 	screen_save();
 
 	/* Prompt */
+	if (row > 0) {
+		prt("", row - 1, 0);
+	}
 	prt("Command: Load a user pref file", row, 0);
-
-	/* Prompt */
+	prt("", row + 1, 0);
 	prt("File: ", row + 2, 0);
+	prt("", row + 3, 0);
 
 	/* Get the filesystem-safe name and append .prf */
 	player_safe_name(ftmp, sizeof(ftmp), player->full_name, true);
@@ -1869,7 +1892,7 @@ static char tag_options_item(struct menu *menu, int oid)
 	size_t line = (size_t) oid;
 
 	if (line < N_ELEMENTS(sval_dependent))
-		return I2A(oid);
+		return all_letters_nohjkl[oid];
 
 	/* Separator - blank line. */
 	if (line == N_ELEMENTS(sval_dependent))
@@ -2003,8 +2026,8 @@ static menu_action option_actions[] =
 	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
 	{ 0, 'u', "Save char screen options to pref file", do_dump_charscreen_opt },
 	{ 0, 0, NULL, NULL },
-	{ 0, 'l', "Load a user pref file", options_load_pref_file },
-	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },
+	{ 0, 'p', "Load a user pref file", options_load_pref_file },
+	{ 0, 'e', "Edit keymaps (advanced)", do_cmd_keymaps },
 	{ 0, 'c', "Edit colours (advanced)", do_cmd_colors },
 	{ 0, 'v', "Save visuals (advanced)", do_cmd_visuals },
 };

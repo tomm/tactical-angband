@@ -533,8 +533,8 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 				   o_name), 0, 0);
 	} else {
 		/* Feature (apply mimic) */
-		const char *name = square_apparent_name(c, player, grid);
-		const char *prefix = square_apparent_look_prefix(c, player, grid);
+		const char *name = square_apparent_name(player->cave, grid);
+		const char *prefix = square_apparent_look_prefix(player->cave, grid);
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s%s:", prefix, name), 0, 0);
 	}
@@ -733,7 +733,7 @@ int context_menu_object(struct object *obj)
 				menu_dynamic_add_label(m, "Drop All", cmdkey,
 									   MENU_VALUE_DROP_ALL, labels);
 			}
-		} else if (square_shopnum(cave, player->grid) == STORE_HOME) {
+		} else if (square(cave, player->grid)->feat == FEAT_HOME) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (obj->number > 1) {
@@ -879,7 +879,7 @@ int context_menu_object(struct object *obj)
 		if (selected == CMD_DROP &&
 			square_isshop(cave, player->grid)) {
 			struct command *gc = cmdq_peek();
-			if (square_shopnum(cave, player->grid) == STORE_HOME)
+			if (square(cave, player->grid)->feat == FEAT_HOME)
 				gc->code = CMD_STASH;
 			else
 				gc->code = CMD_SELL;
@@ -1154,6 +1154,11 @@ static bool cmd_menu(struct command_list *list, void *selection_p)
 
 	ui_event evt;
 	struct cmd_info **selection = selection_p;
+	/*
+	 * By default, cause the containing menu to break out of its event
+	 * handling when this function returns.
+	 */
+	bool result = false;
 
 	/* Set up the menu */
 	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
@@ -1167,35 +1172,52 @@ static bool cmd_menu(struct command_list *list, void *selection_p)
 	screen_save();
 	window_make(area.col - 2, area.row - 1, area.col + 39, area.row + 13);
 
-	/* Select an entry */
-	evt = menu_select(&menu, 0, true);
+	while (1) {
+		/* Select an entry */
+		evt = menu_select(&menu, 0, true);
 
-	/* Load de screen */
-	screen_load();
-
-	if (evt.type == EVT_SELECT) {
-		if (list->list[menu.cursor].cmd ||
-				list->list[menu.cursor].hook) {
-			/* It's a proper command. */
-			*selection = &list->list[menu.cursor];
-		} else {
+		if (evt.type == EVT_SELECT) {
+			if (list->list[menu.cursor].cmd ||
+					list->list[menu.cursor].hook) {
+				/* It's a proper command. */
+				*selection = &list->list[menu.cursor];
+				break;
+			} else {
+				/*
+				 * It's a placeholder that's a parent for a
+				 * nested menu.
+				 */
+				/*
+				 * Look up the list of commands for the nested
+				 * menu.
+				 */
+				if (list->list[menu.cursor].nested_cached_idx == -1) {
+					list->list[menu.cursor].nested_cached_idx =
+						cmd_list_lookup_by_name(list->list[menu.cursor].nested_name);
+				}
+				if (list->list[menu.cursor].nested_cached_idx >= 0) {
+					/* Display a menu for it. */
+					if (!cmd_menu(&cmds_all[list->list[menu.cursor].nested_cached_idx], selection_p)) {
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+		} else if (evt.type == EVT_ESCAPE) {
 			/*
-			 * It's a placeholder that's a parent for a
-			 * nested menu.
+			 * Return to the containing menu and don't break out all
+			 * the way to main game loop.
 			 */
-			/* Look up the list of commands for the nested menu. */
-			if (list->list[menu.cursor].nested_cached_idx == -1) {
-				list->list[menu.cursor].nested_cached_idx =
-					cmd_list_lookup_by_name(list->list[menu.cursor].nested_name);
-			}
-			if (list->list[menu.cursor].nested_cached_idx >= 0) {
-				/* Display a menu for it. */
-				return cmd_menu(&cmds_all[list->list[menu.cursor].nested_cached_idx], selection_p);
-			}
+			result = true;
+			break;
 		}
 	}
 
-	return false;
+	/* Load the screen */
+	screen_load();
+
+	return result;
 }
 
 

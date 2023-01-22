@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "init.h"
 #include "savefile.h"
+#include "ui-birth.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -34,10 +35,10 @@
 /**
  * locale junk
  */
-#include "locale.h"
+#include <locale.h>
 
 #if !defined(WINDOWS)
-#include "langinfo.h"
+#include <langinfo.h>
 #endif
 
 /**
@@ -48,6 +49,14 @@
 #if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL) || defined(USE_SDL2)
 
 #include "main.h"
+
+/*
+ * On some platforms, SDL2 uses a macro to replace main() with another name
+ * to hook into the platform-specific initialization.  Account for that here.
+ */
+#ifdef USE_SDL2
+#include "SDL_main.h"
+#endif
 
 /**
  * List of the available modules in the order they are tried.
@@ -81,6 +90,10 @@ static const struct module modules[] =
 #ifdef USE_SPOIL
 	{ "spoil", help_spoil, init_spoil },
 #endif
+
+#ifdef USE_IBM
+	{ "ibm", help_ibm, init_ibm },
+#endif /* USE_IBM */
 };
 
 /**
@@ -178,7 +191,6 @@ static const struct {
 	{ "gamedata", &ANGBAND_DIR_GAMEDATA, true },
 	{ "screens", &ANGBAND_DIR_SCREENS, true },
 	{ "help", &ANGBAND_DIR_HELP, true },
-	{ "info", &ANGBAND_DIR_INFO, true },
 	{ "pref", &ANGBAND_DIR_CUSTOMIZE, true },
 	{ "fonts", &ANGBAND_DIR_FONTS, true },
 	{ "tiles", &ANGBAND_DIR_TILES, true },
@@ -207,7 +219,7 @@ static void change_path(const char *info)
 	char dirpath[512];
 
 	if (!info || !info[0])
-		quit_fmt("Try '-d<dir>=<path>'.", info);
+		quit_fmt("Try '-d<dir>=<path>'.");
 
 	info_copy = string_make(info);
 	path = strtok(info_copy, "=");
@@ -288,20 +300,6 @@ static void list_saves(void)
 	printf("\nUse angband -u<name> to use savefile <name>.\n");
 
 	cleanup_savefile_getter(g);
-}
-
-
-static void debug_opt(const char *arg) {
-	if (streq(arg, "mem-poison-alloc"))
-		mem_flags |= MEM_POISON_ALLOC;
-	else if (streq(arg, "mem-poison-free"))
-		mem_flags |= MEM_POISON_FREE;
-	else {
-		puts("Debug flags:");
-		puts("  mem-poison-alloc: Poison all memory allocations");
-		puts("   mem-poison-free: Poison all freed memory");
-		exit(0);
-	}
 }
 
 /**
@@ -422,10 +420,6 @@ int main(int argc, char *argv[])
 				change_path(arg);
 				continue;
 
-			case 'x':
-				debug_opt(arg);
-				continue;
-
 			case '-':
 				argv[i] = argv[0];
 				argc = argc - i;
@@ -441,7 +435,6 @@ int main(int argc, char *argv[])
 				puts("  -l             Lists all savefiles you can play");
 				puts("  -w             Resurrect dead character (marks savefile)");
 				puts("  -g             Request graphics mode");
-				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<dir>=<path> Override a specific directory with <path>. <path> can be:");
 				for (i = 0; i < (int)N_ELEMENTS(change_path_values); i++) {
@@ -480,7 +473,7 @@ int main(int argc, char *argv[])
 	/* If we were told which mode to use, then use it */
 	if (mstr)
 		ANGBAND_SYS = mstr;
-#if !defined(WINDOWS)
+#if !defined(WINDOWS) && !defined(DJGPP)
 	if (setlocale(LC_CTYPE, "")) {
 		/* Require UTF-8 */
 		if (!streq(nl_langinfo(CODESET), "UTF-8"))

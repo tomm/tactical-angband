@@ -217,7 +217,7 @@ static void path_analyse(struct chunk *c, struct loc grid)
 	}
 
 	/* Plot the path. */
-	path_n = project_path(cave, path_g, z_info->max_range, player->grid,
+	path_n = project_path(c, path_g, z_info->max_range, player->grid,
 		grid, PROJECT_NONE);
 
 	/* Project along the path */
@@ -470,7 +470,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			mflag_off(mon->mflag, MFLAG_VIEW);
 
 			/* Disturb on disappearance */
-			if (OPT(player, disturb_near) && !monster_is_mimicking(mon))
+			if (OPT(player, disturb_near) && !monster_is_camouflaged(mon))
 				disturb(player);
 
 			/* Re-draw monster list window */
@@ -587,16 +587,16 @@ void monster_swap(struct loc grid1, struct loc grid2)
 		mon = cave_monster(cave, m1);
 
 		/* Update monster */
-		if (monster_is_mimicking(mon)) {
+		if (monster_is_camouflaged(mon)) {
 			/*
-			 * Become aware if the player can see the mimic before
-			 * or after the swap.
+			 * Become aware if the player can see the grid with
+			 * the camouflaged monster before or after the swap.
 			 */
 			if (monster_is_in_view(mon) ||
 				(m2 >= 0 && los(cave, pgrid, grid2)) ||
 				(m2 < 0 && los(cave, grid1, grid2))) {
 				become_aware(cave, mon);
-			} else {
+			} else if (monster_is_mimicking(mon)) {
 				move_mimicked_object(cave, mon, grid1, grid2);
 				player->upkeep->redraw |= (PR_ITEMLIST);
 			}
@@ -634,16 +634,16 @@ void monster_swap(struct loc grid1, struct loc grid2)
 		mon = cave_monster(cave, m2);
 
 		/* Update monster */
-		if (monster_is_mimicking(mon)) {
+		if (monster_is_camouflaged(mon)) {
 			/*
-			 * Become aware if the player can see the mimic before
-			 * or after the swap.
+			 * Become aware if the player can see the grid with
+			 * the camouflaged monster before or after the swap.
 			 */
 			if (monster_is_in_view(mon) ||
 				(m1 >= 0 && los(cave, pgrid, grid1)) ||
 				(m1 < 0 && los(cave, grid2, grid1))) {
 				become_aware(cave, mon);
-			} else {
+			} else if (monster_is_mimicking(mon)) {
 				move_mimicked_object(cave, mon, grid2, grid1);
 				player->upkeep->redraw |= (PR_ITEMLIST);
 			}
@@ -1113,7 +1113,7 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 
 	/* Bloodlust bonus */
 	if (p->timed[TMD_BLOODLUST]) {
-		player_inc_timed(p, TMD_BLOODLUST, 10, false, false);
+		player_inc_timed(p, TMD_BLOODLUST, 10, false, false, true);
 		player_over_exert(p, PY_EXERT_CONF, 5, 3);
 		player_over_exert(p, PY_EXERT_HALLU, 5, 10);
 	}
@@ -1226,7 +1226,7 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 		/* Delete the monster */
 		delete_monster_idx(t_mon->midx);
 		return true;
-	} else if (!monster_is_mimicking(t_mon)) {
+	} else if (!monster_is_camouflaged(t_mon)) {
 		/* Give detailed messages if visible */
 		if (hurt_msg != MON_MSG_NONE) {
 			add_monster_message(t_mon, hurt_msg, false);
@@ -1532,7 +1532,8 @@ void steal_monster_item(struct monster *mon, int midx)
 			msg("You vanish into the shadows!");
 			effect_simple(EF_TELEPORT, source_player(), near, 0, 0, 0, 0, 0,
 						  NULL);
-			(void) player_clear_timed(player, TMD_ATT_RUN, false);
+			(void) player_clear_timed(player, TMD_ATT_RUN, false,
+				false);
 		}
 	} else {
 		/* Get the thief details */

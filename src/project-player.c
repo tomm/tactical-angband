@@ -169,13 +169,15 @@ static int project_player_handler_FIRE(project_player_handler_context_t *context
 		}
 		if (randint0(context->dam) > 500) {
 			if (player_inc_timed(player, TMD_BLIND,
-								 randint1(context->dam / 100), true, true)) {
+					randint1(context->dam / 100), true,
+					true, true)) {
 				msg("Your eyes fill with smoke!");
 			}
 		}
 		if (randint0(context->dam) > 500) {
 			if (player_inc_timed(player, TMD_POISONED,
-								 randint1(context->dam / 10), true, true)) {
+					randint1(context->dam / 10), true,
+					true, true)) {
 				msg("You are assailed by poisonous fumes!");
 			}
 		}
@@ -213,8 +215,9 @@ static int project_player_handler_POIS(project_player_handler_context_t *context
 	int xtra = 0;
 
 	if (!player_inc_timed(player, TMD_POISONED, 10 + randint1(context->dam),
-						  true, true))
+			true, true, true)) {
 		msg("You resist the effect!");
+	}
 
 	/* Occasional side-effects for powerful poison attacks */
 	if (context->power >= 60) {
@@ -244,13 +247,17 @@ static int project_player_handler_LIGHT(project_player_handler_context_t *contex
 		return 0;
 	}
 
-	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true);
+	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true,
+		true);
 
 	/* Confusion for strong unresisted light */
 	if (context->dam > 300) {
-		msg("You are dazzled!");
+		/* Check for resistance before issuing a message. */
+		if (player_inc_check(player, TMD_CONFUSED, false)) {
+			msg("You are dazzled!");
+		}
 		(void)player_inc_timed(player, TMD_CONFUSED,
-							   2 + randint1(context->dam / 100), true, true);
+			2 + randint1(context->dam / 100), true, true, true);
 	}
 	return 0;
 }
@@ -262,7 +269,8 @@ static int project_player_handler_DARK(project_player_handler_context_t *context
 		return 0;
 	}
 
-	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true);
+	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true,
+		true);
 
 	/* Unresisted dark from powerful monsters is bad news */
 	if (context->power >= 70) {
@@ -280,15 +288,15 @@ static int project_player_handler_DARK(project_player_handler_context_t *context
 		/* Slowing */
 		if (randint0(context->dam) > 200) {
 			msg("You feel unsure of yourself in the darkness.");
-			(void)player_inc_timed(player, TMD_SLOW, context->dam / 100, true,
-								   false);
+			(void)player_inc_timed(player, TMD_SLOW,
+				context->dam / 100, true, true, false);
 		}
 
 		/* Amnesia */
 		if (randint0(context->dam) > 300) {
 			msg("Darkness penetrates your mind!");
-			(void)player_inc_timed(player, TMD_AMNESIA, context->dam / 100,
-								   true, false);
+			(void)player_inc_timed(player, TMD_AMNESIA,
+				context->dam / 100, true, true, false);
 		}
 	}
 	return 0;
@@ -305,16 +313,20 @@ static int project_player_handler_SOUND(project_player_handler_context_t *contex
 	if (!player_of_has(player, OF_PROT_STUN)) {
 		int duration = 5 + randint1(context->dam / 3);
 		if (duration > 35) duration = 35;
-		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+		(void)player_inc_timed(player, TMD_STUN, duration, true, true,
+			true);
 	} else {
 		equip_learn_flag(player, OF_PROT_STUN);
 	}
 
 	/* Confusion for strong unresisted sound */
 	if (context->dam > 300) {
-		msg("The noise disorients you.");
+		/* Check for resistance before issuing a message. */
+		if (player_inc_check(player, TMD_CONFUSED, false)) {
+			msg("The noise disorients you.");
+		}
 		(void)player_inc_timed(player, TMD_CONFUSED,
-							   2 + randint1(context->dam / 100), true, true);
+			2 + randint1(context->dam / 100), true, true, true);
 	}
 	return 0;
 }
@@ -328,7 +340,7 @@ static int project_player_handler_SHARD(project_player_handler_context_t *contex
 
 	/* Cuts */
 	(void)player_inc_timed(player, TMD_CUT, randint1(context->dam), true,
-						   false);
+		true, false);
 	return 0;
 }
 
@@ -348,7 +360,8 @@ static int project_player_handler_NEXUS(project_player_handler_context_t *contex
 	if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 		msg("You avoid the effect!");
 	} else {
-		player_inc_timed(player, TMD_SCRAMBLE, randint0(20) + 20, true, true);
+		player_inc_timed(player, TMD_SCRAMBLE, randint0(20) + 20, true,
+			true, true);
 	}
 
 	if (one_in_(3) && mon) { /* Teleport to */
@@ -409,10 +422,12 @@ static int project_player_handler_CHAOS(project_player_handler_context_t *contex
 	}
 
 	/* Hallucination */
-	(void)player_inc_timed(player, TMD_IMAGE, randint1(10), true, false);
+	(void)player_inc_timed(player, TMD_IMAGE, randint1(10), true, true,
+		false);
 
 	/* Confusion */
-	(void)player_inc_timed(player, TMD_CONFUSED, 10 + randint0(20), true, true);
+	(void)player_inc_timed(player, TMD_CONFUSED, 10 + randint0(20), true,
+		true, true);
 
 	/* Life draining */
 	if (!player_of_has(player, OF_HOLD_LIFE)) {
@@ -440,10 +455,12 @@ static int project_player_handler_DISEN(project_player_handler_context_t *contex
 static int project_player_handler_WATER(project_player_handler_context_t *context)
 {
 	/* Confusion */
-	(void)player_inc_timed(player, TMD_CONFUSED, 5 + randint1(5), true, true);
+	(void)player_inc_timed(player, TMD_CONFUSED, 5 + randint1(5), true,
+		true, true);
 
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint1(40), true, true);
+	(void)player_inc_timed(player, TMD_STUN, randint1(40), true, true,
+		true);
 	return 0;
 }
 
@@ -453,13 +470,16 @@ static int project_player_handler_ICE(project_player_handler_context_t *context)
 		inven_damage(player, PROJ_COLD, MIN(context->dam * 5, 300));
 
 	/* Cuts */
-	if (!player_resists(player, ELEM_SHARD))
-		(void)player_inc_timed(player, TMD_CUT, damroll(5, 8), true, false);
-	else
+	if (!player_resists(player, ELEM_SHARD)) {
+		(void)player_inc_timed(player, TMD_CUT, damroll(5, 8), true,
+			true, false);
+	} else {
 		msg("You resist the effect!");
+	}
 
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint1(15), true, true);
+	(void)player_inc_timed(player, TMD_STUN, randint1(15), true, true,
+		true);
 	return 0;
 }
 
@@ -474,13 +494,15 @@ static int project_player_handler_GRAVITY(project_player_handler_context_t *cont
 	}
 
 	/* Slow */
-	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), true, false);
+	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), true, true,
+		false);
 
 	/* Stun */
 	if (!player_of_has(player, OF_PROT_STUN)) {
 		int duration = 5 + randint1(context->dam / 3);
 		if (duration > 35) duration = 35;
-		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+		(void)player_inc_timed(player, TMD_STUN, duration, true, true,
+			true);
 	} else {
 		equip_learn_flag(player, OF_PROT_STUN);
 	}
@@ -490,7 +512,8 @@ static int project_player_handler_GRAVITY(project_player_handler_context_t *cont
 static int project_player_handler_INERTIA(project_player_handler_context_t *context)
 {
 	/* Slow */
-	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), true, false);
+	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), true, true,
+		false);
 	return 0;
 }
 
@@ -523,7 +546,8 @@ static int project_player_handler_FORCE(project_player_handler_context_t *contex
 	}
 
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint1(20), true, true);
+	(void)player_inc_timed(player, TMD_STUN, randint1(20), true, true,
+		true);
 
 	/* Thrust player away. */
 	thrust_away(centre, context->grid, 3 + context->dam / 20);
@@ -557,7 +581,8 @@ static int project_player_handler_PLASMA(project_player_handler_context_t *conte
 	if (!player_of_has(player, OF_PROT_STUN)) {
 		int duration = 5 + randint1(context->dam * 3 / 4);
 		if (duration > 35) duration = 35;
-		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+		(void)player_inc_timed(player, TMD_STUN, duration, true, true,
+			true);
 	} else {
 		equip_learn_flag(player, OF_PROT_STUN);
 	}
@@ -603,7 +628,8 @@ static int project_player_handler_DARK_WEAK(project_player_handler_context_t *co
 		return 0;
 	}
 
-	(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), true, true);
+	(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), true, true,
+		true);
 	return 0;
 }
 
@@ -838,7 +864,8 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 		case SRC_PLAYER: {
 			/* Don't affect projector unless explicitly allowed */
 			if (!self) return false;
-
+			/* Use the same message as the DAMAGE handler. */
+			my_strcpy(killer, "yourself", sizeof(killer));
 			break;
 		}
 
@@ -884,7 +911,8 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 		}
 
 		case SRC_NONE: {
-			/* Assume the caller has set the killer variable */
+			/* Use the same message as the DAMAGE handler. */
+			my_strcpy(killer, "a bug", sizeof(killer));
 			break;
 		}
 	}

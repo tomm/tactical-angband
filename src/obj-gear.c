@@ -442,11 +442,14 @@ bool minus_ac(struct player *p)
  */
 char gear_to_label(struct player *p, struct object *obj)
 {
+	/* Skip rogue-like cardinal direction movement keys. */
+	const char labels[] =
+		 "abcdefgimnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	int i;
 
 	/* Equipment is easy */
 	if (object_is_equipped(p->body, obj)) {
-		return I2A(equipped_item_slot(p->body, obj));
+		return labels[equipped_item_slot(p->body, obj)];
 	}
 
 	/* Check the quiver */
@@ -459,7 +462,7 @@ char gear_to_label(struct player *p, struct object *obj)
 	/* Check the inventory */
 	for (i = 0; i < z_info->pack_size; i++) {
 		if (p->upkeep->inven[i] == obj) {
-			return I2A(i);
+			return labels[i];
 		}
 	}
 
@@ -542,7 +545,7 @@ struct object *gear_object_for_use(struct player *p, struct object *obj,
 			/*
 			 * Don't show aggregate total in pack if equipped or
 			 * if the description could have a number of charges
-			 * or recharign notice specific to the stack (not
+			 * or recharging notice specific to the stack (not
 			 * aggregating those quantities so there would be
 			 * confusion if aggregating the count).
 			 */
@@ -893,7 +896,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 		/*
 		 * Show an aggregate total if the description doesn't have
-		 * a charge/charging notice that's specific to the stack.
+		 * a charge/recharging notice that's specific to the stack.
 		 */
 		if (tval_can_have_charges(obj) || tval_is_rod(obj)
 				|| obj->timeout > 0) {
@@ -991,7 +994,7 @@ void inven_wield(struct object *obj, int slot)
 		ODESC_PREFIX | ODESC_FULL, player);
 
 	/* Message */
-	msgt(MSG_WIELD, fmt, o_name, I2A(slot));
+	msgt(MSG_WIELD, fmt, o_name, gear_to_label(player, wielded));
 
 	/* Sticky flag geats a special mention */
 	if (of_has(wielded->flags, OF_STICKY)) {
@@ -1340,7 +1343,6 @@ void pack_overflow(struct object *obj)
 {
 	int i;
 	char o_name[80];
-	bool artifact = false;
 
 	if (!pack_is_overfull()) return;
 
@@ -1366,9 +1368,6 @@ void pack_overflow(struct object *obj)
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL,
 		player);
-	if (obj->artifact) {
-		artifact = true;
-	}
 
 	/* Message */
 	msg("You drop %s.", o_name);
@@ -1378,10 +1377,7 @@ void pack_overflow(struct object *obj)
 	drop_near(cave, &obj, 0, player->grid, false, true);
 
 	/* Describe */
-	if (artifact)
-		msg("You no longer have the %s.", o_name);
-	else
-		msg("You no longer have %s.", o_name);
+	msg("You no longer have %s.", o_name);
 
 	/* Notice, update, redraw */
 	if (player->upkeep->notice) notice_stuff(player);

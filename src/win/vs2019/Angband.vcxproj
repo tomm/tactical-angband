@@ -286,6 +286,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\ui-object.c" />
     <ClCompile Include="src\ui-options.c" />
     <ClCompile Include="src\ui-output.c" />
+    <ClCompile Include="src\ui-player-properties.c" />
     <ClCompile Include="src\ui-player.c" />
     <ClCompile Include="src\ui-prefs.c" />
     <ClCompile Include="src\ui-score.c" />
@@ -367,6 +368,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\list-room-flags.h" />
     <ClInclude Include="src\list-square-flags.h" />
     <ClInclude Include="src\list-stats.h" />
+    <ClInclude Include="src\list-terrain.h" />
     <ClInclude Include="src\list-terrain-flags.h" />
     <ClInclude Include="src\list-trap-flags.h" />
     <ClInclude Include="src\list-tvals.h" />
@@ -459,6 +461,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\ui-object.h" />
     <ClInclude Include="src\ui-options.h" />
     <ClInclude Include="src\ui-output.h" />
+    <ClInclude Include="src\ui-player-properties.h" />
     <ClInclude Include="src\ui-player.h" />
     <ClInclude Include="src\ui-prefs.h" />
     <ClInclude Include="src\ui-score.h" />
@@ -545,7 +548,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <None Include="lib\fonts\8x8xb.fon" />
     <None Include="lib\fonts\9x15x.fon" />
     <None Include="lib\fonts\9x15xb.fon" />
-    <None Include="lib\sounds\sound.cfg" />
     <None Include="lib\tiles\adam-bolt\flvr-new.prf" />
     <None Include="lib\tiles\adam-bolt\graf-new.prf" />
     <None Include="lib\tiles\adam-bolt\xtra-new.prf" />
@@ -605,6 +607,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Text Include="lib\gamedata\ui_entry.txt" />
     <Text Include="lib\gamedata\ui_entry_base.txt" />
     <Text Include="lib\gamedata\ui_entry_renderer.txt" />
+    <Text Include="lib\gamedata\ui_knowledge.txt" />
     <Text Include="lib\gamedata\vault.txt" />
     <Text Include="lib\gamedata\visuals.txt" />
     <Text Include="lib\gamedata\world.txt" />

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cmd-core.h"
 #include "game-input.h"
+#include "player.h"
 
 bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
 int (*get_quantity_hook)(const char *prompt, int max);
@@ -30,8 +31,9 @@ int (*get_spell_from_book_hook)(struct player *p, const char *verb,
 	struct object *book, const char *error,
 	bool (*spell_filter)(const struct player *p, int spell));
 int (*get_spell_hook)(struct player *p, const char *verb,
-	item_tester book_filter, cmd_code cmd, const char *error,
-	bool (*spell_filter)(const struct player *p, int spell));
+	item_tester book_filter, cmd_code cmd, const char *book_error,
+	bool (*spell_filter)(const struct player *p, int spell),
+	const char *spell_error, struct object **rtn_book);
 bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
 bool (*get_curse_hook)(int *choice, struct object *obj, char *dice_string);
@@ -41,6 +43,8 @@ bool (*confirm_debug_hook)(void);
 void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 bool (*map_is_visible_hook)(void);
+void (*view_abilities_hook)(struct player_ability *ability_list,
+							int num_abilities);
 
 /**
  * Prompt for a string from the user.
@@ -158,15 +162,32 @@ int get_spell_from_book(struct player *p, const char *verb,
 
 /**
  * Get a spell from the player.
+ *
+ * \param p is the player.
+ * \param verb is the string describing the action for which the spell is
+ * requested.  It is typically "cast" or "study".
+ * \param book_filter is the function (if any) to test that an object is
+ * appropriate for use as spellbook by the player.
+ * \param cmd is the command (if any) the request is called from.
+ * \param book_error is the message to display if no valid book is available.
+ * If NULL, no message will be displayed.
+ * \param spell_filter is the function to call to test if a spell is a valid
+ * selection for the request.
+ * \param spell_error is the message to display if no valid spell is available.
+ * If NULL, no message will be displayed.
+ * \param rtn_book if not NULL, is dereferenced and set to the book selected.
+ * \return the index of the spell selected or a negative value if the selection
+ * failed for any reason.
  */
 int get_spell(struct player *p, const char *verb,
-		item_tester book_filter, cmd_code cmd, const char *error,
-		bool (*spell_filter)(const struct player *p, int spell))
+		item_tester book_filter, cmd_code cmd, const char *book_error,
+		bool (*spell_filter)(const struct player *p, int spell),
+		const char *spell_error, struct object **rtn_book)
 {
 	/* Ask the UI for it */
 	if (get_spell_hook) {
-		return get_spell_hook(p, verb, book_filter, cmd, error,
-			spell_filter);
+		return get_spell_hook(p, verb, book_filter, cmd, book_error,
+			spell_filter, spell_error, rtn_book);
 	}
 	return -1;
 }
@@ -288,4 +309,15 @@ bool map_is_visible(void)
 		return map_is_visible_hook();
 	else
 		return true;
+}
+
+/**
+ * Browse player abilities
+ */
+void view_ability_menu(struct player_ability *ability_list,
+					   int num_abilities)
+{
+	/* Ask the UI for it */
+	if (view_abilities_hook)
+		view_abilities_hook(ability_list, num_abilities);
 }

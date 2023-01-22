@@ -327,7 +327,8 @@ static void decrease_timeouts(void)
 				if (!los(cave, player->grid, mon->grid)) {
 					/* Out of sight is out of mind */
 					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY);
-					player_clear_timed(player, TMD_COMMAND, true);
+					player_clear_timed(player, TMD_COMMAND,
+						true, true);
 				} else {
 					/* Keep monster timer aligned */
 					mon_dec_timed(mon, MON_TMD_COMMAND, decr, 0);
@@ -336,7 +337,7 @@ static void decrease_timeouts(void)
 			}
 		}
 		/* Decrement the effect */
-		player_dec_timed(player, i, decr, false);
+		player_dec_timed(player, i, decr, false, true);
 	}
 
 	/* Curse effects always decrement by 1 */
@@ -577,15 +578,20 @@ void process_world(struct chunk *c)
 	}
 
 	/* Check for creature generation */
-	if (one_in_(z_info->alloc_monster_chance))
-		(void)pick_and_place_distant_monster(c, player, z_info->max_sight + 5,
-											 true, player->depth);
+	if (one_in_(z_info->alloc_monster_chance)) {
+		(void)pick_and_place_distant_monster(c, player->grid,
+			z_info->max_sight + 5, true, player->depth);
+	}
 
 	/*** Damage (or healing) over Time ***/
 
 	/* Take damage from poison */
-	if (player->timed[TMD_POISONED])
+	if (player->timed[TMD_POISONED]) {
 		take_hit(player, 1, "poison");
+		if (player->is_dead) {
+			return;
+		}
+	}
 
 	/* Take damage from cuts, worse from serious cuts */
 	if (player->timed[TMD_CUT]) {
@@ -603,6 +609,9 @@ void process_world(struct chunk *c)
 
 		/* Take damage */
 		take_hit(player, i, "a fatal wound");
+		if (player->is_dead) {
+			return;
+		}
 	}
 
 	/* Side effects of diminishing bloodlust */
@@ -610,6 +619,9 @@ void process_world(struct chunk *c)
 		player_over_exert(player, PY_EXERT_HP | PY_EXERT_CUT | PY_EXERT_SLOW,
 						  MAX(0, 10 - player->timed[TMD_BLOODLUST]),
 						  player->chp / 10);
+		if (player->is_dead) {
+			return;
+		}
 	}
 
 	/* Timed healing */
@@ -658,19 +670,22 @@ void process_world(struct chunk *c)
 			if (i < 1) i = 1;
 
 			/* Digest some food */
-			player_dec_timed(player, TMD_FOOD, i, false);
+			player_dec_timed(player, TMD_FOOD, i, false, true);
 		}
 
 		/* Fast metabolism */
 		if (player->timed[TMD_HEAL]) {
-			player_dec_timed(player, TMD_FOOD, 8 * z_info->food_value, false);
+			player_dec_timed(player, TMD_FOOD,
+				8 * z_info->food_value, false, true);
 			if (player->timed[TMD_FOOD] < PY_FOOD_HUNGRY) {
-				player_set_timed(player, TMD_HEAL, 0, true);
+				player_set_timed(player, TMD_HEAL, 0, true,
+					true);
 			}
 		}
 	} else {
 		/* Digest quickly when gorged */
-		player_dec_timed(player, TMD_FOOD, 5000 / z_info->food_value, false);
+		player_dec_timed(player, TMD_FOOD, 5000 / z_info->food_value,
+			false, true);
 		player->upkeep->update |= PU_BONUS;
 	}
 
@@ -683,8 +698,8 @@ void process_world(struct chunk *c)
 			disturb(player);
 
 			/* Faint (bypass free action) */
-			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
-								   true, false);
+			(void)player_inc_timed(player, TMD_PARALYZED,
+				1 + randint0(5), true, true, false);
 		}
 	} else if (player_timed_grade_eq(player, TMD_FOOD, "Starving")) {
 		/* Calculate damage */
@@ -692,6 +707,9 @@ void process_world(struct chunk *c)
 
 		/* Take damage */
 		take_hit(player, i, "starvation");
+		if (player->is_dead) {
+			return;
+		}
 	}
 
 	/* Regenerate Hit Points if needed */
@@ -753,8 +771,12 @@ void process_world(struct chunk *c)
 
 		/* Activate the recall */
 		if (!player->word_recall) {
-			/* Disturbing! */
+			/*
+			 * Disturbing!  Also, flush the command queue to avoid
+			 * losing an action on the new level
+			 */
 			disturb(player);
+			cmdq_flush();
 
 			/* Determine the level */
 			if (player->depth) {
@@ -1047,7 +1069,7 @@ void on_new_level(void)
  */
 static void on_leave_level(void) {
 	/* Cancel any command */
-	player_clear_timed(player, TMD_COMMAND, false);
+	player_clear_timed(player, TMD_COMMAND, false, false);
 
 	/* Don't allow command repeat if moved away from item used. */
 	cmd_disable_repeat_floor_item();

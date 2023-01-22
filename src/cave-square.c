@@ -797,6 +797,14 @@ bool square_islockeddoor(struct chunk *c, struct loc grid)
 }
 
 /**
+ * True if the square is a closed, unlocked door.
+ */
+bool square_isunlockeddoor(struct chunk *c, struct loc grid)
+{
+	return square_iscloseddoor(c, grid) && square_door_power(c, grid) == 0;
+}
+
+/**
  * True if there is a player trap (known or unknown) in this square.
  */
 bool square_isplayertrap(struct chunk *c, struct loc grid)
@@ -1426,32 +1434,58 @@ int square_shopnum(struct chunk *c, struct loc grid) {
 }
 
 int square_digging(struct chunk *c, struct loc grid) {
-	if (square_isdiggable(c, grid))
+	if (square_isdiggable(c, grid) || square_iscloseddoor(c, grid))
 		return f_info[square(c, grid)->feat].dig;
 	return 0;
 }
 
-const char *square_apparent_name(struct chunk *c, struct player *p, struct loc grid) {
-	int actual = square(player->cave, grid)->feat;
-	char *mimic_name = f_info[actual].mimic;
-	int f = mimic_name ? lookup_feat(mimic_name) : actual;
-	return f_info[f].name;
+/*
+ * Return the name for the terrain in a grid.  Accounts for the fact that
+ * some terrain mimics another terrain.
+ *
+ * \param c Is the chunk to use.  Usually it is the player's version of the
+ * chunk.
+ * \param grid Is the grid to use.
+ */
+const char *square_apparent_name(struct chunk *c, struct loc grid) {
+	int actual = square(c, grid)->feat;
+	const struct feature *fp = f_info[actual].mimic ?
+		f_info[actual].mimic : &f_info[actual];
+	return fp->name;
 }
 
-const char *square_apparent_look_prefix(struct chunk *c, struct player *p, struct loc grid) {
-	int actual = square(player->cave, grid)->feat;
-	char *mimic_name = f_info[actual].mimic;
-	int f = mimic_name ? lookup_feat(mimic_name) : actual;
-	return (f_info[f].look_prefix) ? f_info[f].look_prefix :
-		(is_a_vowel(f_info[f].name[0]) ? "an " : "a ");
+/*
+ * Return the prefix, appropriate for describing looking at the grid in
+ * question, for the name returned by square_name().
+ *
+ * \param c Is the chunk to use.  Usually it is the player's version of the
+ * chunk.
+ * \param grid Is the grid to use.
+ *
+ * The prefix is usually an indefinite article.  It may be an empty string.
+ */
+const char *square_apparent_look_prefix(struct chunk *c, struct loc grid) {
+	int actual = square(c, grid)->feat;
+	const struct feature *fp = f_info[actual].mimic ?
+		f_info[actual].mimic : &f_info[actual];
+	return (fp->look_prefix) ? fp->look_prefix :
+		(is_a_vowel(fp->name[0]) ? "an " : "a ");
 }
 
-const char *square_apparent_look_in_preposition(struct chunk *c, struct player *p, struct loc grid) {
-	int actual = square(player->cave, grid)->feat;
-	char *mimic_name = f_info[actual].mimic;
-	int f = mimic_name ? lookup_feat(mimic_name) : actual;
-	return (f_info[f].look_in_preposition) ?
-		 f_info[f].look_in_preposition : "on ";
+/*
+ * Return a preposition, appropriate for describing the grid the viewer is on,
+ * for the name returned by square_name().  May return an empty string when
+ * the name doesn't require a preposition.
+ *
+ * \param c Is the chunk to use.  Usually it is the player's version of the
+ * chunk.
+ * \param grid Is the grid to use.
+ */
+const char *square_apparent_look_in_preposition(struct chunk *c, struct loc grid) {
+	int actual = square(c, grid)->feat;
+	const struct feature *fp = f_info[actual].mimic ?
+		f_info[actual].mimic : &f_info[actual];
+	return (fp->look_in_preposition) ?  fp->look_in_preposition : "on ";
 }
 
 /* Memorize the terrain */

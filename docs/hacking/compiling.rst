@@ -273,11 +273,17 @@ a .tar.gz file, for a release.
 
 Then configure the cross-comilation and perform the compilation itself::
 
-	./configure --enable-win --build=i686-pc-linux-gnu --host=i586-mingw32msvc
+	./configure --enable-win --build=i686-pc-linux-gnu --host=i686-w64-mingw32
 	make install
 
-The last step only works with very recent versions.  For older ones, use this
-instead of the last step::
+You may need to change the --build and --host options there to match your
+system. Mingw installs commands like 'i686-w64-mingw32-gcc'. The value of --host
+should be that same command with the '-gcc' removed. Instead of i686 you may
+see i686, amd64, etc. The value of --build should be the host you're building
+on (see http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
+gory details of how these triplets are arrived at).  The 'make install' step
+only works with very recent version.  For older ones, use this instead of the
+last step::
 
 	make
 	cp src/angband.exe .
@@ -286,12 +292,6 @@ instead of the last step::
 To run the result, you can use wine like this::
 
 	wine angband.exe
-
-Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of --host
-should be that same command with the '-gcc' removed. Instead of i586 you may
-see i686, amd64, etc. The value of --build should be the host you're building
-on. (See http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
-gory details of how these triplets are arrived at)
 
 TODO: except for recent versions (after Angband 4.2.3) you likely need to
 manually disable curses (add --disable-curses to the options passed to
@@ -446,10 +446,10 @@ Install the dependencies by::
 
 Additional dependencies for SDL2 client::
 
-	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_gfx \
-		  mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_ttf
+	pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image \
+		mingw-w64-x86_64-SDL2_ttf
 
-Then run the following to compile with ncurse::
+Then run the following to compile with ncurses::
 
 	cd src
 	make -f Makefile.msys2
@@ -459,11 +459,22 @@ For SDL2, do::
 	cd src
 	make -f Makefile.msys2.sdl2
 
-Go to the root of the source directory and start angband by::
+Very recent versions of Makefile.msys2.sdl2 allow use of SDL2 sound; to build
+with that you'll need SDL2_mixer installed in addtion to the other SDL2
+libraries mentioned above::
+
+	pacman -S mingw-w64-x86_64-SDL2_mixer
+
+Then the executable with SDL2 sound support can be built with::
+
+	cd src
+	make -f Makefile.msys2.sdl2 SOUND=yes
+
+Once built, go to the root of the source directory and start angband by::
 
 	./angband.exe -uPLAYER
 
-The ncurse client may not be able to start properly from msys2 shell, try::
+The ncurses client may not be able to start properly from msys2 shell, try::
 
 	start bash
 
@@ -554,6 +565,31 @@ connect to the target device::
 
 Afterwards, the debugging target will pause automatically and it can be debugged as usual
 using GDB.
+
+Cross-building for DOS with DJGPP
+---------------------------------
+These instructions were written using a Slackware64-15.0 host.
+
+Install the following cross-compiler:
+https://github.com/andrewwutw/build-djgpp
+
+	git clone https://github.com/andrewwutw/build-djgpp.git
+	cd build-djgpp
+	DJGPP_PREFIX=$HOME/local/cross-djgpp ./build-djgpp.sh 10.3.0
+
+Then build angband using the cross-compiler:
+
+	cd angband/src
+	PATH=$PATH:$HOME/local/cross-djgpp/bin
+	make -f Makefile.ibm
+
+Optionally build the documentation (requires Sphinx):
+
+	make -f Makefile.ibm docs
+
+To create the angband.zip distribution
+
+	make -f Makefile.ibm dist
 
 Documentation
 -------------

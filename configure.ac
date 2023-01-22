@@ -88,6 +88,7 @@ fi
 # Prefer cc to gcc (default behavior is the opposite) for better compatibility
 # with OpenBSD and FreeBSD.
 AC_PROG_CC([cc gcc clang])
+AC_PROG_CPP
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 AC_PROG_INSTALL
@@ -98,9 +99,8 @@ AC_PATH_PROG(MV, mv)
 AC_PATH_PROG(CP, cp)
 
 AC_HEADER_DIRENT
-AC_CHECK_HEADERS([fcntl.h stdint.h])
+AC_CHECK_HEADERS([fcntl.h])
 AC_HEADER_STDBOOL
-AC_C_CONST
 AC_CHECK_FUNCS([mkdir setresgid setegid stat])
 
 dnl needed because h-basic.h checks for this define for autoconf support.
@@ -123,29 +123,10 @@ if test x"$release" = xyes ; then
 	AC_DEFINE(RELEASE_BUILD, 1, [Define to mark as a release build with extra optimizations.])
 fi
 
-AC_ARG_ENABLE(more-gcc-warnings,
-	[AS_HELP_STRING([--enable-more-gcc-warnings], [enable more warnings if using GCC])],
-	[AS_CASE(${enableval},
-		[yes], [more_gcc_warnings=yes],
-		[no], [more_gcc_warnings=no],
-		[AC_MSG_ERROR([bad value ${enableval} for --enable-more-gcc-warnings])])],
-	[more_gcc_warnings=no])
-
 if test "$GCC" = "yes"; then
 	CFLAGS="$CFLAGS -W -Wall -Wextra -Wno-unused-parameter -pedantic"
-	if test x"$more_gcc_warnings" = xyes ; then
-		CFLAGS="$CFLAGS -Wstrict-prototypes -Wmissing-prototypes -Wwrite-strings -Wbad-function-cast -Wnested-externs -Wshadow"
-	else
-		AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
-		_gcc_cflags_save=$CFLAGS
-		CFLAGS="-Wno-missing-field-initializers"
-		AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],_gcc_wopt=yes,_gcc_wopt=no)
-		AC_MSG_RESULT($_gcc_wopt)
-		CFLAGS=$_gcc_cflags_save;
-		if test x"$_gcc_wopt" = xyes ; then
-			CFLAGS="$CFLAGS -Wno-missing-field-initializers"
-		fi
-	fi
+	CFLAGS="$CFLAGS -Wstrict-prototypes -Wmissing-prototypes -Wwrite-strings"
+	CFLAGS="$CFLAGS -Wnested-externs -Wshadow"
 fi
 
 AC_ARG_ENABLE(skip-old-int-typedefs,
@@ -348,12 +329,11 @@ fi
 AC_CHECK_FUNCS([mvwaddnwstr use_default_colors can_change_color])
 
 dnl X11 checking
+with_x11=no
 if test "$enable_x11" = "yes"; then
 	AC_PATH_XTRA
 
-	if test "x$have_x" != "xyes"; then
-		with_x11=no
-	else
+	if test "x$have_x" = "xyes"; then
 		AC_DEFINE(USE_X11, 1, [Define to 1 if using the X11 frontend and X11 libraries are found.])
 		CPPFLAGS="$CPPFLAGS $X_CFLAGS"
 		LIBS="${LIBS} ${X_PRE_LIBS} ${X_LIBS} -lX11 ${X_EXTRA_LIBS}"
@@ -361,19 +341,18 @@ if test "$enable_x11" = "yes"; then
 		with_x11=yes
 	fi
 fi
+ENABLEX11="$with_x11"; AC_SUBST(ENABLEX11)
 
+with_sdl2=no
 if test "$enable_sdl2" = "yes" || test "$enable_sdl2_mixer" = "yes"; then
 	dnl SDL2 checking
 	AM_PATH_SDL2(2.0.0,,)
 
-	with_sdl2=no
 	found_sdl2_mixer=no
 	if test "$SDL2_CONFIG" != "no"; then
 		hold_CPPFLAGS="${CPPFLAGS}"
 		hold_LIBS="${LIBS}"
-		SDL2_CFLAGS=`${SDL2_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL2_CFLAGS}"
-		SDL2_LIBS=`${SDL2_CONFIG} --libs`
 		LIBS="${LIBS} ${SDL2_LIBS}"
 		if test "$enable_sdl2" = "yes"; then
 			AC_CHECK_LIB(SDL2_image, IMG_LoadPNG_RW, with_sdl2=yes, with_sdl2=no)
@@ -409,18 +388,17 @@ if test "$enable_sdl2" = "yes" || test "$enable_sdl2_mixer" = "yes"; then
 		fi
 	fi
 fi
+ENABLESDL2="$with_sdl2"; AC_SUBST(ENABLESDL2)
+with_sdl=no
 if test "$enable_sdl" = "yes" || test "$enable_sdl_mixer" = "yes"; then
 	dnl SDL checking
 	AM_PATH_SDL(1.2.10,,)
 
-	with_sdl=no
 	found_sdl_mixer=no
 	if test "$SDL_CONFIG" != "no"; then
 		hold_CPPFLAGS="${CPPFLAGS}"
 		hold_LIBS="${LIBS}"
-		SDL_CFLAGS=`${SDL_CONFIG} --cflags`
 		CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
-		SDL_LIBS=`${SDL_CONFIG} --libs`
 		LIBS="${LIBS} ${SDL_LIBS}"
 		if test "$enable_sdl" = "yes"; then
 			AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
@@ -447,6 +425,7 @@ if test "$enable_sdl" = "yes" || test "$enable_sdl_mixer" = "yes"; then
 		fi
 	fi
 fi
+ENABLESDL="$with_sdl"; AC_SUBST(ENABLESDL)
 
 dnl Windows checking
 if test "$enable_win" = "yes"; then
@@ -461,9 +440,9 @@ if test "$enable_win" = "yes"; then
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
 dnl Note complete replacement of all main files
 	MAINFILES="\$(WINMAINFILES)"
-	# Set up for Windows-specific behavior in the Makefiles.
-	ENABLEWIN="$enable_win"; AC_SUBST(ENABLEWIN)
 fi
+# Set up for Windows-specific behavior in the Makefiles.
+ENABLEWIN="$enable_win"; AC_SUBST(ENABLEWIN)
 
 
 LIBS="${LIBS} -lm"
@@ -633,12 +612,8 @@ else
 fi
 
 if test "$enable_win" = "yes"; then
-	if test "$with_sdl" = "no"; then
-		echo "- Windows                                 No; missing libraries"
-	else
-		echo "- Windows                                 Yes"
-		local_player_frontends="$local_player_frontends"+
-	fi
+	echo "- Windows                                 Yes"
+	local_player_frontends="$local_player_frontends"+
 else
 	echo "- Windows                                 Disabled"
 fi

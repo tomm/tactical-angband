@@ -97,7 +97,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	/* Use real feature (remove later) */
 	g->f_idx = square(cave, grid)->feat;
 	if (f_info[g->f_idx].mimic)
-		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
+		g->f_idx = (uint32_t) (f_info[g->f_idx].mimic - f_info);
 
 	g->in_view = (square_isseen(cave, grid)) ? true : false;
 	g->is_player = (square(cave, grid)->mon < 0) ? true : false;
@@ -131,7 +131,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	/* Use known feature */
 	g->f_idx = square(player->cave, grid)->feat;
 	if (f_info[g->f_idx].mimic)
-		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
+		g->f_idx = (uint32_t) (f_info[g->f_idx].mimic - f_info);
 
 	/* There is a known trap in this square */
 	if (square_trap(player->cave, grid) && square_isknown(cave, grid)) {
@@ -187,7 +187,7 @@ void map_info(struct loc grid, struct grid_data *g)
 			g->hallucinate = false;
 	}
 
-	assert((int) g->f_idx < z_info->f_max);
+	assert((int) g->f_idx < FEAT_MAX);
 	if (!g->hallucinate)
 		assert((int)g->m_idx < cave->mon_max);
 	/* All other g fields are 'flags', mostly booleans. */
@@ -498,7 +498,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 					struct loc a_grid = loc_sum(grid, ddgrid_ddd[i]);
 
 					/* Perma-darken the grid */
-					sqinfo_off(square(cave, a_grid)->info, SQUARE_GLOW);
+					sqinfo_off(square(c, a_grid)->info, SQUARE_GLOW);
 
 					/* Memorize normal features */
 					if (!square_isfloor(c, a_grid) || 

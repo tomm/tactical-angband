@@ -1284,15 +1284,15 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 		msg("There is a searing blast of light!");
 		equip_learn_element(player, ELEM_LIGHT);
 		if (!player_resists(player, ELEM_LIGHT)) {
-			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
-								   true);
+			(void)player_inc_timed(player, TMD_BLIND,
+				10 + randint1(10), true, true, true);
 		}
 	} else if (elem == ELEM_DARK) {
 		msg("Darkness seems to crush you!");
 		equip_learn_element(player, ELEM_DARK);
 		if (!player_resists(player, ELEM_DARK)) {
-			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
-								   true);
+			(void)player_inc_timed(player, TMD_BLIND,
+				10 + randint1(10), true, true, true);
 		}
 	}
 
@@ -1313,6 +1313,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
  * This is always an effect centred on the player; it is similar to the
  * earthquake effect.
  */
+#if 0
 bool effect_handler_DESTRUCTION_old(effect_handler_context_t *context)
 {
 	int k, r = context->radius;
@@ -1396,15 +1397,15 @@ bool effect_handler_DESTRUCTION_old(effect_handler_context_t *context)
 		msg("There is a searing blast of light!");
 		equip_learn_element(player, ELEM_LIGHT);
 		if (!player_resists(player, ELEM_LIGHT)) {
-			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
-								   true);
+			(void)player_inc_timed(player, TMD_BLIND,
+				10 + randint1(10), true, true, true);
 		}
 	} else if (elem == ELEM_DARK) {
 		msg("Darkness seems to crush you!");
 		equip_learn_element(player, ELEM_DARK);
 		if (!player_resists(player, ELEM_DARK)) {
-			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
-								   true);
+			(void)player_inc_timed(player, TMD_BLIND,
+				10 + randint1(10), true, true, true);
 		}
 	}
 
@@ -1416,6 +1417,7 @@ bool effect_handler_DESTRUCTION_old(effect_handler_context_t *context)
 
 	return true;
 }
+#endif /* 0 */
 
 /**
  * Induce an earthquake of the radius context->radius centred on the instigator.
@@ -1513,7 +1515,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 		}
 	}
 
-	/* First, affect the player (if necessary) */
+	/* First, determine the effects on the player (if necessary) */
 	if (hurt) {
 		/* Check around the player */
 		for (i = 0; i < 8; i++) {
@@ -1570,25 +1572,23 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				case 2: {
 					msg("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)player_inc_timed(player, TMD_STUN, randint1(50),
-										   true, true);
+					(void)player_inc_timed(player, TMD_STUN,
+						randint1(50), true, true, true);
 					break;
 				}
 				case 3: {
 					msg("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)player_inc_timed(player, TMD_STUN, randint1(50),
-										   true, true);
+					(void)player_inc_timed(player, TMD_STUN,
+						randint1(50), true, true, true);
 					break;
 				}
 			}
 
 			/* Move player */
 			monster_swap(pgrid, safe_grid);
+			player_handle_post_move(player, true, true);
 		}
-
-		/* Take some damage */
-		if (damage) take_hit(player, damage, "an earthquake");
 	}
 
 
@@ -1609,6 +1609,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				if (!flags_test(mon->race->flags, RF_SIZE, RF_KILL_WALL,
 								RF_PASS_WALL, FLAG_END)) {
 					char m_name[80];
+					int m_dam;
 
 					/* Assume not safe */
 					safe_grids = 0;
@@ -1647,17 +1648,17 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					msg("%s wails out in pain!", m_name);
 
 					/* Take damage from the quake */
-					damage = (safe_grids ? damroll(4, 8) : (mon->hp + 1));
+					m_dam = (safe_grids ? damroll(4, 8) : (mon->hp + 1));
 
 					/* Monster is certainly awake, not thinking about player */
 					monster_wake(mon, false, 0);
 
 					/* If the quake finished the monster off, show message */
-					if (mon->hp < damage && mon->hp >= 0)
+					if (mon->hp < m_dam && mon->hp >= 0)
 						msg("%s is embedded in the rock!", m_name);
 
 					/* Apply damage directly */
-					mon->hp -= damage;
+					mon->hp -= m_dam;
 
 					/* Delete (not kill) "dead" monsters */
 					if (mon->hp < 0) {
@@ -1704,6 +1705,12 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			}
 		}
 	}
+
+	/*
+	 * Apply damage to player; done here so messages are ordered properly
+	 * if the player dies.
+	 */
+	if (damage) take_hit(player, damage, "an earthquake");
 
 	/* Fully update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1838,10 +1845,11 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 
 	/* Move player */
 	monster_swap(player->grid, grid);
+	player_handle_post_move(player, true, false);
 
 	/* Now bite it */
-	drain = MIN(mon->hp, amount);
-	if (drain == 0) return true;
+	drain = MIN(mon->hp + 1, amount);
+	assert(drain > 0);
 	if (OPT(player, show_damage)) {
 		msg("You bite %s. (%d)", m_name, drain);
 	} else {
@@ -1852,7 +1860,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	/* Heal and nourish */
 	effect_simple(EF_HEAL_HP, context->origin, format("%d", drain), 0, 0, 0,
 				  0, 0, NULL);
-	player_inc_timed(player, TMD_FOOD, MAX(drain, 0), false, false);
+	player_inc_timed(player, TMD_FOOD, drain, false, false, false);
 
 	if (dead) {
 		/* Cancel the targeting of the dead creature. */

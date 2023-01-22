@@ -41,6 +41,8 @@ extern size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
 extern int (*text_wctomb_hook)(char *s, wchar_t wchar);
 extern int (*text_wcsz_hook)(void);
 extern int (*text_iswprint_hook)(wint_t wc);
+extern wchar_t *(*text_wcschr_hook)(const wchar_t *wcs, wchar_t wc);
+extern size_t (*text_wcslen_hook)(const wchar_t *s);
 extern void (*plog_aux)(const char *);
 extern void (*quit_aux)(const char *);
 
@@ -147,6 +149,7 @@ extern bool streq(const char *s, const char *t);
 extern bool prefix(const char *s, const char *t);
 extern bool prefix_i(const char *s, const char *t);
 extern bool suffix(const char *s, const char *t);
+extern bool suffix_i(const char *s, const char *t);
 
 #define streq(s, t)		(!strcmp(s, t))
 
@@ -155,6 +158,11 @@ extern bool suffix(const char *s, const char *t);
  */
 extern void strskip(char *s, const char c, const char e);
 extern void strescape(char *s, const char c);
+
+/**
+ * Get the integer value of a hex string
+ */
+extern int hex_str_to_int(const char *s);
 
 /**
  * Change escaped characters into their literal representation
@@ -191,6 +199,18 @@ int text_wcsz(void);
  * Return whether the given wide character is printable.
  */
 int text_iswprint(wint_t wc);
+
+/**
+ * Return pointer to the first occurrence of wc in the wide-character
+ * string pointed to by wcs, or NULL if wc does not occur in the
+ * string.
+ */
+wchar_t *text_wcschr(const wchar_t *wcs, wchar_t wc);
+
+/**
+ * Return the number of wide characters in s.
+ */
+size_t text_wcslen(const wchar_t *s);
 
 /**
  * Print an error message

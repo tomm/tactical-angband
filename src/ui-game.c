@@ -455,8 +455,12 @@ unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode)
 {
 	unsigned char c = cmd_lookup_key(lookup_cmd, mode);
 
+	/*
+	 * Because UN_KTRL('ctrl-d') (i.e. rogue-like ignore command) gives 'd'
+	 * which is the drop command in both keysets, use UN_KTRL_CAP().
+	 */
 	if (c < 0x20)
-		c = UN_KTRL(c);
+		c = UN_KTRL_CAP(c);
 
 	return c;
 }
@@ -805,7 +809,7 @@ static void select_savefile(bool retry, bool *new_game)
 		assert(allocated > 0 && !entries[0]);
 		if (default_entry && arg_force_name) {
 			/*
-			 * Name set by front end is already in use and name's
+			 * Name set by front end is already in use and names
 			 * are forced so don't allow the new game option.
 			 */
 			int i;
@@ -920,10 +924,10 @@ void play_game(enum game_mode_type mode)
 		cleanup_angband();
 		init_display();
 		init_angband();
-		textui_init();
 		if (reinit_hook != NULL) {
 			(*reinit_hook)();
 		}
+		textui_init();
 		if (mode == GAME_LOAD) {
 			mode = GAME_NEW;
 		}

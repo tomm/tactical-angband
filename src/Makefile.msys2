@@ -27,11 +27,10 @@
 EXE = angband.exe
 all: ../$(EXE)
 
-# Include list of object files and add system-specific ones
+# Include list of object files
 include Makefile.inc
-AINFILES="$(WINMAINFILES)"
 
-CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -DUSE_NCURSES -I$(NCURSES_INC) -static
+CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -DUSE_NCURSES -I$(NCURSES_INC) -static -DNCURSES_STATIC -DMSYS2_ENCODING_WORKAROUND
 LIBS = -s $(NCURSES_LIB)
 IOBJS = $(BASEOBJS) main-gcu.o main.o
 

@@ -131,9 +131,9 @@ static void grid_get_attr(struct grid_data *g, int *a)
 	/* Hybrid or block walls */
 	if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
 		if (OPT(player, hybrid_walls))
-			*a = *a + (MAX_COLORS * BG_DARK);
+			*a = *a + (MULT_BG * BG_DARK);
 		else if (OPT(player, solid_walls))
-			*a = *a + (MAX_COLORS * BG_SAME);
+			*a = *a + (MULT_BG * BG_SAME);
 	}
 }
 
@@ -230,7 +230,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 		if (g->hallucinate) {
 			/* Just pick a random monster to display. */
 			hallucinatory_monster(&a, &c);
-		} else if (!monster_is_mimicking(cave_monster(cave, g->m_idx)))	{
+		} else if (!monster_is_camouflaged(cave_monster(cave, g->m_idx)))	{
 			struct monster *mon = cave_monster(cave, g->m_idx);
 
 			uint8_t da;
@@ -660,12 +660,11 @@ static void prt_map_aux(void)
 				/* Check bounds */
 				if (!square_in_bounds(cave, loc(x, y))) {
 					Term_queue_char(t, vx, vy,
-						t->attr_blank, t->char_blank,
+						COLOUR_WHITE, ' ',
 						0, 0);
 					if (tile_width > 1 || tile_height > 1) {
 						Term_big_queue_char(t, vx, vy,
-							clipy, t->attr_blank,
-							t->char_blank, 0, 0);
+							clipy, COLOUR_WHITE, ' ', 0, 0);
 					}
 					continue;
 				}
@@ -681,15 +680,15 @@ static void prt_map_aux(void)
 			}
 			/* Clear partial tile at the end of each line. */
 			for (; vx < t->wid; ++vx) {
-				Term_queue_char(t, vx, vy, t->attr_blank,
-					t->char_blank, 0, 0);
+				Term_queue_char(t, vx, vy, COLOUR_WHITE,
+					' ', 0, 0);
 			}
 		}
 		/* Clear row of partial tiles at the bottom. */
 		for (; vy < t->hgt; ++vy) {
 			for (vx = 0; vx < t->wid; ++vx) {
-				Term_queue_char(t, vx, vy, t->attr_blank,
-					t->char_blank, 0, 0);
+				Term_queue_char(t, vx, vy, COLOUR_WHITE,
+					' ', 0, 0);
 			}
 		}
 	}

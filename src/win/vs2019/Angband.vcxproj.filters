@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -402,6 +402,9 @@
     <ClCompile Include="src\ui-output.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui-player-properties.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\ui-player.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -657,6 +660,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\list-stats.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\list-terrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\list-terrain-flags.h">
@@ -915,6 +921,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-output.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui-player-properties.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-player.h">
@@ -1181,9 +1190,6 @@
     <None Include="lib\fonts\16x24x.fon">
       <Filter>Resource Files\fonts</Filter>
     </None>
-    <None Include="lib\sounds\sound.cfg">
-      <Filter>Resource Files\sounds</Filter>
-    </None>
     <None Include="lib\tiles\adam-bolt\flvr-new.prf">
       <Filter>Resource Files\tiles\adam-bolt</Filter>
     </None>
@@ -1355,6 +1361,9 @@
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\gamedata\ui_entry_renderer.txt">
+      <Filter>Resource Files\gamedata</Filter>
+    </Text>
+    <Text Include="lib\gamedata\ui_knowledge.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\gamedata\vault.txt">

@@ -184,14 +184,14 @@ AC_ARG_ENABLE(sdl2test, [AS_HELP_STRING([--disable-sdl2test], [do not try to com
   if test "$SDL2_CONFIG" = "no" ; then
     no_sdl2=yes
   else
-    SDL2_CFLAGS=`$SDL2_CONFIG $sdl2conf_args --cflags`
-    SDL2_LIBS=`$SDL2_CONFIG $sdl2conf_args --libs`
+    SDL2_CFLAGS=`$SDL2_CONFIG $sdl2_args --cflags`
+    SDL2_LIBS=`$SDL2_CONFIG $sdl2_args --libs`
 
     sdl2_major_version=`$SDL2_CONFIG $sdl2_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
     sdl2_minor_version=`$SDL2_CONFIG $sdl2_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
-    sdl2_micro_version=`$SDL2_CONFIG $sdl2_config_args --version | \
+    sdl2_micro_version=`$SDL2_CONFIG $sdl2_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
     if test "x$enable_sdl2test" = "xyes" ; then
       ac_save_CFLAGS="$CFLAGS"
@@ -351,14 +351,14 @@ AC_ARG_ENABLE(sdltest, [AS_HELP_STRING([--disable-sdltest], [do not try to compi
   if test "$SDL_CONFIG" = "no" ; then
     no_sdl=yes
   else
-    SDL_CFLAGS=`$SDL_CONFIG $sdlconf_args --cflags`
-    SDL_LIBS=`$SDL_CONFIG $sdlconf_args --libs`
+    SDL_CFLAGS=`$SDL_CONFIG $sdl_args --cflags`
+    SDL_LIBS=`$SDL_CONFIG $sdl_args --libs`
 
     sdl_major_version=`$SDL_CONFIG $sdl_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
     sdl_minor_version=`$SDL_CONFIG $sdl_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
-    sdl_micro_version=`$SDL_CONFIG $sdl_config_args --version | \
+    sdl_micro_version=`$SDL_CONFIG $sdl_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
     if test "x$enable_sdltest" = "xyes" ; then
       ac_save_CFLAGS="$CFLAGS"
@@ -490,8 +490,7 @@ dnl
 AC_DEFUN([AM_PATH_NCURSESW],
 [dnl 
 dnl Get the cflags and libraries from the ncursesw6-config or ncursesw5-config
-dnl script; currently assumes ncursesw5-config with --with-ncurses-prefix
-dnl or --with-ncurses-exec-prefix
+dnl script.
 dnl
 AC_ARG_WITH(ncurses-prefix,[AS_HELP_STRING([--with-ncurses-prefix=PFX], [set prefix where ncurses is installed (optional)])],
             ncurses_prefix="$withval", ncurses_prefix="")
@@ -499,28 +498,29 @@ AC_ARG_WITH(ncurses-exec-prefix,[AS_HELP_STRING([--with-ncurses-exec-prefix=PFX]
             ncurses_exec_prefix="$withval", ncurses_exec_prefix="")
 AC_ARG_ENABLE(ncursestest, [AS_HELP_STRING([--disable-ncursestest], [do not try to compile and run a test ncurses program])],
 		    , enable_ncursestest=yes)
+AC_ARG_VAR([NCURSES_CONFIG], [full path to the script for querying details about how to compile and link with an installed ncurses library])
+
+# Holds variations of the name of the script used to query the ncurses
+# installation.
+ncurses_config_progs="ncursesw6-config ncursesw5-config"
 
   if test x$ncurses_exec_prefix != x ; then
-     ncurses_args="$ncurses_args --exec-prefix=$ncurses_exec_prefix"
-     if test x${NCURSES_CONFIG+set} != xset ; then
-        NCURSES_CONFIG=$ncurses_exec_prefix/bin/ncursesw5-config
-     fi
+     AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no],
+        [$ncurses_exec_prefix/bin])
   fi
   if test x$ncurses_prefix != x ; then
-     ncurses_args="$ncurses_args --prefix=$ncurses_prefix"
-     if test x${NCURSES_CONFIG+set} != xset ; then
-        NCURSES_CONFIG=$ncurses_prefix/bin/ncursesw5-config
-     fi
+     AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no],
+        [$ncurses_prefix/bin])
   fi
 
-  AC_PATH_PROGS([NCURSES_CONFIG], [ncursesw6-config ncursesw5-config], [no])
+  AC_PATH_PROGS([NCURSES_CONFIG], [$ncurses_config_progs], [no])
   AC_MSG_CHECKING([for ncurses - wide char support])
   no_ncurses=""
   if test "$NCURSES_CONFIG" = "no" ; then
     no_ncurses=yes
   else
-    NCURSES_CFLAGS=`$NCURSES_CONFIG $ncurses_args --cflags`
-    NCURSES_LIBS=`$NCURSES_CONFIG $ncurses_args --libs`
+    NCURSES_CFLAGS=`$NCURSES_CONFIG --cflags`
+    NCURSES_LIBS=`$NCURSES_CONFIG --libs`
 
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"

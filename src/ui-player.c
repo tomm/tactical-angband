@@ -30,6 +30,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
+#include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-entry.h"
 #include "ui-entry-renderers.h"
@@ -358,16 +359,17 @@ static void display_player_equippy(int y, int x)
 		/* Object */
 		obj = slot_object(player, i);
 
-		/* Skip empty objects */
-		if (!obj) continue;
-
-		/* Get attr/char for display */
-		a = object_attr(obj);
-		c = object_char(obj);
+		/* Get attr/char for display; clear if big tiles or no object */
+		if (obj && tile_width == 1 && tile_height == 1) {
+			a = object_attr(obj);
+			c = object_char(obj);
+		} else {
+			a = COLOUR_WHITE;
+			c = L' ';
+		}
 
 		/* Dump */
-		if ((tile_width == 1) && (tile_height == 1))
-		        Term_putch(x + i, y, a, c);
+		Term_putch(x + i, y, a, c);
 	}
 }
 
@@ -394,7 +396,7 @@ static void display_resistance_panel(int ipart, struct char_sheet_config *config
 	/* Equippy */
 	display_player_equippy(row++, col + config->res_nlabel);
 
-	Term_putstr(col, row++, config->res_cols, COLOUR_WHITE, "      abcdefghijkl@");
+	Term_putstr(col, row++, config->res_cols, COLOUR_WHITE, "      abcdefgimnop@");
 	render_details.label_position.x = col;
 	render_details.value_position.x = col + config->res_nlabel;
 	render_details.position_step = loc(1, 0);
@@ -537,7 +539,7 @@ static void display_player_sust_info(struct char_sheet_config *config)
 	col = 26;
 
 	/* Header */
-	c_put_str(COLOUR_WHITE, "abcdefghijkl@", row - 1, col);
+	c_put_str(COLOUR_WHITE, "abcdefgimnop@", row - 1, col);
 
 	render_details.label_position.x = col + player->body.count + 5;
 	render_details.value_position.x = col;
@@ -918,7 +920,7 @@ void write_character_dump(ang_file *fff)
 	int a;
 	wchar_t c;
 
-	struct store *home = &stores[STORE_HOME];
+	struct store *home = &stores[f_info[FEAT_HOME].shopnum - 1];
 	struct object **home_list = mem_zalloc(sizeof(struct object *) *
 										   z_info->store_inven_max);
 	char o_name[80];
@@ -973,7 +975,7 @@ void write_character_dump(ang_file *fff)
 	display_player(1);
 
 	/* Print a header */
-	file_putf(fff, format("%-20s%s\n", "Resistances", "Abilities"));
+	file_putf(fff, "%-20s%s\n", "Resistances", "Abilities");
 
 	/* Dump part of the screen */
 	ylim = ((cached_config->n_resist_by_region[0] >
@@ -1011,7 +1013,7 @@ void write_character_dump(ang_file *fff)
 	file_putf(fff, "\n");
 
 	/* Print a header */
-	file_putf(fff, format("%-20s%s\n", "Hindrances", "Modifiers"));
+	file_putf(fff, "%-20s%s\n", "Hindrances", "Modifiers");
 
 	/* Dump part of the screen */
 	ylim = ((cached_config->n_resist_by_region[2] >

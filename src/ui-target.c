@@ -178,7 +178,7 @@ void target_display_help(bool monster, bool object, bool free)
 			label[1] = '\0';
 		}
 		text_out(" '");
-		text_out_c(COLOUR_L_GREEN, label);
+		text_out_c(COLOUR_L_GREEN, "%s", label);
 		text_out("' ignores selection.");
 	}
 
@@ -308,7 +308,7 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 				ODESC_PREFIX | ODESC_FULL, p);
 
 			/* Describe the object */
-			if (player->wizard) {
+			if (p->wizard) {
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
 						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
 						o_name, coords, y, x, (int)cave->noise.grids[y][x],
@@ -342,6 +342,8 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 static bool aux_reinit(struct chunk *c, struct player *p,
 		struct target_aux_state *auxst)
 {
+	struct monster *mon;
+
 	/* Set the default event to focus on the player. */
 	auxst->press.type = EVT_KBRD;
 	auxst->press.key.code = 'p';
@@ -359,7 +361,17 @@ static bool aux_reinit(struct chunk *c, struct player *p,
 		auxst->phrase2 = "on ";
 	} else {
 		/* Default */
-		auxst->phrase1 = "You see ";
+		if (square_isseen(c, auxst->grid)) {
+			auxst->phrase1 = "You see ";
+		} else {
+			mon = square_monster(c, auxst->grid);
+			if (mon && monster_is_obvious(mon)) {
+				/* Monster is visible because of detection or telepathy */
+				auxst->phrase1 = "You sense ";
+			} else {
+				auxst->phrase1 = "You recall ";
+			}
+		}
 		auxst->phrase2 = "";
 	}
 
@@ -599,10 +611,10 @@ static bool aux_trap(struct chunk *c, struct player *p,
 	char out_val[TARGET_OUT_VAL_SIZE];
 	const char *lphrase3;
 
-	if (!square_isvisibletrap(c, auxst->grid)) return false;
+	if (!square_isvisibletrap(p->cave, auxst->grid)) return false;
 
 	/* A trap */
-	trap = square(c, auxst->grid)->trap;
+	trap = square(p->cave, auxst->grid)->trap;
 
 	/* Not boring */
 	auxst->boring = false;
@@ -671,8 +683,7 @@ static bool aux_object(struct chunk *c, struct player *p,
 
 	/* Scan all sensed objects in the grid */
 	floor_num = scan_distant_floor(floor_list, floor_max, p, auxst->grid);
-	if (floor_num <= 0 || (p->timed[TMD_BLIND]
-			&& !loc_eq(auxst->grid, p->grid))) {
+	if (floor_num <= 0) {
 		mem_free(floor_list);
 		return result;
 	}
@@ -800,16 +811,16 @@ static bool aux_terrain(struct chunk *c, struct player *p,
 		return false;
 
 	/* Terrain feature if needed */
-	name = square_apparent_name(c, p, auxst->grid);
+	name = square_apparent_name(p->cave, auxst->grid);
 
 	/* Hack -- handle unknown grids */
 
 	/* Pick a preposition if needed */
 	lphrase2 = (*auxst->phrase2) ?
-		square_apparent_look_in_preposition(c, p, auxst->grid) : "";
+		square_apparent_look_in_preposition(p->cave, auxst->grid) : "";
 
 	/* Pick prefix for the name */
-	lphrase3 = square_apparent_look_prefix(c, p, auxst->grid);
+	lphrase3 = square_apparent_look_prefix(p->cave, auxst->grid);
 
 	/* Display a message */
 	if (p->wizard) {
@@ -947,8 +958,6 @@ void textui_target_closest(void)
 		Term_get_cursor(&visibility);
 		(void)Term_set_cursor(true);
 		move_cursor_relative(target.y, target.x);
-		Term_redraw_section(target.y, target.x, target.y, target.x);
-
 		/* TODO: what's an appropriate amount of time to spend highlighting */
 		Term_xtra(TERM_XTRA_DELAY, 150);
 		(void)Term_set_cursor(visibility);
@@ -1021,11 +1030,27 @@ static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
 			colour = COLOUR_L_DARK;
 		} else if (mon && monster_is_visible(mon)) {
 			/* Mimics act as objects */
-			if (monster_is_camouflaged(mon)) 
+			if (monster_is_mimicking(mon)) {
 				colour = COLOUR_YELLOW;
-			else
+			} else if (!monster_is_camouflaged(mon)) {
 				/* Visible monsters are red. */
 				colour = COLOUR_L_RED;
+			} else if (obj) {
+				/*
+				 * The camouflaged monster is on a grid with
+				 * an object; make it act like an object.
+				 */
+				colour = COLOUR_YELLOW;
+			} else if (!square_isprojectable(cave, grid)) {
+				/* The camouflaged monster looks like a wall. */
+				colour = COLOUR_BLUE;
+			} else {
+				/*
+				 * The camouflaged monster looks like an
+				 * unoccupied square.
+				 */
+				colour = COLOUR_WHITE;
+			}
 		} else if (obj)
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;

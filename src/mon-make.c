@@ -343,7 +343,7 @@ void delete_monster_idx(int m_idx)
 
 	/* Hack -- remove any command status */
 	if (mon->m_timed[MON_TMD_COMMAND]) {
-		(void) player_clear_timed(player, TMD_COMMAND, true);
+		(void) player_clear_timed(player, TMD_COMMAND, true, true);
 	}
 
 	/* Monster is gone from square and group */
@@ -1121,7 +1121,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 		return false;
 
 	/* Add to level feeling, note uniques for cheaters */
-	c->mon_rating += race->level * race->level;
+	add_to_monster_rating(c, race->level * race->level);
 
 	/* Check out-of-depth-ness */
 	if (race->level > c->depth) {
@@ -1133,7 +1133,8 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 				msg("Deep monster (%s).", race->name);
 		}
 		/* Boost rating by power per 10 levels OOD */
-		c->mon_rating += (race->level - c->depth) * race->level * race->level;
+		add_to_monster_rating(c, (race->level - c->depth) * race->level
+			* race->level);
 	} else if (rf_has(race->flags, RF_UNIQUE) && OPT(player, cheat_hear)) {
 		msg("Unique (%s).", race->name);
 	}
@@ -1485,16 +1486,16 @@ bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 
 /**
  * Picks a monster race, makes a new monster of that race, then attempts to
- * place it in the dungeon at least `dis` away from the player. The monster
- * race chosen will be appropriate for dungeon level equal to `depth`.
+ * place it in the dungeon at least `dis` away from the grid, to_avoid. The
+ * monster race chosen will be appropriate for dungeon level equal to `depth`.
  *
  * If `sleep` is true, the monster is placed with its default sleep value,
  * which is given in monster.txt.
  *
  * Returns true if we successfully place a monster.
  */
-bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
-		bool sleep, int depth)
+bool pick_and_place_distant_monster(struct chunk *c, struct loc to_avoid,
+		int dis, bool sleep, int depth)
 {
 	struct loc grid;
 	int	attempts_left = 10000;
@@ -1514,11 +1515,11 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 			continue;
 
 		/* Accept far away grids */
-		if (distance(grid, p->grid) > dis) break;
+		if (distance(grid, to_avoid) > dis) break;
 	}
 
 	if (!attempts_left) {
-		if (OPT(p, cheat_xtra) || OPT(p, cheat_hear))
+		if (OPT(player, cheat_xtra) || OPT(player, cheat_hear))
 			msg("Warning! Could not allocate a new monster.");
 
 		return false;
@@ -1530,6 +1531,20 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 
 	/* Nope */
 	return (false);
+}
+
+/**
+ * Add to the monster rating for the given chunk.
+ *
+ * \param c is the chunk to manipulate
+ * \param part is the amount to add to the rating.
+ */
+void add_to_monster_rating(struct chunk *c, uint32_t part) {
+	if (c->mon_rating < UINT32_MAX - part) {
+		c->mon_rating += part;
+	} else {
+		c->mon_rating = UINT32_MAX;
+	}
 }
 
 struct init_module mon_make_module = {

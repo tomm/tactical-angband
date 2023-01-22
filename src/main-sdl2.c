@@ -44,8 +44,12 @@
 	ANGBAND_TERM_MAX
 /* that should be plenty... */
 #define MAX_WINDOWS 4
-#define MAX_FONTS 128
 #define MAX_BUTTONS 32
+/*
+ * Since font selection goes through a menu panel with MAX_BUTTONS, there's
+ * no point to having any more than can be selected with that menu.
+ */
+#define MAX_FONTS (MAX_BUTTONS)
 
 #define INIT_SDL_FLAGS \
 	(SDL_INIT_VIDEO)
@@ -59,10 +63,6 @@
 /* size of the keypress queue (term->key_queue) */
 #define SUBWINDOW_KEYQ_SIZE(subwindow_ptr) \
 	((subwindow_ptr)->index == MAIN_SUBWINDOW ? 1024 : 32)
-
-#define DEFAULT_ATTR_BLANK \
-	COLOUR_WHITE
-#define DEFAULT_CHAR_BLANK ' '
 
 #define DEFAULT_DISPLAY 0
 
@@ -413,6 +413,7 @@ struct menu_elem {
 	struct button_data data;
 	button_render on_render;
 	button_menu on_menu;
+	bool disabled;
 };
 
 struct button_callbacks {
@@ -426,6 +427,10 @@ struct button_callbacks {
 };
 
 struct button {
+	/* disabled, if true, means that the on_event or on_menu callbacks
+	 * won't be invoked and the button will be drawn with an altered
+	 * appearance to indicate that it currently doesn't do anything. */
+	bool disabled;
 	/* selected means the user pointed at button and
 	 * pressed mouse button (but not released yet) */
 	bool selected;
@@ -503,6 +508,11 @@ struct wallpaper {
 	enum wallpaper_mode mode;
 };
 
+struct stipple {
+	int w, h;
+	SDL_Texture *texture;
+};
+
 /* struct window is a real window on screen, it has one or more
  * subwindows (terms) in it */
 struct window {
@@ -544,6 +554,7 @@ struct window {
 	int pixelformat;
 
 	struct wallpaper wallpaper;
+	struct stipple stipple;
 	struct move_state move_state;
 	struct size_state size_state;
 	struct status_bar status_bar;
@@ -705,6 +716,39 @@ static void render_background(const struct window *window)
 	}
 }
 
+static void stipple_button(const struct window *window,
+		const struct button *button, SDL_Texture *dst_texture)
+{
+	SDL_Rect srect = { 0, 0, 0, 0 }, drect;
+	int ylim = button->full_rect.y + button->full_rect.h;
+	int xlim = button->full_rect.x + button->full_rect.w;
+
+	if (!window->stipple.texture) {
+		return;
+	}
+	SDL_SetRenderTarget(window->renderer, dst_texture);
+	for (drect.y = button->full_rect.y; drect.y < ylim;
+			drect.y += window->stipple.h) {
+		if (drect.y + window->stipple.h > ylim) {
+			drect.h = ylim - drect.y;
+		} else {
+			drect.h = window->stipple.h;
+		}
+		srect.h = drect.h;
+		for (drect.x = button->full_rect.x; drect.x < xlim;
+				drect.x += window->stipple.w) {
+			if (drect.x + window->stipple.w > xlim) {
+				drect.w = xlim - drect.x;
+			} else {
+				drect.w = window->stipple.w;
+			}
+			srect.w = drect.w;
+			SDL_RenderCopy(window->renderer,
+				window->stipple.texture, &srect, &drect);
+		}
+	}
+}
+
 static void render_all(const struct window *window)
 {
 	render_background(window);
@@ -730,6 +774,10 @@ static void render_status_bar(const struct window *window)
 		struct button *button = &window->status_bar.button_bank.buttons[i];
 		if (button->callbacks.on_render != NULL) {
 			button->callbacks.on_render(window, button);
+		}
+		if (button->disabled) {
+			stipple_button(window, button,
+				window->status_bar.texture);
 		}
 	}
 }
@@ -876,7 +924,7 @@ static void render_glyph_mono(const struct window *window,
 		const struct font *font, SDL_Texture *dst_texture,
 		int x, int y, const SDL_Color *fg, uint32_t codepoint)
 {
-	if (codepoint == DEFAULT_CHAR_BLANK) {
+	if (codepoint == ' ') {
 		return;
 	}
 
@@ -944,7 +992,7 @@ static void render_grid_cell_text(const struct subwindow *subwindow,
 	SDL_Color fg = g_colors[a % MAX_COLORS];
 	SDL_Color bg;
 
-	switch (ta / MAX_COLORS) {
+	switch (ta / MULT_BG) {
 		case BG_BLACK:
 			bg = subwindow->color;
 			break;
@@ -1127,6 +1175,9 @@ static void render_menu_panel(const struct window *window, struct menu_panel *me
 
 		assert(button->callbacks.on_render != NULL);
 		button->callbacks.on_render(window, button);
+		if (button->disabled) {
+			stipple_button(window, button, NULL);
+		}
 	}
 	render_outline_rect(window,
 			NULL, &menu_panel->rect, &g_colors[DEFAULT_MENU_PANEL_OUTLINE_COLOR]);
@@ -1290,11 +1341,7 @@ static void render_button_menu_tile_size(const struct window *window,
 	SDL_Color fg;
 	SDL_Color *bg;
 
-	if (window->graphics.id != GRAPHICS_NONE) {
-		fg = g_colors[DEFAULT_MENU_TOGGLE_FG_ACTIVE_COLOR];
-	} else {
-		fg = g_colors[DEFAULT_MENU_TOGGLE_FG_INACTIVE_COLOR];
-	}
+	fg = g_colors[DEFAULT_MENU_TOGGLE_FG_ACTIVE_COLOR];
 	if (button->highlighted) {
 		bg = &g_colors[DEFAULT_MENU_BG_ACTIVE_COLOR];
 	} else {
@@ -1695,7 +1742,7 @@ static bool handle_button_movesize(struct window *window,
 }
 
 static void push_button(struct button_bank *bank, struct font *font,
-		const char *caption, struct button_data data, struct button_callbacks callbacks,
+		const char *caption, bool disabled, struct button_data data, struct button_callbacks callbacks,
 		const SDL_Rect *rect, enum button_caption_position position)
 {
 	assert(bank->number < bank->size);
@@ -1737,6 +1784,7 @@ static void push_button(struct button_bank *bank, struct font *font,
 
 	button->callbacks = callbacks;
 	button->data = data;
+	button->disabled = disabled;
 	button->highlighted = false;
 	button->selected = false;
 
@@ -1794,6 +1842,7 @@ static struct menu_panel *make_menu_panel(const struct button *origin,
 		push_button(&menu_panel->button_bank,
 				font,
 				elems[i].caption,
+				elems[i].disabled,
 				elems[i].data,
 				callbacks,
 				&rect,
@@ -1908,6 +1957,7 @@ static void handle_menu_windows(struct window *window,
 		elems[i].data.value.unsigned_value = i;
 		elems[i].on_render = render_button_menu_window;
 		elems[i].on_menu = handle_menu_window;
+		elems[i].disabled = false;
 	}
 
 	load_next_menu_panel(window, menu_panel, button, N_ELEMENTS(elems), elems);
@@ -2038,6 +2088,13 @@ static void handle_menu_tile_sizes(struct window *window,
 		return;
 	}
 
+	/*
+	 * Disable the menu entries to change the tile multipliers if not
+	 * using tiles or if not at a command prompt in game (the latter
+	 * avoids multiplier changes causing blank screens in in-game menus
+	 * or display artifacts when the in-game menu is dismissed sometime
+	 * after the multiplier change).
+	 */
 	struct menu_elem elems[] = {
 		{
 			"< Tile width  %d >",
@@ -2046,7 +2103,9 @@ static void handle_menu_tile_sizes(struct window *window,
 				{.int_value = BUTTON_TILE_SIZE_WIDTH},
 			},
 			render_button_menu_tile_size,
-			handle_menu_tile_size
+			handle_menu_tile_size,
+			window->graphics.id == GRAPHICS_NONE
+				|| !character_generated || !inkey_flag
 		},
 		{
 			"< Tile height %d >",
@@ -2055,7 +2114,9 @@ static void handle_menu_tile_sizes(struct window *window,
 				{.int_value = BUTTON_TILE_SIZE_HEIGHT},
 			},
 			render_button_menu_tile_size,
-			handle_menu_tile_size
+			handle_menu_tile_size,
+			window->graphics.id == GRAPHICS_NONE
+				|| !character_generated || !inkey_flag
 		}
 	};
 
@@ -2073,6 +2134,15 @@ static void handle_menu_tile_sets(struct window *window,
 	}
 
 	size_t num_elems = 0;
+	/*
+	 * Only allow changes to the graphics mode when at a command prompt
+	 * in game.  Could also allow while at the splash screen, but that
+	 * isn't possible to test for with character_generated and
+	 * character_dungeon.  In other situations, the saved screens for
+	 * overlayed menus could have tile references that become outdated
+	 * when the graphics mode is changed.
+	 */
+	bool disabled = !character_generated || !inkey_flag;
 	struct menu_elem *elems;
 
 	graphics_mode *mode = graphics_modes;
@@ -2090,7 +2160,7 @@ static void handle_menu_tile_sets(struct window *window,
 		elems[i].data.value.int_value = mode->grafID;
 		elems[i].on_render = render_button_menu_tile_set;
 		elems[i].on_menu = handle_menu_tile_set;
-
+		elems[i].disabled = disabled;
 		mode = mode->pNext;
 	}
 
@@ -2114,8 +2184,20 @@ static void handle_menu_tiles(struct window *window,
 	};
 
 	struct menu_elem elems[] = {
-		{"Set", data, render_button_menu_simple, handle_menu_tile_sets},
-		{"Size", data, render_button_menu_simple, handle_menu_tile_sizes}
+		{
+			"Set",
+			data,
+			render_button_menu_simple,
+			handle_menu_tile_sets,
+			false
+		},
+		{
+			"Size",
+			data,
+			render_button_menu_simple,
+			handle_menu_tile_sizes,
+			false
+		}
 	};
 
 	load_next_menu_panel(window, menu_panel, button, N_ELEMENTS(elems), elems);
@@ -2241,7 +2323,13 @@ static void handle_menu_font_sizes(struct window *window,
 			{.subwindow = subwindow, .index = subwindow->font->index, .size_ok = true}},
 	};
 	struct menu_elem elems[] = {
-		{"< %2d points >", data, render_button_menu_font_size, handle_menu_font_size}
+		{
+			"< %2d points >",
+			data,
+			render_button_menu_font_size,
+			handle_menu_font_size,
+			false
+		}
 	};
 
 	load_next_menu_panel(window, menu_panel, button, N_ELEMENTS(elems), elems);
@@ -2269,6 +2357,7 @@ static void handle_menu_font_names(struct window *window,
 			elems[num_elems].data.value.font_value.index = i;
 			elems[num_elems].on_render = render_button_menu_font_name;
 			elems[num_elems].on_menu = handle_menu_font_name;
+			elems[num_elems].disabled = false;
 			num_elems++;
 		}
 	}
@@ -2297,10 +2386,12 @@ static void handle_menu_purpose(struct window *window,
 	{
 		elems[num_elems].caption = window_flag_desc[num_elems];
 		elems[num_elems].data.value.term_flag_value.subwindow = subwindow;
-		elems[num_elems].data.value.term_flag_value.flag = 1L << num_elems;
+		elems[num_elems].data.value.term_flag_value.flag =
+			((uint32_t) 1) << num_elems;
 		elems[num_elems].data.type = BUTTON_DATA_TERM_FLAG;
 		elems[num_elems].on_render = render_button_menu_pw;
 		elems[num_elems].on_menu = handle_menu_pw;
+		elems[num_elems].disabled = false;
 		num_elems++;
 	}
 
@@ -2322,8 +2413,20 @@ static void handle_menu_font(struct window *window,
 	};
 
 	struct menu_elem elems[] = {
-		{"Name", data, render_button_menu_simple, handle_menu_font_names},
-		{"Size", data, render_button_menu_simple, handle_menu_font_sizes}
+		{
+			"Name",
+			data,
+			render_button_menu_simple,
+			handle_menu_font_names,
+			false
+		},
+		{
+			"Size",
+			data,
+			render_button_menu_simple,
+			handle_menu_font_sizes,
+			false
+		}
 	};
 
 	load_next_menu_panel(window, menu_panel, button, N_ELEMENTS(elems), elems);
@@ -2389,6 +2492,7 @@ static void handle_menu_alpha(struct window *window,
 		elems[i].data.value.alpha_value.show_value = i * DEFAULT_ALPHA_STEP;
 		elems[i].on_render = render_button_menu_alpha;
 		elems[i].on_menu = handle_menu_subwindow_alpha;
+		elems[i].disabled = false;
 	}
 	elems[N_ELEMENTS(elems) - 1].data.value.alpha_value.real_value =
 		DEFAULT_ALPHA_FULL;
@@ -2431,25 +2535,46 @@ static void handle_menu_terms(struct window *window,
 
 	struct menu_elem elems[] = {
 		{
-			"Font", data, render_button_menu_simple, handle_menu_font
+			"Font",
+			data,
+			render_button_menu_simple,
+			handle_menu_font,
+			false
 		},
 		{
 			subwindow->index == MAIN_SUBWINDOW ? "Tiles" : NULL,
-			data, render_button_menu_simple, handle_menu_tiles
+			data,
+			render_button_menu_simple,
+			handle_menu_tiles,
+			false
 		},
 		{
 			subwindow->index == MAIN_SUBWINDOW ? NULL: "Purpose",
-			data, render_button_menu_simple, handle_menu_purpose
+			data,
+			render_button_menu_simple,
+			handle_menu_purpose,
+			false
 		},
 		{
 			subwindow->index == MAIN_SUBWINDOW ? NULL : "Alpha",
-			data, render_button_menu_simple, handle_menu_alpha
+			data,
+			render_button_menu_simple,
+			handle_menu_alpha,
+			false
 		},
 		{
-			"Borders", data, render_button_menu_borders, handle_menu_borders
+			"Borders",
+			data,
+			render_button_menu_borders,
+			handle_menu_borders,
+			false
 		},
 		{
-			"Top", data, render_button_menu_top, handle_menu_top
+			"Top",
+			data,
+			render_button_menu_top,
+			handle_menu_top,
+			false
 		}
 	};
 
@@ -2475,6 +2600,7 @@ static void load_main_menu_panel(struct status_bar *status_bar)
 		term_elems[n_terms].data.value.subwindow_value = subwindow;
 		term_elems[n_terms].on_render = render_button_menu_terms;
 		term_elems[n_terms].on_menu = handle_menu_terms;
+		term_elems[n_terms].disabled = false;
 		n_terms++;
 	}
 
@@ -2482,23 +2608,40 @@ static void load_main_menu_panel(struct status_bar *status_bar)
 	struct menu_elem other_elems[] = {
 		{
 			"Fullscreen",
-			data, render_button_menu_fullscreen, handle_menu_fullscreen
+			data,
+			render_button_menu_fullscreen,
+			handle_menu_fullscreen,
+			false,
 		},
 		{
-			status_bar->window->index == MAIN_WINDOW ? "Send Keypad Modifier" : NULL,
-			data, render_button_menu_kp_mod, handle_menu_kp_mod
+			status_bar->window->index == MAIN_WINDOW ?
+				"Send Keypad Modifier" : NULL,
+			data,
+			render_button_menu_kp_mod,
+			handle_menu_kp_mod,
+			false
 		},
 		{
-			status_bar->window->index == MAIN_WINDOW ? "Windows" : NULL,
-			data, render_button_menu_simple, handle_menu_windows
+			status_bar->window->index == MAIN_WINDOW ?
+				"Windows" : NULL,
+			data,
+			render_button_menu_simple,
+			handle_menu_windows,
+			false
 		},
 		{
 			"About",
-			data, render_button_menu_simple, handle_menu_about
+			data,
+			render_button_menu_simple,
+			handle_menu_about,
+			false
 		},
 		{
 			"Quit", 
-			data, render_button_menu_simple, handle_menu_quit
+			data,
+			render_button_menu_simple,
+			handle_menu_quit,
+			false
 		}
 	};
 
@@ -2569,10 +2712,11 @@ static bool handle_menu_event(struct window *window, const SDL_Event *event)
 			button->highlighted = true;
 
 			assert(button->callbacks.on_menu != NULL);
-			button->callbacks.on_menu(window, button, event, menu_panel);
-
-			handled = true;
-
+			if (!button->disabled) {
+				button->callbacks.on_menu(window, button,
+					event, menu_panel);
+				handled = true;
+			}
 		} else {
 			button->highlighted = false;
 			/* but we do unset selected */
@@ -3078,7 +3222,10 @@ static bool handle_status_bar_buttons(struct window *window,
 	for (size_t i = 0; i < window->status_bar.button_bank.number; i++) {
 		struct button *button = &window->status_bar.button_bank.buttons[i];
 		assert(button->callbacks.on_event != NULL);
-		handled |= button->callbacks.on_event(window, button, event);
+		if (!button->disabled) {
+			handled |= button->callbacks.on_event(window, button,
+				event);
+		}
 	}
 
 	return handled;
@@ -3554,6 +3701,7 @@ static bool handle_text_input(const SDL_TextInputEvent *input)
 			case '-':
 			case '+':
 			case '.':
+			case '=':
 				return false;
 		}
 	}
@@ -3829,7 +3977,7 @@ static errr term_text_hook(int col, int row, int n, int a, const wchar_t *s)
 	SDL_Color fg = g_colors[a % MAX_COLORS];
 	SDL_Color bg;
 
-	switch (a / MAX_COLORS) {
+	switch (a / MULT_BG) {
 		case BG_BLACK:
 			bg = subwindow->color;
 			break;
@@ -3876,6 +4024,14 @@ static errr term_pict_hook(int col, int row, int n,
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
 
+	if (!current_graphics_mode || current_graphics_mode->grafID == GRAPHICS_NONE) {
+		/*
+		 * Do nothing unsuccessfully if asked to draw a tile while
+		 * they're not enabled.  Could proceed in this function
+		 * with no apparent ill effects, but that just wastes time.
+		 */
+		return -1;
+	}
 	assert(subwindow->window->graphics.texture != NULL);
 
 	if (subwindow->window->graphics.overdraw_row) {
@@ -4042,6 +4198,221 @@ static void term_view_map_hook(term *terminal)
 	}
 }
 
+#ifdef MSYS2_ENCODING_WORKAROUND
+/*
+ * Override the default character encoding in MSYS2 for better handling in
+ * term_text_hook() of characters that don't fall in the ASCII range.  See
+ * init_sdl2() for more details about the default character encoding in MSYS2.
+ */
+
+/**
+ * Convert UTF-8 to UTF-16 with each UTF-16 in the native byte order and
+ * lossily change any code point that requires a surrogate pair to U+FFFD.
+ * Return the total number of code points that would be generated by
+ * converting the * UTF-8 input.
+ *
+ * \param dest Points to the buffer in which to store the conversion.  May be
+ * NULL.
+ * \param src Is a null-terminated UTF-8 sequence.
+ * \param n Is the maximum number of code points to store in dest.
+ *
+ * In case of malformed UTF-8, inserts a U+FFFD in the converted output at the
+ * point of the error.
+ */
+static size_t term_mbcs_sdl2_msys2(wchar_t *dest, const char *src, int n)
+{
+	size_t nout = (n > 0) ? n : 0;
+	size_t count = 0;
+
+	while (1) {
+		/*
+		 * Default to U+FFFD to indicate an erroneous UTF-8 sequence
+		 * that could not be decoded.  Follow "best practice"
+		 * recommended by the Unicode 6 standard:  an erroneous
+		 * sequence ends as soon as a disallowed byte is encountered.
+		 */
+		uint32_t decoded = 0xfffd;
+
+		if (((unsigned int) *src & 0x80) == 0) {
+			/*
+			 * Encoded as a single byte:  U+0000 to U+007F ->
+			 * 0xxxxxxx.
+			 */
+			if (*src == 0) {
+				if (dest && count < nout) {
+					dest[count] = 0;
+				}
+				break;
+			}
+			decoded = *src;
+			++src;
+		} else if (((unsigned int) *src & 0xe0) == 0xc0) {
+			/*
+			 * Encoded as two bytes:  U+0080 to U+07FF ->
+			 * 110xxxxx 10xxxxxx.
+			 */
+			uint32_t part = ((uint32_t) *src & 0x1f) << 6;
+
+			++src;
+			/*
+			 * Check that the first two bits of the continuation
+			 * byte are valid and the encoding is not overlong.
+			 */
+			if (((unsigned int) *src & 0xc0) == 0x80
+					&& part > 0x40) {
+				decoded = part + ((uint32_t) *src & 0x3f);
+				++src;
+			}
+		} else if (((unsigned int) *src & 0xf0) == 0xe0) {
+			/*
+			 * Encoded as three bytes:  U+0800 to U+FFFF ->
+			 * 1110xxxx 10xxxxxx 10xxxxxx.
+			 */
+			uint32_t part = ((uint32_t) *src & 0xf) << 12;
+
+			++src;
+			if (((unsigned int) *src & 0xc0) == 0x80) {
+				part += ((uint32_t) *src & 0x3f) << 6;
+				++src;
+				/*
+				 * The second part of the test rejects
+				 * overlong encodings.  The third part
+				 * rejects encodings of U+D800 to U+DFFF,
+				 * reserved for surrogate pairs.
+				 */
+				if (((unsigned int) *src & 0xc0) == 0x80
+						&& part >= 0x800
+						&& (part & 0xf800) != 0xd800) {
+					decoded = part
+						+ ((uint32_t) *src & 0x3f);
+					++src;
+				}
+			}
+		} else if (((unsigned int) *src & 0xf8) == 0xf0) {
+			/*
+			 * Encoded as four bytes:  U+10000 to U+1FFFFF ->
+			 * 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx.
+			 */
+			uint32_t part = ((uint32_t) *src & 0x7) << 18;
+
+			++src;
+			if (((unsigned int) *src & 0xc0) == 0x80) {
+				part += ((uint32_t) * src & 0x3f) << 12;
+				++src;
+				/*
+				 * The second part of the test rejects
+				 * overlong encodings.  The third part
+				 * rejects code points beyond U+10FFFF which
+				 * can't be encoded in UTF-16.
+				 */
+				if (((unsigned int) *src & 0xc0) == 0x80
+						&& part >= 0x10000
+						&& (part & 0xff0000)
+						<= 0x100000) {
+					part += ((uint32_t) *src & 0x3f) << 6;
+					++src;
+					if (((unsigned int) *src & 0xc0)
+							== 0x80) {
+						decoded = part
+							+ ((uint32_t) *src
+							& 0x3f);
+						++src;
+					}
+				}
+			}
+		} else {
+			/*
+			 * Either an impossible byte or one that signals the
+			 * start of a five byte or longer encoding.
+			 */
+			++src;
+		}
+		if (dest && count < nout) {
+			if (decoded >= 0x10000) {
+				/*
+				 * Would require a surrogate pair to represent
+				 * accurately.  Substitute U+FFFD instead.
+				 */
+				assert(decoded <= 0x10FFFF);
+				dest[count] = (wchar_t) 0xfffd;
+			} else {
+				/*
+				 * By the decoding logic, the decoded value
+				 * should not match part of surrogate pair.
+				 */
+				assert(decoded < 0xd800 || decoded > 0xdfff);
+				dest[count] = (wchar_t) decoded;
+			}
+		}
+		++count;
+	}
+	return count;
+}
+
+/**
+ * Convert a UTF-16 stored in the native byte order to UTF-8.
+ * \param s Points to the buffer where the conversion should be stored.
+ * That buffer must have at least term_wcsz_sdl2_msys2() bytes.
+ * \param wchar Is the UTF-16 value to convert.
+ * \return The returned value is the number of bytes written to s or -1
+ * if the UTF-16 value could not be converted.
+ *
+ * This is a necessary counterpart to term_mbcs_sdl2_msys2():  since we
+ * are overriding the default multibyte to wide character conversion, need
+ * to override the reverse conversion as well.
+ */
+static int term_wctomb_sdl2_msys2(char *s, wchar_t wchar)
+{
+	if ((unsigned int) wchar <= 0x7f) {
+		*s = wchar;
+		return 1;
+	}
+	if ((unsigned int) wchar < 0x7ff) {
+		*s++ = 0xc0 + (((unsigned int) wchar & 0x7c0) >> 6);
+		*s++ = 0x80 + ((unsigned int) wchar & 0x3f);
+		return 2;
+	}
+	/* Refuse to encode a value reserved for surrogate pairs in UTF-16. */
+	if ((unsigned int) wchar >= 0xd800 && (unsigned int) wchar <= 0xdfff) {
+		return -1;
+	}
+	*s++ = 0xe0 + (((unsigned int) wchar & 0xf000) >> 12);
+	*s++ = 0x80 + (((unsigned int) wchar & 0xfc0) >> 6);
+	*s++ = 0x80 + ((unsigned int) wchar & 0x3f);
+	return 3;
+}
+
+/**
+ * Return whether a UTF-16 value is printable.
+ *
+ * This is a necessary counterpart to term_mbcs_sdl2_msys2() so that
+ * screening of wide characters in the core's text_out_to_screen() is
+ * consistent with what term_mbcs_sdl2_msys2() does.
+ */
+static int term_iswprint_sdl2_msys2(wint_t wc)
+{
+	/*
+	 * Upcast the UTF-16 value to UTF-32 since the UTF-16 value is either
+	 * equal to the code point's value or is part of a surrogate pair.
+	 */
+	return utf32_isprint((uint32_t) wc);
+}
+
+/**
+ * Return the maximum number of bytes needed for a multibyte encoding of a
+ * wchar.
+ */
+static int term_wcsz_sdl2_msys2(void)
+{
+	/*
+	 * UTF-8 takes at most 3 bytes to encode a code point that can be
+	 * encoded with a single 16-bit quantity in UTF-16.
+	 */
+	return 3;
+}
+
+#endif /* MSYS2_ENCODING_WORKAROUND */
+
 static SDL_Texture *load_image(const struct window *window, const char *path)
 {
 	SDL_Surface *surface = IMG_Load(path);
@@ -4114,6 +4485,65 @@ static void load_default_wallpaper(struct window *window)
 	path_build(path, sizeof(path), DEFAULT_WALLPAPER_DIR, DEFAULT_WALLPAPER);
 
 	load_wallpaper(window, path);
+}
+
+static void load_stipple(struct window *window)
+{
+	SDL_Surface *s;
+	Uint32 *pixels;
+	Uint32 rmask, gmask, bmask, amask, on_pixel, off_pixel;
+	int y, x;
+
+	/*
+	 * on_pixel is black and completely transparent.  off_pixel is gray
+	 * (0x40, 0x40, 0x40) and slightly opaque.
+	 */
+#if SDL_BYTE_ORDER == SDL_BIGENDIAN
+	rmask = 0xff000000;
+	gmask = 0x00ff0000;
+	bmask = 0x0000ff00;
+	amask = 0x000000ff;
+	on_pixel = 0x000000ff;
+	off_pixel = 0x40404040;
+#else
+	rmask = 0x000000ff;
+	gmask = 0x0000ff00;
+	bmask = 0x00ff0000;
+	amask = 0xff000000;
+	on_pixel = 0xff000000;
+	off_pixel = 0x40404040;
+#endif
+
+	/*
+	 * These dimensions must be multiple of two:  see the loop logic below.
+	 */
+	window->stipple.h = 16;
+	window->stipple.w = 16;
+	pixels = mem_alloc(window->stipple.h * window->stipple.w *
+		sizeof(*pixels));
+	for (y = 0; y < window->stipple.h; y += 2) {
+		uint32_t *row = pixels + y * window->stipple.w;
+
+		for (x = 0; x < window->stipple.w; x += 2) {
+			row[x] = on_pixel;
+			row[x + 1] = off_pixel;
+			row[x + window->stipple.w] = off_pixel;
+			row[x + window->stipple.w + 1] = on_pixel;
+		}
+	}
+
+	s = SDL_CreateRGBSurfaceFrom(pixels, window->stipple.w,
+		window->stipple.h, 32, 4 * window->stipple.w, rmask, gmask,
+		bmask, amask);
+	window->stipple.texture = SDL_CreateTextureFromSurface(window->renderer,
+		s);
+	if (window->stipple.texture == NULL) {
+		(void) fprintf(stderr, "could not create stipple texture: %s\n",
+			SDL_GetError());
+	}
+
+	SDL_FreeSurface(s);
+	mem_free(pixels);
 }
 
 static void load_default_window_icon(const struct window *window)
@@ -4610,7 +5040,7 @@ static void make_default_status_buttons(struct status_bar *status_bar)
 	get_string_metrics(status_bar->font, (cap), &rect.w, NULL); \
 	rect.w += DEFAULT_BUTTON_BORDER * 2; \
 	push_button(&status_bar->button_bank, status_bar->font, \
-			(cap), data, callbacks, &rect, CAPTION_POSITION_CENTER); \
+			(cap), false, data, callbacks, &rect, CAPTION_POSITION_CENTER); \
 	rect.x += rect.w; \
 
 	rect.x = status_bar->full_rect.x;
@@ -4649,7 +5079,7 @@ static void make_default_status_buttons(struct status_bar *status_bar)
 	rect.w += DEFAULT_BUTTON_BORDER * 2; \
 	rect.x -= rect.w; \
 	push_button(&status_bar->button_bank, status_bar->font, \
-			(cap), data, callbacks, &rect, CAPTION_POSITION_CENTER); \
+			(cap), false, data, callbacks, &rect, CAPTION_POSITION_CENTER); \
 
 	rect.x = status_bar->full_rect.x + status_bar->full_rect.w;
 	rect.y = status_bar->full_rect.y;
@@ -4818,6 +5248,7 @@ static void load_window(struct window *window)
 			load_wallpaper(window, window->config->wallpaper_path);
 		}
 	}
+	load_stipple(window);
 	load_default_window_icon(window);
 	if (window->graphics.id != GRAPHICS_NONE) {
 		load_graphics(window, get_graphics_mode(window->graphics.id));
@@ -4893,7 +5324,6 @@ static void start_window(struct window *window)
 	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
 		if (window->subwindows[i] != NULL) {
 			load_subwindow(window, window->subwindows[i]);
-			window->subwindows[i]->visible = true;
 		}
 	}
 
@@ -4980,6 +5410,8 @@ static void wipe_window(struct window *window, int display)
 	window->wallpaper.texture = NULL;
 	window->wallpaper.mode = WALLPAPER_TILED;
 
+	window->stipple.texture = NULL;
+
 	window->status_bar.font = NULL;
 	window->status_bar.color = g_colors[DEFAULT_STATUS_BAR_BG_COLOR];
 	window->status_bar.button_bank.buttons = NULL;
@@ -4999,7 +5431,8 @@ static void dump_subwindow(const struct subwindow *subwindow, ang_file *config)
 {
 #define DUMP_SUBWINDOW(sym, fmt, ...) \
 	file_putf(config, "subwindow-" sym ":%u:" fmt "\n", subwindow->index, __VA_ARGS__)
-	DUMP_SUBWINDOW("window", "%u", subwindow->window->index);
+	DUMP_SUBWINDOW("window", "%u:%d", subwindow->window->index,
+			(subwindow->visible) ? 1 : 0);
 	DUMP_SUBWINDOW("full-rect", "%d:%d:%d:%d",
 			subwindow->full_rect.x, subwindow->full_rect.y,
 			subwindow->full_rect.w, subwindow->full_rect.h);
@@ -5057,7 +5490,7 @@ static void dump_window(const struct window *window, ang_file *config)
 
 	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
 		struct subwindow *subwindow = window->subwindows[i];
-		if (subwindow != NULL && subwindow->visible) {
+		if (subwindow != NULL) {
 			dump_subwindow(subwindow, config);
 		}
 	}
@@ -5226,9 +5659,6 @@ static void link_term(struct subwindow *subwindow)
 	subwindow->term->soft_cursor = true;
 	subwindow->term->complex_input = true;
 	subwindow->term->never_frosh = true;
-
-	subwindow->term->attr_blank = DEFAULT_ATTR_BLANK;
-	subwindow->term->char_blank = DEFAULT_CHAR_BLANK;
 
 	subwindow->term->xtra_hook = term_xtra_hook;
 	subwindow->term->curs_hook = term_curs_hook;
@@ -5494,6 +5924,11 @@ static void free_window(struct window *window)
 		window->wallpaper.texture = NULL;
 	}
 
+	if (window->stipple.texture != NULL) {
+		SDL_DestroyTexture(window->stipple.texture);
+		window->stipple.texture = NULL;
+	}
+
 	free_graphics(&window->graphics);
 
 	if (window->renderer != NULL) {
@@ -5563,7 +5998,7 @@ static void init_font_info(const char *directory)
 			g_font_info[i].name = string_make(name);
 			g_font_info[i].path = string_make(path);
 			g_font_info[i].loaded = true;
-			if (suffix(path, ".fon")) {
+			if (suffix_i(path, ".fon")) {
 				g_font_info[i].type = FONT_TYPE_RASTER;
 				g_font_info[i].size = 0;
 			} else {
@@ -5656,6 +6091,27 @@ errr init_sdl2(int argc, char **argv)
 
 	start_windows();
 	load_terms();
+
+#ifdef MSYS2_ENCODING_WORKAROUND
+	/*
+	 * Under MSYS2, mbcstowcs() converts UTF-8 by outputting a wchar_t
+	 * (a 16-bit quantity) for every byte in the UTF-8 sequence.  For most
+	 * bytes in the UTF-8 sequence, the corresponding wchar_t has the same
+	 * value as the byte but some are altered.  For instance the UTF-8
+	 * sequence 0x24, 0xC2, 0xA2, 0xE2, 0x82, 0xAC, 0xF0, 0x90, 0x8D, 0x88,
+	 * 0xF0, 0x90, 0x91, and 0x99 which represents U+0024, U+00A2, U+20AC,
+	 * U+10348, and U+10459 becomes 0x0024, 0x00C2, 0x00A2, 0x00E2, 0x201A,
+	 * 0x00AC, 0x00F0, 0x0090, 0x008D, 0x02C6, 0x00F0, 0x0090, 0x2018,
+	 * and 0x2122.  Override that to use a UTF-16 encoding for the
+	 * wchar_t's where any codepoint that would require a surrogate pair
+	 * is lossily converted to U+FFFD since ui-term.c only allows storage
+	 * for one wchar_t per grid location.
+	 */
+	text_mbcs_hook = term_mbcs_sdl2_msys2;
+	text_wctomb_hook = term_wctomb_sdl2_msys2;
+	text_wcsz_hook = term_wcsz_sdl2_msys2;
+	text_iswprint_hook = term_iswprint_sdl2_msys2;
+#endif /* MSYS2_ENCODING_WORKAROUND */
 
 	quit_aux = quit_hook;
 
@@ -6009,7 +6465,14 @@ static enum parser_error config_subwindow_window(struct parser *parser)
 		return PARSE_ERROR_GENERIC;
 	}
 	subwindow->config = mem_zalloc(sizeof(*subwindow->config));
-
+	/*
+	 * Old versions only wrote visible subwindows to the configuration
+	 * file and did not append the visibility status to the subwindow-window
+	 * directive.
+	 */
+	if (parser_hasval(parser, "vis")) {
+		subwindow->visible = (parser_getint(parser, "vis") != 0);
+	}
 	subwindow->window = window;
 	attach_subwindow_to_window(window, subwindow);
 
@@ -6140,7 +6603,7 @@ static struct parser *init_parse_config(void)
 	parser_reg(parser, "window-tile-scale uint index sym which int scale",
 			config_window_tile_scale);
 
-	parser_reg(parser, "subwindow-window uint index uint windex",
+	parser_reg(parser, "subwindow-window uint index uint windex ?int vis",
 			config_subwindow_window);
 	parser_reg(parser, "subwindow-full-rect uint index int x int y int w int h",
 			config_subwindow_rect);

@@ -187,7 +187,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	if (player_has(p, PF_COMBAT_REGEN)  && !streq(kb_str, "poison")
 		&& !streq(kb_str, "a fatal wound") && !streq(kb_str, "starvation")) {
 		/* lose X% of hitpoints get X% of spell points */
-		int32_t sp_gain = (MAX((int32_t)p->msp, 10) << 16)
+		int32_t sp_gain = (((int32_t)MAX(p->msp, 10)) * 65536)
 			/ (int32_t)p->mhp * dam;
 		player_adjust_mana_precise(p, sp_gain);
 	}
@@ -244,7 +244,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
  */
 void death_knowledge(struct player *p)
 {
-	struct store *home = &stores[STORE_HOME];
+	struct store *home = &stores[f_info[FEAT_HOME].shopnum - 1];
 	struct object *obj;
 	time_t death_time = (time_t)0;
 
@@ -330,6 +330,68 @@ int16_t modify_stat_value(int value, int amount)
 
 	/* Return new value */
 	return (value);
+}
+
+/**
+ * Swap player's stats at random, retaining information so they can be
+ * reverted to their original state.
+ */
+void player_scramble_stats(struct player *p)
+{
+	int max1, cur1, max2, cur2, i, j, swap;
+
+	/* Fisher-Yates shuffling algorithm */
+	for (i = STAT_MAX - 1; i > 0; --i) {
+		j = randint0(i);
+
+		max1 = p->stat_max[i];
+		cur1 = p->stat_cur[i];
+		max2 = p->stat_max[j];
+		cur2 = p->stat_cur[j];
+
+		p->stat_max[i] = max2;
+		p->stat_cur[i] = cur2;
+		p->stat_max[j] = max1;
+		p->stat_cur[j] = cur1;
+
+		/* Record what we did */
+		swap = p->stat_map[i];
+		assert(swap >= 0 && swap < STAT_MAX);
+		p->stat_map[i] = p->stat_map[j];
+		assert(p->stat_map[i] >= 0 && p->stat_map[i] < STAT_MAX);
+		p->stat_map[j] = swap;
+	}
+
+	/* Mark what else needs to be updated */
+	p->upkeep->update |= (PU_BONUS);
+}
+
+/**
+ * Revert all prior swaps to the player's stats.  Has no effect if the
+ * stats have not been swapped.
+ */
+void player_fix_scramble(struct player *p)
+{
+	/* Figure out what stats should be */
+	int new_cur[STAT_MAX];
+	int new_max[STAT_MAX];
+	int i;
+
+	for (i = 0; i < STAT_MAX; ++i) {
+		assert(p->stat_map[i] >= 0 && p->stat_map[i] < STAT_MAX);
+		new_cur[p->stat_map[i]] = p->stat_cur[i];
+		new_max[p->stat_map[i]] = p->stat_max[i];
+	}
+
+	/* Apply new stats and reset stat_map */
+	for (i = 0; i < STAT_MAX; ++i) {
+		p->stat_cur[i] = new_cur[i];
+		p->stat_max[i] = new_max[i];
+		p->stat_map[i] = i;
+	}
+
+	/* Mark what else needs to be updated */
+	p->upkeep->update |= (PU_BONUS);
 }
 
 /**
@@ -420,7 +482,7 @@ void player_regen_mana(struct player *p)
 
 	/* SP degen heals BGs at double efficiency vs casting */
 	if (sp_gain < 0  && player_has(p, PF_COMBAT_REGEN)) {
-		convert_mana_to_hp(p, -sp_gain << 2);
+		convert_mana_to_hp(p, -sp_gain * 2);
 	}
 
 	/* Notice changes */
@@ -433,25 +495,40 @@ void player_regen_mana(struct player *p)
 
 void player_adjust_hp_precise(struct player *p, int32_t hp_gain)
 {
-	int32_t new_chp;
-	int num, old_chp = p->chp;
-
-	/* Load it all into 4 byte format*/
-	new_chp = (int32_t)((p->chp << 16) + p->chp_frac) + hp_gain;
+	int16_t old_16 = p->chp;
+	/* Load it all into 4 byte format */
+	int32_t old_32 = ((int32_t) old_16) * 65536 + p->chp_frac, new_32;
 
 	/* Check for overflow */
-	/*     {new_chp = LONG_MIN;} DAVIDTODO*/
-	if ((new_chp < 0) && (old_chp > 0) && (hp_gain > 0)) {
-		new_chp = INT32_MAX;
-	} else if ((new_chp > 0) && (old_chp < 0) && (hp_gain < 0)) {
-		new_chp = INT32_MIN;
+	if (hp_gain >= 0) {
+		new_32 = (old_32 < INT32_MAX - hp_gain) ?
+			old_32 + hp_gain : INT32_MAX;
+	} else {
+		new_32 = (old_32 > INT32_MIN - hp_gain) ?
+			old_32 + hp_gain : INT32_MIN;
 	}
 
-	/* Break it back down*/
-	p->chp = (int16_t)(new_chp >> 16);   /* div 65536 */
-	p->chp_frac = (uint16_t)(new_chp & 0xFFFF); /* mod 65536 */
-	/*DAVIDTODO neg new_chp ok? I think so because eg a slightly negative
-	 * new_chp will give -1 for chp and very high chp_frac.*/
+	/* Break it back down */
+	if (new_32 < 0) {
+		/*
+		 * Don't use right bitwise shift on negative values:  whether
+		 * the left bits are zero or one depends on the system.
+		 */
+		int32_t remainder = new_32 % 65536;
+
+		p->chp = (int16_t) (new_32 / 65536);
+		if (remainder) {
+			assert(remainder < 0);
+			p->chp_frac = (uint16_t) (65536 + remainder);
+			assert(p->chp > INT16_MIN);
+			p->chp -= 1;
+		} else {
+			p->chp_frac = 0;
+		}
+	} else {
+		p->chp = (int16_t)(new_32 >> 16);   /* div 65536 */
+		p->chp_frac = (uint16_t)(new_32 & 0xFFFF); /* mod 65536 */
+	}
 
 	/* Fully healed */
 	if (p->chp >= p->mhp) {
@@ -459,11 +536,9 @@ void player_adjust_hp_precise(struct player *p, int32_t hp_gain)
 		p->chp_frac = 0;
 	}
 
-	num = p->chp - old_chp;
-	if (num == 0)
-		return;
-
-	p->upkeep->redraw |= (PR_HP);
+	if (p->chp != old_16) {
+		p->upkeep->redraw |= (PR_HP);
+	}
 }
 
 
@@ -473,29 +548,48 @@ void player_adjust_hp_precise(struct player *p, int32_t hp_gain)
  */
 int32_t player_adjust_mana_precise(struct player *p, int32_t sp_gain)
 {
-	int32_t old_csp_long, new_csp_long;
-	int old_csp_short = p->csp;
+	int16_t old_16 = p->csp;
+	/* Load it all into 4 byte format*/
+	int32_t old_32 = ((int32_t) p->csp) * 65536 + p->csp_frac, new_32;
 
 	if (sp_gain == 0) return 0;
 
-	/* Load it all into 4 byte format*/
-	old_csp_long = (int32_t)((p->csp << 16) + p->csp_frac);
-	new_csp_long = old_csp_long + sp_gain;
-
 	/* Check for overflow */
-
-	/* new_csp = LONG_MAX LONG_MIN;} DAVIDTODO produces warning*/
-	if ((new_csp_long < 0) && (old_csp_long > 0) && (sp_gain > 0)) {
-		new_csp_long = INT32_MAX;
-		sp_gain = 0;
-	} else if ((new_csp_long > 0) && (old_csp_long < 0) && (sp_gain < 0)) {
-		new_csp_long = INT32_MIN;
+	if (sp_gain > 0) {
+		if (old_32 < INT32_MAX - sp_gain) {
+			new_32 = old_32 + sp_gain;
+		} else {
+			new_32 = INT32_MAX;
+			sp_gain = 0;
+		}
+	} else if (old_32 > INT32_MIN - sp_gain) {
+		new_32 = old_32 + sp_gain;
+	} else {
+		new_32 = INT32_MIN;
 		sp_gain = 0;
 	}
 
 	/* Break it back down*/
-	p->csp = (int16_t)(new_csp_long >> 16);   /* div 65536 */
-	p->csp_frac = (uint16_t)(new_csp_long & 0xFFFF);    /* mod 65536 */
+	if (new_32 < 0) {
+		/*
+		 * Don't use right bitwise shift on negative values:  whether
+		 * the left bits are zero or one depends on the system.
+		 */
+		int32_t remainder = new_32 % 65536;
+
+		p->csp = (int16_t) (new_32 / 65536);
+		if (remainder) {
+			assert(remainder < 0);
+			p->csp_frac = (uint16_t) (65536 + remainder);
+			assert(p->csp > INT16_MIN);
+			p->csp -= 1;
+		} else {
+			p->chp_frac = 0;
+		}
+	} else {
+		p->csp = (int16_t)(new_32 >> 16);   /* div 65536 */
+		p->csp_frac = (uint16_t)(new_32 & 0xFFFF);    /* mod 65536 */
+	}
 
 	/* Max/min SP */
 	if (p->csp >= p->msp) {
@@ -509,14 +603,14 @@ int32_t player_adjust_mana_precise(struct player *p, int32_t sp_gain)
 	}
 
 	/* Notice changes */
-	if (old_csp_short != p->csp) {
+	if (old_16 != p->csp) {
 		p->upkeep->redraw |= (PR_MANA);
 	}
 
 	if (sp_gain == 0) {
 		/* Recalculate */
-		new_csp_long = (int32_t)((p->csp << 16) + p->csp_frac);
-		sp_gain = new_csp_long - old_csp_long;
+		new_32 = ((int32_t) p->csp) * 65536 + p->csp_frac;
+		sp_gain = new_32 - old_32;
 	}
 
 	return sp_gain;
@@ -528,13 +622,13 @@ void convert_mana_to_hp(struct player *p, int32_t sp_long) {
 	if (sp_long <= 0 || p->msp == 0 || p->mhp == p->chp) return;
 
 	/* Total HP from max */
-	hp_gain = (int32_t)((p->mhp - p->chp) << 16);
+	hp_gain = ((int32_t)(p->mhp - p->chp)) * 65536;
 	hp_gain -= (int32_t)p->chp_frac;
 
 	/* Spend X% of SP get X/2% of lost HP. E.g., at 50% HP get X/4% */
 	/* Gain stays low at msp<10 because MP gains are generous at msp<10 */
 	/* sp_ratio is max sp to spent sp, doubled to suit target rate. */
-	sp_ratio = (MAX(10, (int32_t)p->msp) << 16) * 2 / sp_long;
+	sp_ratio = (((int32_t)MAX(10, (int32_t)p->msp)) * 131072) / sp_long;
 
 	/* Limit max healing to 25% of damage; ergo spending > 50% msp
 	 * is inefficient */
@@ -707,16 +801,16 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 			msg("You faint from the effort!");
 
 			/* Bypass free action */
-			(void)player_inc_timed(p, TMD_PARALYZED, randint1(amount),
-								   true, false);
+			(void)player_inc_timed(p, TMD_PARALYZED,
+				randint1(amount), true, true, false);
 		}
 	}
 
 	/* Scrambled stats */
 	if (flag & PY_EXERT_SCRAMBLE) {
 		if (randint0(100) < chance) {
-			(void)player_inc_timed(p, TMD_SCRAMBLE, randint1(amount),
-								   true, true);
+			(void)player_inc_timed(p, TMD_SCRAMBLE,
+				randint1(amount), true, true, true);
 		}
 	}
 
@@ -725,15 +819,15 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 		if (randint0(100) < chance) {
 			msg("Wounds appear on your body!");
 			(void)player_inc_timed(p, TMD_CUT, randint1(amount),
-								   true, false);
+				true, true, false);
 		}
 	}
 
 	/* Confusion */
 	if (flag & PY_EXERT_CONF) {
 		if (randint0(100) < chance) {
-			(void)player_inc_timed(p, TMD_CONFUSED, randint1(amount),
-								   true, true);
+			(void)player_inc_timed(p, TMD_CONFUSED,
+				randint1(amount), true, true, true);
 		}
 	}
 
@@ -741,7 +835,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	if (flag & PY_EXERT_HALLU) {
 		if (randint0(100) < chance) {
 			(void)player_inc_timed(p, TMD_IMAGE, randint1(amount),
-								   true, true);
+				true, true, true);
 		}
 	}
 
@@ -750,7 +844,7 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 		if (randint0(100) < chance) {
 			msg("You feel suddenly lethargic.");
 			(void)player_inc_timed(p, TMD_SLOW, randint1(amount),
-								   true, false);
+				true, true, false);
 		}
 	}
 
@@ -765,9 +859,14 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 
 
 /**
- * See how much damage the player will take from damaging terrain
+ * See how much damage the player will take from terrain.
+ *
+ * \param p is the player to check
+ * \param grid is the location of the terrain
+ * \param actual, if true, will cause the player to learn the appropriate
+ * runes if equipment or effects mitigate the damage.
  */
-int player_check_terrain_damage(struct player *p, struct loc grid)
+int player_check_terrain_damage(struct player *p, struct loc grid, bool actual)
 {
 	int dam_taken = 0;
 
@@ -776,11 +875,15 @@ int player_check_terrain_damage(struct player *p, struct loc grid)
 		int res = p->state.el_info[ELEM_FIRE].res_level;
 
 		/* Fire damage */
-		dam_taken = adjust_dam(p, ELEM_FIRE, base_dam, RANDOMISE, res, false);
+		dam_taken = adjust_dam(p, ELEM_FIRE, base_dam, RANDOMISE, res,
+			actual);
 
 		/* Feather fall makes one lightfooted. */
 		if (player_of_has(p, OF_FEATHER)) {
 			dam_taken /= 2;
+			if (actual) {
+				equip_learn_flag(p, OF_FEATHER);
+			}
 		}
 	}
 
@@ -792,18 +895,18 @@ int player_check_terrain_damage(struct player *p, struct loc grid)
  */
 void player_take_terrain_damage(struct player *p, struct loc grid)
 {
-	int dam_taken = player_check_terrain_damage(p, grid);
+	int dam_taken = player_check_terrain_damage(p, grid, true);
 
 	if (!dam_taken) {
 		return;
 	}
 
 	/* Damage the player and inventory */
-	take_hit(p, dam_taken, square_feat(cave, grid)->die_msg);
 	if (square_isfiery(cave, grid)) {
 		msg(square_feat(cave, grid)->hurt_msg);
 		inven_damage(p, PROJ_FIRE, dam_taken);
 	}
+	take_hit(p, dam_taken, square_feat(cave, grid)->die_msg);
 }
 
 /**
@@ -892,7 +995,7 @@ void player_resume_normal_shape(struct player *p)
 	msg("You resume your usual shape.");
 
 	/* Kill vampire attack */
-	(void) player_clear_timed(p, TMD_ATT_VAMP, true);
+	(void) player_clear_timed(p, TMD_ATT_VAMP, true, false);
 
 	/* Update */
 	p->upkeep->update |= (PU_BONUS);
@@ -903,7 +1006,7 @@ void player_resume_normal_shape(struct player *p)
 /**
  * Check if the player is shapechanged
  */
-bool player_is_shapechanged(struct player *p)
+bool player_is_shapechanged(const struct player *p)
 {
 	return streq(p->shape->name, "normal") ? false : true;
 }
@@ -911,7 +1014,7 @@ bool player_is_shapechanged(struct player *p)
 /**
  * Check if the player is immune from traps
  */
-bool player_is_trapsafe(struct player *p)
+bool player_is_trapsafe(const struct player *p)
 {
 	if (p->timed[TMD_TRAPSAFE]) return true;
 	if (player_of_has(p, OF_TRAP_IMMUNE)) return true;
@@ -925,7 +1028,7 @@ bool player_is_trapsafe(struct player *p)
  * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
-bool player_can_cast(struct player *p, bool show_msg)
+bool player_can_cast(const struct player *p, bool show_msg)
 {
 	if (!p->class->magic.total_spells) {
 		if (show_msg) {
@@ -951,7 +1054,7 @@ bool player_can_cast(struct player *p, bool show_msg)
  * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
-bool player_can_study(struct player *p, bool show_msg)
+bool player_can_study(const struct player *p, bool show_msg)
 {
 	if (!player_can_cast(p, show_msg))
 		return false;
@@ -1004,7 +1107,7 @@ bool player_can_study(struct player *p, bool show_msg)
  * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
-bool player_can_read(struct player *p, bool show_msg)
+bool player_can_read(const struct player *p, bool show_msg)
 {
 	if (p->timed[TMD_BLIND]) {
 		if (show_msg)
@@ -1105,7 +1208,7 @@ bool player_can_study_prereq(void)
 bool player_can_read_prereq(void)
 {
 	/*
-	 * Accomodate hacks elsewhere:  'r' is overloaded to mean
+	 * Accommodate hacks elsewhere:  'r' is overloaded to mean
 	 * release a commanded monster when TMD_COMMAND is active.
 	 */
 	return (player->timed[TMD_COMMAND]) ?
@@ -1235,7 +1338,7 @@ bool player_resting_is_special(int16_t count)
 /**
  * Return true if the player is resting.
  */
-bool player_is_resting(struct player *p)
+bool player_is_resting(const struct player *p)
 {
 	return (p->upkeep->resting > 0 ||
 			player_resting_is_special(p->upkeep->resting));
@@ -1244,7 +1347,7 @@ bool player_is_resting(struct player *p)
 /**
  * Return the remaining number of resting turns.
  */
-int16_t player_resting_count(struct player *p)
+int16_t player_resting_count(const struct player *p)
 {
 	return p->upkeep->resting;
 }
@@ -1298,7 +1401,7 @@ void player_resting_cancel(struct player *p, bool disturb)
  * Return true if the player should get a regeneration bonus for the current
  * rest.
  */
-bool player_resting_can_regenerate(struct player *p)
+bool player_resting_can_regenerate(const struct player *p)
 {
 	return player_turns_rested >= REST_REQUIRED_FOR_REGEN ||
 		player_resting_is_special(p->upkeep->resting);
@@ -1385,7 +1488,7 @@ void player_set_resting_repeat_count(struct player *p, int16_t count)
 /**
  * Check if the player state has the given OF_ flag.
  */
-bool player_of_has(struct player *p, int flag)
+bool player_of_has(const struct player *p, int flag)
 {
 	assert(p);
 	return of_has(p->state.flags, flag);
@@ -1394,7 +1497,7 @@ bool player_of_has(struct player *p, int flag)
 /**
  * Check if the player resists (or better) an element
  */
-bool player_resists(struct player *p, int element)
+bool player_resists(const struct player *p, int element)
 {
 	return (p->state.el_info[element].res_level > 0);
 }
@@ -1402,7 +1505,7 @@ bool player_resists(struct player *p, int element)
 /**
  * Check if the player resists (or better) an element
  */
-bool player_is_immune(struct player *p, int element)
+bool player_is_immune(const struct player *p, int element)
 {
 	return (p->state.el_info[element].res_level == 3);
 }
@@ -1426,11 +1529,55 @@ void player_place(struct chunk *c, struct player *p, struct loc grid)
 }
 
 /*
+ * Take care of bookkeeping after moving the player with monster_swap().
+ *
+ * \param p is the player that was moved.
+ * \param eval_trap, if true, will cause evaluation (possibly affecting the
+ * player) of the traps in the grid.
+ * \param is_involuntary, if true, will do appropriate actions (flush the
+ * command queue) for a move not expected by the player.
+ */
+void player_handle_post_move(struct player *p, bool eval_trap,
+		bool is_involuntary)
+{
+	/* Handle store doors, or notice objects */
+	if (square_isshop(cave, p->grid)) {
+		if (player_is_shapechanged(p)) {
+			if (square(cave, p->grid)->feat != FEAT_HOME) {
+				msg("There is a scream and the door slams shut!");
+			}
+			return;
+		}
+		disturb(p);
+		if (is_involuntary) {
+			cmdq_flush();
+		}
+		event_signal(EVENT_ENTER_STORE);
+		event_remove_handler_type(EVENT_ENTER_STORE);
+		event_signal(EVENT_USE_STORE);
+		event_remove_handler_type(EVENT_USE_STORE);
+		event_signal(EVENT_LEAVE_STORE);
+		event_remove_handler_type(EVENT_LEAVE_STORE);
+	} else {
+		if (is_involuntary) {
+			cmdq_flush();
+		}
+		square_know_pile(cave, p->grid);
+	}
+
+	/* Discover invisible traps, set off visible ones */
+	if (eval_trap && square_isplayertrap(cave, p->grid)
+			&& !square_isdisabledtrap(cave, p->grid)) {
+		hit_trap(p->grid, 0);
+	}
+
+	/* Update view and search */
+	update_view(cave, p);
+	search(p);
+}
+
+/*
  * Something has happened to disturb the player.
- *
- * The first arg indicates a major disturbance, which affects search.
- *
- * The second arg is currently unused, but could induce output flush.
  *
  * All disturbance cancels repeated commands, resting, and running.
  *

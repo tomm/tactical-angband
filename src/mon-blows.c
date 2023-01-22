@@ -100,7 +100,8 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 	next = strchr(in_cursor, '{');
 	while (next) {
 		/* Copy the text leading up to this { */
-		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor);
+		strnfcat(buf, 1024, &end, "%.*s", (int) (next - in_cursor),
+			in_cursor);
 
 		s = next + 1;
 		while (*s && isalpha((unsigned char) *s)) s++;
@@ -123,7 +124,8 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 						monster_desc(m_name,
 							sizeof(m_name), t_mon,
 							mdesc_mode);
-						strnfcat(buf, sizeof(buf), &end, m_name);
+						strnfcat(buf, sizeof(buf),
+							&end, "%s", m_name);
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "you");
 					}
@@ -135,7 +137,7 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 						monster_desc(m_name,
 							sizeof(m_name), t_mon,
 							MDESC_TARG | MDESC_POSS);
-						strnfcat(buf, sizeof(buf), &end, m_name);
+						strnfcat(buf, sizeof(buf), &end, "%s", m_name);
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "your");
 					}
@@ -161,7 +163,7 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 
 		next = strchr(in_cursor, '{');
 	}
-	strnfcat(buf, 1024, &end, in_cursor);
+	strnfcat(buf, 1024, &end, "%s", in_cursor);
 	return string_make(buf);
 }
 
@@ -227,8 +229,9 @@ static void steal_player_item(melee_effect_handler_context_t *context)
 				(split ? "one of your" : "your"), o_name);
 		} else {
 			/* Message */
-			msg("%s %s (%c) was stolen!", (split ? "One of your" : "Your"),
-				o_name, I2A(index));
+			msg("%s %s (%c) was stolen!",
+				(split ? "One of your" : "Your"), o_name,
+				gear_to_label(context->p, obj));
 
 			/* Steal and carry */
 			stolen = gear_object_for_use(context->p, obj, 1,
@@ -464,7 +467,8 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 		context->obvious = true;
 	} else {
 		/* Increase timer for type. */
-		if (player_inc_timed(context->p, type, amount, true, true)) {
+		if (player_inc_timed(context->p, type, amount, true, true,
+				true)) {
 			context->obvious = true;
 		}
 
@@ -578,9 +582,10 @@ static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 		return;
 
 	/* Take "poison" effect */
-	if (player_inc_timed(context->p, TMD_POISONED, 5 + randint1(context->rlev),
-						 true, true))
+	if (player_inc_timed(context->p, TMD_POISONED,
+			5 + randint1(context->rlev), true, true, true)) {
 		context->obvious = true;
+	}
 
 	/* Learn about the player */
 	update_smart_learn(context->mon, context->p, 0, 0, ELEM_POIS);
@@ -805,12 +810,13 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		if (obj->number == 1) {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE,
 				context->p);
-			msg("Your %s (%c) was eaten!", o_name, I2A(index));
+			msg("Your %s (%c) was eaten!", o_name,
+				gear_to_label(context->p, obj));
 		} else {
 			object_desc(o_name, sizeof(o_name), obj,
 				ODESC_PREFIX | ODESC_BASE, context->p);
 			msg("One of your %s (%c) was eaten!", o_name,
-				I2A(index));
+				gear_to_label(context->p, obj));
 		}
 
 		/* Steal and eat */
@@ -1055,8 +1061,8 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 	if (monster_damage_target(context, true)) return;
 
 	/* Increase "image" */
-	if (player_inc_timed(context->p, TMD_IMAGE, 3 + randint1(context->rlev / 2),
-						 true, true))
+	if (player_inc_timed(context->p, TMD_IMAGE,
+			3 + randint1(context->rlev / 2), true, true, true))
 		context->obvious = true;
 
 	/* Learn about the player */
@@ -1075,8 +1081,9 @@ static void melee_effect_handler_BLACK_BREATH(melee_effect_handler_context_t *co
 
 	/* Increase Black Breath counter a *small* amount, maybe */
 	if (one_in_(5) && player_inc_timed(context->p, TMD_BLACKBREATH,
-									   context->damage / 10, true, false))
+			context->damage / 10, true, true, false)) {
 		context->obvious = true;
+	}
 }
 
 /**

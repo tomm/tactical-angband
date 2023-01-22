@@ -237,7 +237,7 @@ static void prt_exp(int row, int col)
 			player->exp;
 
 	/* Format XP */
-	strnfmt(out_val, sizeof(out_val), "%8d", xp);
+	strnfmt(out_val, sizeof(out_val), "%8ld", xp);
 
 
 	if (player->exp >= player->max_exp) {
@@ -275,15 +275,13 @@ static void prt_equippy(int row, int col)
 
 	struct object *obj;
 
-	/* No equippy chars in bigtile mode */
-	if (tile_width > 1 || tile_height > 1) return;
-
 	/* Dump equippy chars */
 	for (i = 0; i < player->body.count; i++) {
 		/* Object */
 		obj = slot_object(player, i);
 
-		if (obj) {
+		/* Get attr/char for display; clear if big tiles or no object */
+		if (obj && tile_width == 1 && tile_height == 1) {
 			c = object_char(obj);
 			a = object_attr(obj);
 		} else {
@@ -634,7 +632,7 @@ static int prt_exp_short(int row, int col)
 			player->exp;
 
 	/* Format XP */
-	strnfmt(out_val, sizeof(out_val), "%d", xp);
+	strnfmt(out_val, sizeof(out_val), "%ld", xp);
 
 	if (player->exp >= player->max_exp) {
 		put_str((lev50 ? "EXP:" : "NXT:"), row, col);
@@ -1163,7 +1161,7 @@ static int longest_terrain_name(void)
 			max = strlen(trap_info[i].name);
 		}
 	}
-	for (i = 0; i < z_info->f_max; i++) {
+	for (i = 0; i < FEAT_MAX; i++) {
 		if (strlen(f_info[i].name) > max) {
 			max = strlen(f_info[i].name);
 		}
@@ -1179,16 +1177,17 @@ static size_t prt_terrain(int row, int col)
 	struct feature *feat = square_feat(cave, player->grid);
 	struct trap *trap = square_trap(cave, player->grid);
 	char buf[30];
+	uint8_t attr;
 
 	if (trap && !square_isinvis(cave, player->grid)) {
-		my_strcpy(buf, trap->kind->name, strlen(trap->kind->name) + 1);
-		my_strcap(buf);
-		c_put_str(trap->kind->d_attr, format("%s ", buf), row, col);
+		my_strcpy(buf, trap->kind->name, sizeof(buf));
+		attr = trap->kind->d_attr;
 	} else {
-		my_strcpy(buf, feat->name, strlen(feat->name) + 1);
-		my_strcap(buf);
-		c_put_str(feat->d_attr, format("%s ", buf), row, col);
+		my_strcpy(buf, feat->name, sizeof(buf));
+		attr = feat->d_attr;
 	}
+	my_strcap(buf);
+	c_put_str(attr, format("%s ", buf), row, col);
 
 	return longest_terrain_name() + 1;
 }
@@ -2314,10 +2313,15 @@ static void subwindow_set_flags(int win_idx, uint32_t new_flags)
 	/* Deal with the changed flags by seeing what's changed */
 	for (i = 0; i < 32; i++)
 		/* Only process valid flags */
-		if (window_flag_desc[i])
-			if ((new_flags & (1L << i)) != (window_flag[win_idx] & (1L << i)))
-				subwindow_flag_changed(win_idx, (1L << i),
-									   (new_flags & (1L << i)) != 0);
+		if (window_flag_desc[i]) {
+			uint32_t flag = ((uint32_t) 1) << i;
+
+			if ((new_flags & flag) !=
+					(window_flag[win_idx] & flag)) {
+				subwindow_flag_changed(win_idx, flag,
+						(new_flags & flag) != 0);
+			}
+		}
 
 	/* Store the new flags */
 	window_flag[win_idx] = new_flags;

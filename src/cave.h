@@ -111,9 +111,7 @@ struct feature {
 	char *desc;
 	int fidx;
 
-	struct feature *next;
-
-	char *mimic;		/**< Name of feature to mimic */
+	struct feature *mimic;	/**< Feature to mimic or NULL for no mimicry */
 	uint8_t priority;	/**< Display priority */
 
 	uint8_t shopnum;	/**< Which shop does it take you to? */
@@ -216,36 +214,12 @@ struct chunk {
 };
 
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/
-
-/* Nothing */
-extern int FEAT_NONE;
-
-/* Various */
-extern int FEAT_FLOOR;
-extern int FEAT_CLOSED;
-extern int FEAT_OPEN;
-extern int FEAT_BROKEN;
-extern int FEAT_LESS;
-extern int FEAT_MORE;
-
-/* Secret door */
-extern int FEAT_SECRET;
-
-/* Rubble */
-extern int FEAT_RUBBLE;
-extern int FEAT_PASS_RUBBLE;
-
-/* Mineral seams */
-extern int FEAT_MAGMA;
-extern int FEAT_QUARTZ;
-extern int FEAT_MAGMA_K;
-extern int FEAT_QUARTZ_K;
-
-/* Walls */
-extern int FEAT_GRANITE;
-extern int FEAT_PERM;
-extern int FEAT_LAVA;
-
+enum {
+	#define FEAT(x) FEAT_##x,
+	#include "list-terrain.h"
+	#undef FEAT
+	FEAT_MAX
+};
 
 /* Current level */
 extern struct chunk *cave;
@@ -257,7 +231,7 @@ extern uint16_t chunk_list_max;
 int distance(struct loc grid1, struct loc grid2);
 bool los(struct chunk *c, struct loc grid1, struct loc grid2);
 void update_view(struct chunk *c, struct player *p);
-bool no_light(struct player *p);
+bool no_light(const struct player *p);
 
 /* cave-map.c */
 void map_info(struct loc grid, struct grid_data *g);
@@ -371,6 +345,7 @@ bool square_iswebbed(struct chunk *c, struct loc grid);
 bool square_seemslikewall(struct chunk *c, struct loc grid);
 bool square_isinteresting(struct chunk *c, struct loc grid);
 bool square_islockeddoor(struct chunk *c, struct loc grid);
+bool square_isunlockeddoor(struct chunk *c, struct loc grid);
 bool square_isplayertrap(struct chunk *c, struct loc grid);
 bool square_isvisibletrap(struct chunk *c, struct loc grid);
 bool square_issecrettrap(struct chunk *c, struct loc grid);
@@ -434,9 +409,9 @@ void square_force_floor(struct chunk *c, struct loc grid);
 
 int square_shopnum(struct chunk *c, struct loc grid);
 int square_digging(struct chunk *c, struct loc grid);
-const char *square_apparent_name(struct chunk *c, struct player *p, struct loc grid);
-const char *square_apparent_look_prefix(struct chunk *c, struct player *p, struct loc grid);
-const char *square_apparent_look_in_preposition(struct chunk *c, struct player *p, struct loc grid);
+const char *square_apparent_name(struct chunk *c, struct loc grid);
+const char *square_apparent_look_prefix(struct chunk *c, struct loc grid);
+const char *square_apparent_look_in_preposition(struct chunk *c, struct loc grid);
 
 void square_memorize(struct chunk *c, struct loc grid);
 void square_forget(struct chunk *c, struct loc grid);
@@ -447,7 +422,8 @@ void square_unmark(struct chunk *c, struct loc grid);
 int motion_dir(struct loc source, struct loc target);
 struct loc next_grid(struct loc grid, int dir);
 int lookup_feat(const char *name);
-void set_terrain(void);
+int lookup_feat_code(const char *code);
+const char *get_feat_code_name(int idx);
 struct chunk *cave_new(int height, int width);
 void cave_connectors_free(struct connector *join);
 void cave_free(struct chunk *c);

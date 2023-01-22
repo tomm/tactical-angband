@@ -75,8 +75,7 @@ correctly.
 
 === Directory "lib/sounds" ===
 
-The "lib/sounds" directory contains the .mp3 sound files, plus the file
-sound.cfg which tells the game which sound files to use for which game events.
+The "lib/sounds" directory contains the .mp3 sound files.
 
 
 === Directory "lib/icons" ===
@@ -132,9 +131,4 @@ On some multiuser systems there is a separate systemwide score file.
 Holds the randart set files when they are not in use by a character loaded
 into the game.
 
-
-=== Directory "lib/user/info" ===
-
-Holds user-generated help files.  One use for it is to put spoiler files
-here so they be accessed through the in-game help system.
 

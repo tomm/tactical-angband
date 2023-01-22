@@ -24,8 +24,12 @@
 #include "snd-sdl.h"
 #endif
 
-#if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && defined(SOUND) && !defined(USE_SDL) && !defined(USE_SDL2))
+#if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2))
 #include "snd-win.h"
+#endif
+
+#if defined(MACH_O_CARBON) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
+#include "cocoa/snd-cocoa.h"
 #endif
 
 #define MAX_SOUNDS_PER_MESSAGE	16
@@ -57,11 +61,13 @@ static const struct sound_module sound_modules[] =
 {
 #if defined(SOUND_SDL) || defined(SOUND_SDL2)
 	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
-#endif /* SOUND_SDL */
-#if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && defined(SOUND) && !defined(USE_SDL) && !defined(USE_SDL2))
+#endif /* SOUND_SDL || SOUND_SDL2 */
+#if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2))
 	{ "win", "Windows sound module", init_sound_win },
 #endif
-
+#if (defined(MACH_O_CARBON) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2))
+	{ "cocoa", "Cocoa sound module", init_sound_cocoa },
+#endif
 	{ "", "", NULL },
 };
 
@@ -80,13 +86,11 @@ static struct sound_data *sounds;
 /* These are the hooks installed by the platform sound module */
 static struct sound_hooks hooks;
 
-#ifdef SOUND
 /*
  * If preload_sounds is true, sounds are loaded immediately when assigned to
  * a message. Otherwise, each sound is only loaded when first played.
  */
 static bool preload_sounds = false;
-#endif
 
 #ifdef SOUND
 static struct sound_data *grow_sound_list(void)
@@ -147,8 +151,13 @@ static void load_sound(struct sound_data *sound_data)
 			my_strcpy(filename_buf, path, filename_buf_size);
 			filename_buf = string_append(filename_buf, supported_sound_files[i].extension);
 
-			if (file_exists(filename_buf))
-				load_success = hooks.load_sound_hook(filename_buf, supported_sound_files[i].type, sound_data);
+			if (file_exists(filename_buf)) {
+				sound_data->status = SOUND_ST_ERROR;
+				load_success = hooks.load_sound_hook(
+					filename_buf,
+					supported_sound_files[i].type,
+					sound_data);
+			}
 
 			mem_free(filename_buf);
 			i++;
@@ -315,15 +324,31 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 		assert((sound_id >= 0) && (sound_id < next_sound_id));
 
 		/* Ensure the sound is loaded before we play it */
-		if (!sounds[sound_id].loaded)
+		if (sounds[sound_id].status == SOUND_ST_UNKNOWN)
 			load_sound(&sounds[sound_id]);
 
 		/* Only bother playing it if the platform can */
-		if (sounds[sound_id].loaded)
+		if (sounds[sound_id].status == SOUND_ST_LOADED)
 			hooks.play_sound_hook(&sounds[sound_id]);
 	}
 }
 
+/**
+ * Set whether all sounds are loaded when the sound preferences are loaded or
+ * a sound is loaded when it is needed.
+ *
+ * \param new_setting will, if true, causes all sounds to be preloaded when
+ * the sound preferences are loaded next.  If false, a sound will be loaded
+ * just before it is first played..
+ * \return the previous setting for whether sounds are preloaded.
+ */
+bool set_preloaded_sounds(bool new_setting)
+{
+	bool old_setting = preload_sounds;
+
+	preload_sounds = new_setting;
+	return old_setting;
+}
 
 /**
  * Init the sound "module".
@@ -351,7 +376,6 @@ errr init_sound(const char *soundstr, int argc, char **argv)
 	/* Open the platform specific sound system */
 	if (!hooks.open_audio_hook)
 		return 1;
-
 	if (!hooks.open_audio_hook())
 		return 1;
 

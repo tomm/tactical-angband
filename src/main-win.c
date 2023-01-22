@@ -81,7 +81,7 @@
 
 #define uint unsigned int
 
-#if (defined(WINDOWS) && !defined(USE_SDL)) && !defined(USE_SDL2)
+#if defined(WINDOWS) && !defined(USE_SDL) && !defined(USE_SDL2)
 
 #include "sound.h"
 #include "snd-win.h"
@@ -568,51 +568,123 @@ static void term_getsize(term_data *td)
 	if (td->rows < 1) td->rows = 1;
 
 	if (use_graphics_nice) {
+		/*
+		 * This is the gamut of multipliers available in the
+		 * IDM_OPTIONS_TILE_* constants, sorted in increasing order
+		 * of the area of the scaled up block.
+		 */
+		const struct { int w, h; } multipliers[] = {
+			{ 1, 1 },
+			{ 2, 1 },
+			{ 3, 1 },
+			{ 2, 2 },
+			{ 4, 2 },
+			{ 3, 3 },
+			{ 4, 4 },
+			{ 6, 3 },
+			{ 8, 4 },
+			{ 6, 6 },
+			{ 8, 8 },
+			{ 16, 8 },
+			{ 16, 16 },
+		};
+		long best;
+		int ibest, i;
+
 		if (current_graphics_mode && current_graphics_mode->grafID) {
 			if (current_graphics_mode->file[0]) {
-                char *end;
-                td->tile_wid = strtol(current_graphics_mode->file,&end,10);
-                td->tile_hgt = strtol(end+1,NULL,10);
+				char *end;
+				td->tile_wid = strtol(
+					current_graphics_mode->file,&end,10);
+				td->tile_hgt = strtol(end+1,NULL,10);
 			} else {
-                td->tile_wid = current_graphics_mode->cell_width;
-                td->tile_hgt = current_graphics_mode->cell_height;
+				td->tile_wid =
+					current_graphics_mode->cell_width;
+				td->tile_hgt =
+					current_graphics_mode->cell_height;
 			}
 			if ((td->tile_wid == 0) || (td->tile_hgt == 0)) {
-                td->tile_wid = current_graphics_mode->cell_width;
-                td->tile_hgt = current_graphics_mode->cell_height;
+				td->tile_wid =
+					current_graphics_mode->cell_width;
+				td->tile_hgt =
+					current_graphics_mode->cell_height;
 			}
 			if ((td->tile_wid == 0) || (td->tile_hgt == 0)) {
-                td->tile_wid = td->font_wid;
-                td->tile_hgt = td->font_hgt;
+				td->tile_wid = td->font_wid;
+				td->tile_hgt = td->font_hgt;
 			}
 		} else {
 			/* Reset the tile info */
 			td->tile_wid = td->font_wid;
 			td->tile_hgt = td->font_hgt;
 		}
-		
-	    tile_width = 1;
-	    tile_height = 1;
-		
-		if ((td->tile_hgt >= td->font_hgt * 3) &&
-			(td->tile_wid >= td->font_wid * 3)) {
-			tile_width = 3;
-			tile_height = 3;
-			td->tile_wid /= 3;
-			td->tile_hgt /= 3;
-		} else if ((td->tile_hgt >= td->font_hgt * 2) &&
-				   (td->tile_wid >= td->font_wid * 2)) {
-			tile_width = 2;
-			tile_height = 2;
-			td->tile_wid /= 2;
-			td->tile_hgt /= 2;
+
+		/*
+		 * If the tile is enough smaller than the font in either
+		 * dimension, consider using a scaled up version (preserving
+		 * the aspect ratio) of the tile as the target size.
+		 */
+		if (td->tile_wid <= (2 * td->font_wid) / 3
+				|| td->tile_hgt <= (2 * td->font_wid) / 3) {
+			int area_ratio = (int) (((long) td->font_wid
+				* (long) td->font_hgt + ((long) td->tile_wid
+				* (long) td->tile_hgt) / 2)
+				/ ((long) td->tile_wid * (long) td->tile_hgt));
+
+			best = abs((long) td->font_wid * (long) td->font_hgt
+				 - (long) td->tile_wid * (long) td->tile_hgt);
+			ibest = 1;
+			i = 2;
+			while (!best && (i - 1) * (i - 1) <= area_ratio) {
+				int try_best = abs((long) td->font_wid
+					* (long) td->font_hgt
+					- ((long) td->tile_wid * i)
+					* ((long) td->tile_hgt * i));
+
+				if (best > try_best) {
+					best = try_best;
+					ibest = i;
+				}
+				++i;
+			}
+			td->tile_wid *= i;
+			td->tile_hgt *= i;
 		}
-		
-		if (td->tile_wid >= td->font_wid * 2) {
-			tile_width *= 2;
-			td->tile_wid /= 2;
+
+		/*
+		 * Find the best multiplier (size of the scaled up font does
+		 * not exceed the tile size in either dimension, and the area
+		 * of the scaled up font is closest to the area of the tile).
+		 */
+		ibest = -1;
+		best = (long) td->tile_wid * (long) td->tile_hgt;
+		for (i = 0; i < (int) N_ELEMENTS(multipliers) && best; ++i) {
+			uint sclw = td->font_wid * multipliers[i].w;
+			uint sclh = td->font_hgt * multipliers[i].h;
+
+			if (sclw <= td->tile_wid && sclh <= td->tile_hgt) {
+				int try_best = abs(
+					(long) td->tile_wid
+					* (long) td->tile_hgt
+					- (long) sclw * (long) sclh);
+
+				if (best > try_best) {
+					best = try_best;
+					ibest = i;
+				}
+			}
 		}
-		
+
+		if (ibest >= 0) {
+			tile_width = multipliers[ibest].w;
+			tile_height = multipliers[ibest].h;
+			td->tile_wid /= tile_width;
+			td->tile_hgt /= tile_height;
+		} else {
+			tile_width = 1;
+			tile_height = 1;
+		}
+
 		if (td->tile_wid < td->font_wid) td->tile_wid = td->font_wid;
 		if (td->tile_hgt < td->font_hgt) td->tile_hgt = td->font_hgt;
 	}
@@ -1111,7 +1183,7 @@ static bool init_graphics(void)
 	return (can_use_graphics);
 }
 
-#ifdef SOUND
+#if defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
 
 /* Supported file types */
 enum {
@@ -1156,9 +1228,9 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 				mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT, (size_t)(&sample->op));
 			}
 
-			data->loaded = (0 != sample->op.wDeviceID);
-
-			if (!data->loaded) {
+			if (0 != sample->op.wDeviceID) {
+				data->status = SOUND_ST_LOADED;
+			} else {
 				mem_free(sample);
 				sample = NULL;
 			}
@@ -1170,12 +1242,11 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 
 			sample->filename = mem_zalloc(strlen(filename) + 1);
 			my_strcpy(sample->filename, filename, strlen(filename) + 1);
-			data->loaded = true;
+			data->status = SOUND_ST_LOADED;
 			break;
 
 		default:
 			plog_fmt("Sound: Oops - Unsupported file type");
-			data->loaded = false;
 			break;
 	}
 
@@ -1247,7 +1318,7 @@ static bool unload_sound_win(struct sound_data *data)
 
 		mem_free(sample);
 		data->plat_data = NULL;
-		data->loaded = false;
+		data->status = SOUND_ST_UNKNOWN;
 	}
 
 	return true;
@@ -1283,7 +1354,7 @@ errr init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
 	/* Success */
 	return (0);
 }
-#endif /* SOUND */
+#endif /* SOUND && !SOUND_SDL && !SOUND_SDL2 */
 
 
 /**
@@ -2041,7 +2112,7 @@ static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 			SetTextColor(hdc, win_clr[a % MAX_COLORS]);
 
 		/* Determine the background colour - from Sil */
-		switch (a / MAX_COLORS)
+		switch (a / MULT_BG)
 		{
 			case BG_SAME:
 				/* Background same as foreground*/
@@ -2573,10 +2644,6 @@ static void term_data_link(term_data *td)
 	/* Use "Term_pict" for "graphic" data */
 	t->higher_pict = true;
 
-	/* Erase with "white space" */
-	t->attr_blank = COLOUR_WHITE;
-	t->char_blank = ' ';
-
 #if 0
 	/* Prepare the init/nuke hooks */
 	t->init_hook = Term_init_win;
@@ -2977,7 +3044,7 @@ static void setup_menus(void)
 	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
 				   MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
-	for (i = IDM_OPTIONS_TILE_1x1; i < IDM_OPTIONS_TILE_16x16; i++) {
+	for (i = IDM_OPTIONS_TILE_1x1; i <= IDM_OPTIONS_TILE_16x16; i++) {
 		EnableMenuItem(hm, i, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	}
 	for (i = IDM_TILE_FONT; i < IDM_TILE_12X13; i++) {
@@ -3110,8 +3177,12 @@ static void setup_menus(void)
 
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE, MF_ENABLED);
 
-		for (i = IDM_OPTIONS_TILE_1x1; i < IDM_OPTIONS_TILE_16x16; i++) {
-			EnableMenuItem(hm, i, MF_ENABLED);
+		/* Only enable the multiplier entries if using a tile set. */
+		if (current_graphics_mode && current_graphics_mode->grafID) {
+			for (i = IDM_OPTIONS_TILE_1x1;
+					i <= IDM_OPTIONS_TILE_16x16; i++) {
+				EnableMenuItem(hm, i, MF_ENABLED);
+			}
 		}
 		for (i = IDM_TILE_FONT; i < IDM_TILE_12X13; i++) {
 			EnableMenuItem(hm, i, MF_ENABLED);
@@ -4999,7 +5070,6 @@ static void init_stuff(void)
 	validate_dir(ANGBAND_DIR_SAVE);
 	validate_dir(ANGBAND_DIR_PANIC);
 	validate_dir(ANGBAND_DIR_SCORES);
-	validate_dir(ANGBAND_DIR_INFO);
 
 	/* Build the filename */
 	path_build(path, sizeof(path), ANGBAND_DIR_SCREENS, "news.txt");
@@ -5027,8 +5097,14 @@ static void init_stuff(void)
  */
 static void win_reinit(void)
 {
-	/* Initialise sound. */
+/* Initialise sound. */
+#ifdef SOUND
+#if defined(SOUND_SDL) || defined(SOUND_SOUND_SDL2)
+	init_sound("sdl", 0, NULL);
+#else
 	init_sound("win", 0, NULL);
+#endif /* else SOUND_SDL || SOUND_SDL2 */
+#endif /* SOUND */
 
 	/*
 	 * Watch for these events to set up and tear down protection against

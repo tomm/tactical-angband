@@ -311,16 +311,16 @@ void equip_cmp_display(void)
 		{ "Sorry, could not display.  Press any key.",
 			handle_input_bail, true, false },
 		/* EQUIP_CMP_MENU_NEW_PAGE */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; ? for help; ESC to "
+		{ "[k/up, j/down, p/PgUp, n/PgDn to move; ? for help; ESC to "
 			"exit]", handle_input_equip_cmp_general, true, true },
 		/* EQUIP_CMP_MENU_SAME_PAGE */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; ? for help; ESC to "
+		{ "[k/up, j/down, p/PgUp, n/PgDn to move; ? for help; ESC to "
 			"exit]", handle_input_equip_cmp_general, false, false },
 		/* EQUIP_CMP_MENU_SEL0 */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; return to accept]",
+		{ "[k/up, j/down, p/PgUp, n/PgDn to move; return to accept]",
 			handle_input_equip_cmp_select, true, true },
 		/* EQUIP_CMP_MENU_SEL1 */
-		{ "[Up/Down arrow, p/PgUp, n/PgDn to move; return to accept]",
+		{ "[k/up, j/down, p/PgUp, n/PgDn to move; return to accept]",
 			handle_input_equip_cmp_select, true, true },
 	};
 	int istate;
@@ -403,31 +403,31 @@ static void display_equip_cmp_help(void)
 	irow = 1;
 	prt("Movement/scrolling ---------------------------------", irow, 0);
 	++irow;
-	prt("Down arrow  one line down    Up arrow    one line up", irow, 0);
+	prt("j, down  one line down    k, up    one line up", irow, 0);
 	++irow;
-	prt("n, PgDn     one page down    p, PgUp     one page up", irow, 0);
+	prt("n, PgDn  one page down    p, PgUp  one page up", irow, 0);
 	++irow;
-	prt("space       one page down", irow, 0);
+	prt("space    one page down", irow, 0);
 	++irow;
 	prt("Filtering/searching/sorting ------------------------", irow, 0);
 	++irow;
-	prt("q           quick filter     !           use opposite quick", irow, 0);
+	prt("q        quick filter     !        use opposite quick", irow, 0);
 	++irow;
-	prt("c           cycle through sources of items", irow, 0);
+	prt("c        cycle through sources of items", irow, 0);
 	++irow;
-	prt("r           reverse", irow, 0);
+	prt("r        reverse", irow, 0);
 	++irow;
 	prt("Information ----------------------------------------", irow, 0);
 	++irow;
-	prt("v           cycle through attribute views", irow, 0);
+	prt("v        cycle through attribute views", irow, 0);
 	++irow;
-	prt("I, x        select one or two items for details", irow, 0);
+	prt("I, x     select one or two items for details", irow, 0);
 	++irow;
 	prt("Other ----------------------------------------------", irow, 0);
 	++irow;
-	prt("d           dump to file     R           reset display", irow, 0);
+	prt("d        dump to file     R        reset display", irow, 0);
 	++irow;
-	prt("ESC         exit", irow, 0);
+	prt("ESC      exit", irow, 0);
 	++irow;
 
 	Term_get_size(&wid, &hgt);
@@ -515,10 +515,12 @@ static int handle_input_equip_cmp_general(ui_event in, int istate,
 			action = ACT_CTX_EQUIPCMP_PREV_PAGE;
 			break;
 
+		case 'j':
 		case ARROW_DOWN:
 			action = ACT_CTX_EQUIPCMP_NEXT_LINE;
 			break;
 
+		case 'k':
 		case ARROW_UP:
 			action = ACT_CTX_EQUIPCMP_PREV_LINE;
 			break;
@@ -757,7 +759,7 @@ static int handle_input_equip_cmp_general(ui_event in, int istate,
 			break;
 
 		case EQUIPPABLE_ONLY_CARRIED:
-			assert(s->easy_filt.simple = EQUIP_EXPR_AND
+			assert(s->easy_filt.simple == EQUIP_EXPR_AND
 				&& (s->easy_filt.nv == 3
 				|| s->easy_filt.nv == 4)
 				&& s->easy_filt.v[0].s.func == sel_exclude_src
@@ -916,19 +918,19 @@ static void display_equip_cmp_sel_help(void)
 
 	Term_clear();
 	irow = 1;
-	prt("Down arrow  move selection one line down", irow, 0);
+	prt("j, down   move selection one line down", irow, 0);
 	++irow;
-	prt("Up arrow    move selection one line up", irow, 0);
+	prt("k, up     move selection one line up", irow, 0);
 	++irow;
-	prt("n, PgDn     move selection one page up", irow, 0);
+	prt("n, PgDn   move selection one page up", irow, 0);
 	++irow;
-	prt("p, PgUp     move selection one page up", irow, 0);
+	prt("p, PgUp   move selection one page up", irow, 0);
 	++irow;
-	prt("x           stop selection; if first item, escapes", irow, 0);
+	prt("x         stop selection; if first item, escapes", irow, 0);
 	++irow;
-	prt("return      select current item", irow, 0);
+	prt("return    select current item", irow, 0);
 	++irow;
-	prt("ESC         leave selection process", irow, 0);
+	prt("ESC       leave selection process", irow, 0);
 	++irow;
 
 	Term_get_size(&wid, &hgt);
@@ -971,10 +973,12 @@ static int handle_input_equip_cmp_select(ui_event in, int istate,
 			action = ACT_CTX_EQUIPCMP_SELECT_PREV_PAGE;
 			break;
 
+		case 'j':
 		case ARROW_DOWN:
 			action = ACT_CTX_EQUIPCMP_SELECT_NEXT_LINE;
 			break;
 
+		case 'k':
 		case ARROW_UP:
 			action = ACT_CTX_EQUIPCMP_SELECT_PREV_LINE;
 			break;
@@ -2562,9 +2566,10 @@ static int initialize_summary(struct player *p,
 	}
 	visitor.selfunc = select_wearable;
 	visitor.selfunc_closure = NULL;
-	apply_visitor_to_pile(stores[STORE_HOME].stock, &visitor);
-	for (i = 0; i < MAX_STORES; ++i) {
-		if (i == STORE_HOME) {
+	apply_visitor_to_pile(stores[f_info[FEAT_HOME].shopnum - 1].stock,
+		&visitor);
+	for (i = 0; i < z_info->store_max; ++i) {
+		if (stores[i].feat == FEAT_HOME) {
 			continue;
 		}
 		apply_visitor_to_pile(stores[i].stock, &visitor);
@@ -2602,10 +2607,11 @@ static int initialize_summary(struct player *p,
 	add_obj_data.src = EQUIP_SOURCE_HOME;
 	visitor.selfunc = select_wearable;
 	visitor.selfunc_closure = NULL;
-	apply_visitor_to_pile(stores[STORE_HOME].stock, &visitor);
+	apply_visitor_to_pile(stores[f_info[FEAT_HOME].shopnum - 1].stock,
+		&visitor);
 	add_obj_data.src = EQUIP_SOURCE_STORE;
-	for (i = 0; i < MAX_STORES; ++i) {
-		if (i == STORE_HOME) {
+	for (i = 0; i < z_info->store_max; ++i) {
+		if (stores[i].feat == FEAT_HOME) {
 			continue;
 		}
 		apply_visitor_to_pile(stores[i].stock, &visitor);
@@ -2715,7 +2721,7 @@ static int display_page(struct equippable_summary *s, const struct player *p,
 {
 	struct ui_entry_details rdetails;
 	int color = (COLOUR_WHITE);
-	int i;
+	int i, ilab;
 
 	/* Try to handle terminal size changes while displaying the summary. */
 	if (allow_reconfig) {
@@ -2740,20 +2746,20 @@ static int display_page(struct equippable_summary *s, const struct player *p,
 	rdetails.alternate_color_first = false;
 	rdetails.show_combined = false;
 	Term_putch(s->icol_name - 4, rdetails.value_position.y, color, L'@');
-	for (i = 0; i < (int)N_ELEMENTS(s->propcats); ++i) {
+	for (i = 0, ilab = 0; i < (int)N_ELEMENTS(s->propcats); ++i) {
 		int j;
 
 		if (!s->propcats[i].nvw[s->iview]) {
 			continue;
 		}
-		for (j = 0; j < s->propcats[i].nvw[s->iview]; ++j) {
+		for (j = 0; j < s->propcats[i].nvw[s->iview]; ++j, ++ilab) {
 			int joff = j + s->propcats[i].ivw[s->iview];
 			/*
 			 * As a hack, label colors are hardwired; it would be
 			 * better if they configurable so they'd be consistent
 			 * with the scheme for the symbol colors.
 			 */
-			int label_color = (j % 2 == 0) ?
+			int label_color = (ilab % 2 == 0) ?
 				COLOUR_WHITE : COLOUR_L_WHITE;
 			int k;
 
@@ -2789,8 +2795,14 @@ static int display_page(struct equippable_summary *s, const struct player *p,
 		assert(isort >= 0 && isort < s->nitems);
 		e = s->items + isort;
 
-		Term_putch(s->icol_name - 4, rdetails.value_position.y,
-			e->at, e->ch);
+		if (tile_width == 1 && tile_height == 1) {
+			Term_putch(s->icol_name - 4, rdetails.value_position.y,
+				e->at, e->ch);
+		} else {
+			/* No equippy chars with big tiles. */
+			Term_putch(s->icol_name - 4, rdetails.value_position.y,
+				COLOUR_WHITE, L' ');
+		}
 		Term_putch(s->icol_name - 2, rdetails.value_position.y, color,
 			source_to_char(e->src));
 		if (isort == s->isel0 || isort == s->isel1 ||

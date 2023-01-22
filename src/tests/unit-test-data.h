@@ -754,7 +754,6 @@ static struct monster_base TEST_DATA test_rb_info = {
 	.name = "townsfolk",
 	.text = "Townsfolk",
 	.flags = "\0\0\0\0\0\0\0\0\0\0\0",
-	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0",
 	.d_char = 116,
 	.pain = NULL,
 	
@@ -950,16 +949,16 @@ static monster_lore TEST_DATA test_lore = {
 };
 
 static struct angband_constants TEST_DATA test_z_info = {
-	.f_max    = 2,
-	.trap_max = 2,
-	.k_max    = 2,
-	.a_max    = 2,
-	.e_max    = 2,
-	.r_max    = 2,
-	.mp_max   = 2,
-	.s_max    = 2,
-	.pit_max  = 2,
-	.act_max  = 2,
+	.store_max = 2,
+	.trap_max  = 2,
+	.k_max     = 2,
+	.a_max     = 2,
+	.e_max     = 2,
+	.r_max     = 2,
+	.mp_max    = 2,
+	.s_max     = 2,
+	.pit_max   = 2,
+	.act_max   = 2,
 	.level_monster_max = 2,
 };
 

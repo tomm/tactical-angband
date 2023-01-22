@@ -6,6 +6,7 @@
 #include "message.h"
 #include "game-event.h"
 #include "z-color.h"
+#include "z-form.h"
 #include "z-util.h"
 #include "z-virt.h"
 
@@ -205,6 +206,7 @@ static int test_fill(void *state) {
 	int i = 0;
 	const char *txt;
 	char buf[16];
+	size_t np;
 	uint16_t n, n2, j;
 
 	messages_free();
@@ -216,7 +218,8 @@ static int test_fill(void *state) {
 	 */
 	while (1) {
 		require(i < 1 << 16);
-		(void) sprintf(buf, "%d", i);
+		np = strnfmt(buf, sizeof(buf), "%d", i);
+		require(np < sizeof(buf) - 1);
 		message_add(buf, MSG_GENERIC);
 		++i;
 		n = messages_num();
@@ -226,7 +229,9 @@ static int test_fill(void *state) {
 				n2 = message_count(j);
 				eq(n2, 1);
 				txt = message_str(j);
-				(void) sprintf(buf, "%d", i - 1 - (int) j);
+				np = strnfmt(buf, sizeof(buf), "%d",
+					i - 1 - (int) j);
+				require(np < sizeof(buf) - 1);
 				require(streq(txt, buf));
 			}
 
@@ -306,21 +311,44 @@ static int test_color(void *state) {
 	color = message_type_color(MSG_HIT);
 	eq(color, (COLOUR_RED));
 
+	message_color_define(MSG_MISS, (COLOUR_GREEN));
+	color = message_type_color(MSG_MISS);
+	eq(color, (COLOUR_GREEN));
+
+	message_add("msg0", MSG_MISS);
+	color = message_color(0);
+	eq(color, (COLOUR_GREEN));
+
 	message_add("msg1", MSG_HIT);
 	color = message_color(0);
 	eq(color, (COLOUR_RED));
+	color = message_color(1);
+	eq(color, (COLOUR_GREEN));
 
 	message_add("msg2", MSG_GENERIC);
 	color = message_color(0);
 	eq(color, (COLOUR_WHITE));
 	color = message_color(1);
 	eq(color, (COLOUR_RED));
+	color = message_color(2);
+	eq(color, (COLOUR_GREEN));
 
 	message_color_define(MSG_HIT, (COLOUR_L_BLUE));
 	color = message_color(0);
 	eq(color, (COLOUR_WHITE));
 	color = message_color(1);
 	eq(color, (COLOUR_L_BLUE));
+	color = message_color(2);
+	eq(color, (COLOUR_GREEN));
+
+	message_color_define(MSG_MISS, (COLOUR_VIOLET));
+	color = message_color(0);
+	eq(color, (COLOUR_WHITE));
+	color = message_color(1);
+	eq(color, (COLOUR_L_BLUE));
+	color = message_color(2);
+	eq(color, (COLOUR_VIOLET));
+
 
 	ok;
 }
@@ -475,6 +503,7 @@ static int test_msgt(void *state)
 static int test_lookup(void *state)
 {
 	char buffer[16];
+	size_t np;
 	int i, j;
 
 	messages_free();
@@ -490,7 +519,8 @@ static int test_lookup(void *state)
 
 	/* Test by printed number. */
 	for (i = MSG_GENERIC; i < MSG_MAX; ++i) {
-		(void) sprintf(buffer, "%d", i);
+		np = strnfmt(buffer, sizeof(buffer), "%d", i);
+		require(np < sizeof(buffer) - 1);
 		j = message_lookup_by_name(buffer);
 		eq(i, j);
 	}
@@ -502,10 +532,12 @@ static int test_lookup(void *state)
 	eq(i, -1);
 	i = message_lookup_by_name("-3");
 	eq(i, -1);
-	(void) sprintf(buffer, "%d", MSG_MAX);
+	np = strnfmt(buffer, sizeof(buffer), "%d", MSG_MAX);
+	require(np < sizeof(buffer) - 1);
 	i = message_lookup_by_name(buffer);
 	eq(i, -1);
-	(void) sprintf(buffer, "%d", MSG_MAX + 1);
+	np = strnfmt(buffer, sizeof(buffer), "%d", MSG_MAX + 1);
+	require(np < sizeof(buffer) - 1);
 	i = message_lookup_by_name(buffer);
 	eq(i, -1);
 

@@ -254,10 +254,14 @@ void do_cmd_open(struct command *cmd)
 		n_closed_doors = count_feats(&grid1, square_iscloseddoor, false);
 		n_locked_chests = count_chests(&grid1, CHEST_OPENABLE);
 
+		/*
+		 * If prompting for a direction, allow the player's square as
+		 * an option if there's a chest nearby.
+		 */
 		if (n_closed_doors + n_locked_chests == 1) {
 			dir = motion_dir(player->grid, grid1);
 			cmd_set_arg_direction(cmd, "direction", dir);
-		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
+		} else if (cmd_get_direction(cmd, "direction", &dir, n_locked_chests > 0)) {
 			return;
 		}
 	}
@@ -290,11 +294,11 @@ void do_cmd_open(struct command *cmd)
 	/* Monster */
 	mon = square_monster(cave, grid);
 	if (mon) {
-		/* Mimics surprise the player */
-		if (monster_is_mimicking(mon)) {
+		/* Camouflaged monsters surprise the player */
+		if (monster_is_camouflaged(mon)) {
 			become_aware(cave, mon);
 
-			/* Mimic wakes up and becomes aware*/
+			/* Camouflaged monster wakes up and becomes aware */
 			monster_wake(mon, false, 100);
 		} else {
 			/* Message */
@@ -334,6 +338,15 @@ static bool do_cmd_close_test(struct loc grid)
 	if (!square_isopendoor(cave, grid) && !square_isbrokendoor(cave, grid)) {
 		/* Message */
 		msg("You see nothing there to close.");
+
+		/* Nope */
+		return (false);
+	}
+
+	/* Don't allow if player is in the way. */
+	if (square(cave, grid)->mon < 0) {
+		/* Message */
+		msg("You're standing in that doorway.");
 
 		/* Nope */
 		return (false);
@@ -513,7 +526,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	struct object *best_digger = NULL;
 	struct player_state local_state;
 	struct player_state *used_state = &player->state;
-	int oldn = 1;
+	int oldn = 1, dig_idx;
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(grid)) return (false);
@@ -535,7 +548,15 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	calc_digging_chances(used_state, digging_chances);
 
 	/* Do we succeed? */
-	chance = digging_chances[square_digging(cave, grid) - 1];
+	dig_idx = square_digging(cave, grid);
+	if (dig_idx < 1 || dig_idx > DIGGING_MAX) {
+		msg("%s has misconfigured digging chance; please report this bug.",
+			(square_feat(cave, grid)->name) ?
+			square_feat(cave, grid)->name :
+			format("Terrain index %d", square_feat(cave, grid)->fidx));
+		dig_idx = DIGGING_GRANITE + 1;
+	}
+	chance = digging_chances[dig_idx - 1];
 	okay = (chance > randint0(1600));
 
 	/* Swap back */
@@ -587,7 +608,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			msg("You dig in the rubble.");
 		else
 			msg("You tunnel into the %s.",
-				square_apparent_name(cave, player, grid));
+				square_apparent_name(player->cave, grid));
 		more = true;
 	} else {
 		/* Don't automatically repeat if there's no hope. */
@@ -595,7 +616,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			msg("You dig in the rubble with little effect.");
 		} else {
 			msg("You chip away futilely at the %s.",
-				square_apparent_name(cave, player, grid));
+				square_apparent_name(player->cave, grid));
 		}
 	}
 
@@ -823,12 +844,13 @@ void do_cmd_disarm(struct command *cmd)
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
 		struct loc grid1;
-		int n_traps, n_chests;
+		int n_traps, n_chests, n_unldoor;
 
-		n_traps = count_feats(&grid1, square_isdisarmabletrap, true);
+		n_traps = count_feats(&grid1, square_isdisarmabletrap, false);
 		n_chests = count_chests(&grid1, CHEST_TRAPPED);
+		n_unldoor = count_feats(&grid1, square_isunlockeddoor, false);
 
-		if (n_traps + n_chests == 1) {
+		if (n_traps + n_chests + n_unldoor == 1) {
 			dir = motion_dir(player->grid, grid1);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, n_chests > 0)) {
@@ -1014,10 +1036,10 @@ void move_player(int dir, bool disarm)
 	/* Many things can happen on movement */
 	if (m_idx > 0) {
 		/* Attack monsters */
-		if (monster_is_mimicking(mon)) {
+		if (monster_is_camouflaged(mon)) {
 			become_aware(cave, mon);
 
-			/* Mimic wakes up and becomes aware*/
+			/* Camouflaged monster wakes up and becomes aware */
 			monster_wake(mon, false, 100);
 		} else {
 			py_attack(player, grid);
@@ -1030,6 +1052,8 @@ void move_player(int dir, bool disarm)
 	} else if (trap && player->upkeep->running && !trapsafe) {
 		/* Stop running before known traps */
 		disturb(player);
+		/* No move made so no energy spent. */
+		player->upkeep->energy_use = 0;
 	} else if (!square_ispassable(cave, grid)) {
 		disturb(player);
 
@@ -1058,89 +1082,72 @@ void move_player(int dir, bool disarm)
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
 		}
-	} else if (square_isdamaging(cave, grid)) {
-		/* Some terrain can damage the player */
-		bool step = true;
-		struct feature *feat = square_feat(cave, grid);
-		int dam_taken = player_check_terrain_damage(player, grid);
-
-		/* Check if running, or going to cost more than a third of hp */
-		if (player->upkeep->running && dam_taken) {
-			if (!get_check(feat->run_msg)) {
-				player->upkeep->running = 0;
-				step = false;
-			}
-		} else {
-			if (dam_taken > player->chp / 3) {
-				step = get_check(feat->walk_msg);
-			}
-		}
-
-		/* Enter if OK or confirmed. */
-		if (step) {
-			/* Move player */
-			monster_swap(player->grid, grid);
-
-			/* Update view and search */
-			update_view(cave, player);
-			search(player);
-		}
+		/*
+		 * No move but do not refund energy:  primarily so that
+		 * confused moves while blind or without light take energy.
+		 */
 	} else {
 		/* See if trap detection status will change */
 		bool old_dtrap = square_isdtrap(cave, player->grid);
 		bool new_dtrap = square_isdtrap(cave, grid);
+		bool step = true;
 
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap)
 			player->upkeep->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the area */
-		if (player->upkeep->running && !player->upkeep->running_firststep &&
-			old_dtrap && !new_dtrap) {
+		if (player->upkeep->running
+				&& !player->upkeep->running_firststep
+				&& old_dtrap && !new_dtrap) {
 			disturb(player);
+			/* No move made so no energy spent. */
+			player->upkeep->energy_use = 0;
 			return;
 		}
 
-		/* Trap immune player learns that they are */
-		if (trap && player_of_has(player, OF_TRAP_IMMUNE)) {
-			equip_learn_flag(player, OF_TRAP_IMMUNE);
-		}
+		/*
+		 * If not confused, allow check before moving into damaging
+		 * terrain.
+		 */
+		if (square_isdamaging(cave, grid)
+				&& !player->timed[TMD_CONFUSED]) {
+			struct feature *feat = square_feat(cave, grid);
+			int dam_taken = player_check_terrain_damage(player,
+				grid, false);
 
-		/* Move player */
-		monster_swap(player->grid, grid);
-
-		/* Handle store doors, or notice objects */
-		if (square_isshop(cave, grid)) {
-			if (player_is_shapechanged(player)) {
-				if (store_at(cave, grid)->sidx != STORE_HOME) {
-					msg("There is a scream and the door slams shut!");
+			/*
+			 * Check if running, or going to cost more than a
+			 * third of hp.
+			 */
+			if (player->upkeep->running && dam_taken) {
+				if (!get_check(feat->run_msg)) {
+					player->upkeep->running = 0;
+					step = false;
 				}
-				return;
+			} else {
+				if (dam_taken > player->chp / 3) {
+					step = get_check(feat->walk_msg);
+				}
 			}
-			disturb(player);
-			event_signal(EVENT_ENTER_STORE);
-			event_remove_handler_type(EVENT_ENTER_STORE);
-			event_signal(EVENT_USE_STORE);
-			event_remove_handler_type(EVENT_USE_STORE);
-			event_signal(EVENT_LEAVE_STORE);
-			event_remove_handler_type(EVENT_LEAVE_STORE);
-		} else {
-			square_know_pile(cave, grid);
+		}
+
+		if (step) {
+			/* Move player */
+			monster_swap(player->grid, grid);
+			player_handle_post_move(player, true, false);
 			cmdq_push(CMD_AUTOPICKUP);
+			/*
+			 * The autopickup is a side effect of the move:
+			 * whatever command triggered the move will be the
+			 * target for CMD_REPEAT rather than repeating the
+			 * autopickup.
+			 */
+			cmdq_peek()->is_background_command = true;
+		} else {
+			/* No move made so no energy spent. */
+			player->upkeep->energy_use = 0;
 		}
-
-		/* Discover invisible traps, set off visible ones */
-		if (square_issecrettrap(cave, grid)) {
-			disturb(player);
-			hit_trap(grid, 0);
-		} else if (square_isdisarmabletrap(cave, grid) && !trapsafe) {
-			disturb(player);
-			hit_trap(grid, 0);
-		}
-
-		/* Update view and search */
-		update_view(cave, player);
-		search(player);
 	}
 
 	player->upkeep->running_firststep = false;
@@ -1154,8 +1161,8 @@ static bool do_cmd_walk_test(struct loc grid)
 	int m_idx = square(cave, grid)->mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 
-	/* Allow attack on visible monsters if unafraid */
-	if (m_idx > 0 && monster_is_visible(mon) &&	!monster_is_mimicking(mon)) {
+	/* Allow attack on obvious monsters if unafraid */
+	if (m_idx > 0 && monster_is_obvious(mon)) {
 		/* Handle player fear */
 		if (player_of_has(player, OF_AFRAID)) {
 			/* Extract monster name (or "it") */
@@ -1368,7 +1375,7 @@ void do_cmd_hold(struct command *cmd)
 	/* Enter a store if we are on one, otherwise look at the floor */
 	if (square_isshop(cave, player->grid)) {
 		if (player_is_shapechanged(player)) {
-			if (store_at(cave, player->grid)->sidx != STORE_HOME) {
+			if (square(cave, player->grid)->feat != FEAT_HOME) {
 				msg("There is a scream and the door slams shut!");
 			}
 			return;
@@ -1579,7 +1586,7 @@ void do_cmd_mon_command(struct command *cmd)
 		case CMD_READ_SCROLL: {
 			/* Actually 'r'elease monster */
 			mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY);
-			player_clear_timed(player, TMD_COMMAND, true);
+			player_clear_timed(player, TMD_COMMAND, true, false);
 			break;
 		}
 		case CMD_CAST: {
@@ -1658,6 +1665,12 @@ void do_cmd_mon_command(struct command *cmd)
 			if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 				return;
 			grid = loc_sum(mon->grid, ddgrid[dir]);
+
+			/* Don't let immobile monsters be moved */
+			if (rf_has(mon->race->flags, RF_NEVER_MOVE)) {
+				msg("The monster can not move.");
+				return;
+			}
 
 			/* Monster there - attack */
 			t_mon = square_monster(cave, grid);

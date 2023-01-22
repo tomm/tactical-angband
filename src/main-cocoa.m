@@ -24,6 +24,9 @@
 #include "init.h"
 #include "obj-util.h"
 #include "savefile.h"
+#if defined(MACH_O_CARBON) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
+#include "sound.h"
+#endif
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -68,14 +71,17 @@ static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
 static NSString * const AngbandTerminalVisibleDefaultsKey = @"Visible";
 static NSString * const AngbandGraphicsDefaultsKey = @"GraphicsID";
-static NSString * const AngbandUseDefaultTileMultDefaultsKey =
-    @"UseDefaultTileMultiplier";
+static NSString * const AngbandTileFracDefaultsKey = @"TileFraction";
+static NSString * const AngbandFrameRateDefaultsKey = @"FramesPerSecond";
+static NSString * const AngbandSoundDefaultsKey = @"AllowSound";
+/*
+ * These two are for compatibility with older sets of defaults.  They'll
+ * only be read and not written.
+ */
 static NSString * const AngbandTileWidthMultDefaultsKey =
     @"TileWidthMultiplier";
 static NSString * const AngbandTileHeightMultDefaultsKey =
     @"TileHeightMultiplier";
-static NSString * const AngbandFrameRateDefaultsKey = @"FramesPerSecond";
-static NSString * const AngbandSoundDefaultsKey = @"AllowSound";
 static NSInteger const AngbandWindowMenuItemTagBase = 1000;
 static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 
@@ -111,260 +117,110 @@ static bool new_game = false;
 @class AngbandView;
 
 /**
- * Load sound effects based on sound.cfg within the xtra/sound directory;
- * bridge to Cocoa to use NSSound for simple loading and playback, avoiding
- * I/O latency by caching all sounds at the start.  Inherits full sound
- * format support from Quicktime base/plugins.
- * pelpel favoured a plist-based parser for the future but .cfg support
- * improves cross-platform compatibility.
+ * The tile size fractions * 1000 allowed in the "Tile Size" menu.  Since
+ * tiles often use 8, 16, 32, or 64 for the size of one dimension, favor
+ * fractions that have factors of 2 in the denominator (1/8, ...).
+ * coerce_tile_fraction() assumes these are in ascending order.  The values
+ * should always include 1000 (i.e. the native size).
  */
-@interface AngbandSoundCatalog : NSObject {
-@private
-    /**
-     * Stores instances of NSSound keyed by path so the same sound can be
-     * used for multiple events.
+static int tile_size_fractions[] = {
+    125, 250, 375, 500, 675, 750, 875, 1000, 1500, 2000, 2500, 3000, 4000
+};
+
+static int coerce_tile_fraction(int frac)
+{
+    int i = 0;
+
+    while (1) {
+        if (i >= (int) N_ELEMENTS(tile_size_fractions)) {
+            break;
+        }
+        if (frac < tile_size_fractions[i]) {
+            if (i == 0) {
+                /*
+                 * It's smaller than all the available options.  Return the
+                 * the smallest.
+                 */
+                return tile_size_fractions[0];
+            }
+            return ((frac - tile_size_fractions[i - 1])
+                < (tile_size_fractions[i] - frac)) ?
+                tile_size_fractions[i - 1] : tile_size_fractions[i];
+        } else if (frac == tile_size_fractions[i]) {
+            return tile_size_fractions[i];
+        }
+        ++i;
+    }
+    /* It's larger than all the available options.  Return the largest. */
+    return tile_size_fractions[N_ELEMENTS(tile_size_fractions) - 1];
+}
+
+static void get_tile_multipliers_from_fraction(const graphics_mode *gm,
+        int frac, CGFloat cellw, CGFloat cellh,
+        int *tile_mult_w, int *tile_mult_h)
+{
+    if (!gm || gm->grafID == GRAPHICS_NONE) {
+        *tile_mult_w = 1;
+        *tile_mult_h = 1;
+        return;
+    }
+
+    /*
+     * Round to the nearest integer.  Restrict to the range [1, 255]
+     * since the core game stores tile multipliers as unsigned 8-bit integers.
      */
-    NSMutableDictionary *soundsByPath;
-    /**
-     * Stores arrays of NSSound keyed by event number.
-     */
-    NSMutableDictionary *soundArraysByEvent;
+    *tile_mult_w = (int) floor((frac * gm->cell_width)
+        / (cellw * 1000.0) + 0.5);
+    *tile_mult_w = MAX(1, MIN(255, *tile_mult_w));
+    *tile_mult_h = (int) floor((frac * gm->cell_height)
+        / (cellh * 1000.0) + 0.5);
+    *tile_mult_h = MAX(1, MIN(255, *tile_mult_w));
 }
 
-/**
- * If NO, then playSound effectively becomes a do nothing operation.
- */
-@property (getter=isEnabled) BOOL enabled;
+static int get_tile_fraction_from_size(const graphics_mode *gm,
+        CGFloat target_w, CGFloat target_h, CGFloat cell_w, CGFloat cell_h)
+{
+    /* Find the available fraction that most closely matches the target area. */
+    CGFloat area = target_w * target_h;
+    CGFloat prev_area = 0.0;
+    CGFloat tileWidth, tileHeight;
+    int i = 0;
 
-/**
- * Set up for lazy initialization in playSound().  Set enabled to NO.
- */
-- (id)init;
-
-/**
- * If self.enabled is YES and the given event has one or more sounds
- * corresponding to it in the catalog, plays one of those sounds, chosen at
- * random.
- */
-- (void)playSound:(int)event;
-
-/**
- * Impose an arbitrary limit on the number of possible samples per event.
- * Currently not declaring this as a class property for compatibility with
- * versions of Xcode prior to 8.
- */
-+ (int)maxSamples;
-
-/**
- * Return the shared sound catalog instance, creating it if it does not
- * exist yet.  Currently not declaring this as a class property for
- * compatibility with versions of Xcode prior to 8.
- */
-+ (AngbandSoundCatalog*)sharedSounds;
-
-/**
- * Release any resources associated with shared sounds.
- */
-+ (void)clearSharedSounds;
-
-@end
-
-@implementation AngbandSoundCatalog
-
-- (id)init {
-    if (self = [super init]) {
-	self->soundsByPath = nil;
-	self->soundArraysByEvent = nil;
-	self->_enabled = NO;
+    if (gm && gm->grafID != GRAPHICS_NONE) {
+        tileWidth = gm->cell_width;
+        tileHeight = gm->cell_height;
+    } else {
+        tileWidth = cell_w;
+        tileHeight = cell_h;
     }
-    return self;
-}
+    while (1) {
+        CGFloat fracf = tile_size_fractions[i] / 1000.0;
+        CGFloat this_area = (fracf * tileWidth) * (fracf * tileHeight);
 
-- (void)playSound:(int)event {
-    if (! self.enabled) {
-	return;
+        if (i >= (int) N_ELEMENTS(tile_size_fractions)) {
+            /*
+             * Area is larger than that for any available option.  Use the
+             * largest.
+             */
+            return tile_size_fractions[N_ELEMENTS(tile_size_fractions) - 1];
+        }
+        if (area <= this_area) {
+            if (i == 0) {
+                /*
+                 * Area is less than or equal to that for any available option.
+                 * Use the smallest.
+                 */
+                return tile_size_fractions[0];
+            }
+            return (area - prev_area < this_area - area) ?
+                tile_size_fractions[i - 1] : tile_size_fractions[i];
+        }
+        prev_area = this_area;
+        ++i;
     }
-
-    /* Initialize when the first sound is played. */
-    if (self->soundArraysByEvent == nil) {
-	/* Find and open the config file */
-	char path[2048];
-	path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, "sound.cfg");
-	ang_file *fff = file_open(path, MODE_READ, -1);
-
-	/* Handle errors */
-	if (!fff) {
-	    NSLog(@"The sound configuration file could not be opened.");
-	    return;
-	}
-
-	self->soundsByPath = [[NSMutableDictionary alloc] init];
-	self->soundArraysByEvent = [[NSMutableDictionary alloc] init];
-	@autoreleasepool {
-	    /*
-	     * This loop may take a while depending on the count and size of
-	     * samples to load.
-	     */
-
-	    /* Parse the file */
-	    /* Lines are always of the form "name = sample [sample ...]" */
-	    char buffer[2048];
-	    while (file_getl(fff, buffer, sizeof(buffer))) {
-		char *msg_name;
-		char *cfg_sample_list;
-		char *search;
-		char *cur_token;
-		char *next_token;
-		int lookup_result;
-
-		/* Skip anything not beginning with an alphabetic character */
-		if (!buffer[0] || !isalpha((unsigned char)buffer[0])) continue;
-
-		/* Split the line into two: message name, and the rest */
-		search = strchr(buffer, ' ');
-		cfg_sample_list = strchr(search + 1, ' ');
-		if (!search) continue;
-		if (!cfg_sample_list) continue;
-
-		/* Set the message name, and terminate at first space */
-		msg_name = buffer;
-		search[0] = '\0';
-
-		/* Make sure this is a valid event name */
-		lookup_result = message_lookup_by_sound_name(msg_name);
-		if (lookup_result < 0) continue;
-
-		/*
-		 * Advance the sample list pointer so it's at the beginning of
-		 * text.
-		 */
-		cfg_sample_list++;
-		if (!cfg_sample_list[0]) continue;
-
-		/* Terminate the current token */
-		cur_token = cfg_sample_list;
-		search = strchr(cur_token, ' ');
-		if (search) {
-		    search[0] = '\0';
-		    next_token = search + 1;
-		} else {
-		    next_token = NULL;
-		}
-
-		/*
-		 * Now we find all the sample names and add them one by one
-		 */
-		while (cur_token) {
-		    NSMutableArray *soundSamples =
-			[self->soundArraysByEvent
-			     objectForKey:[NSNumber numberWithInteger:lookup_result]];
-		    if (soundSamples == nil) {
-			soundSamples = [[NSMutableArray alloc] init];
-			[self->soundArraysByEvent
-			     setObject:soundSamples
-			     forKey:[NSNumber numberWithInteger:lookup_result]];
-		    }
-		    int num = (int) soundSamples.count;
-
-		    /* Don't allow too many samples */
-		    if (num >= [AngbandSoundCatalog maxSamples]) break;
-
-		    NSString *token_string =
-			[NSString stringWithUTF8String:cur_token];
-		    NSSound *sound =
-			[self->soundsByPath objectForKey:token_string];
-
-		    if (! sound) {
-			/*
-			 * We have to load the sound. Build the path to the
-			 * sample.
-			 */
-			path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS,
-				   cur_token);
-			if (file_exists(path)) {
-			    /* Load the sound into memory */
-			    sound = [[NSSound alloc]
-					 initWithContentsOfFile:[NSString stringWithUTF8String:path]
-					 byReference:YES];
-			    if (sound) {
-				[self->soundsByPath setObject:sound
-					    forKey:token_string];
-			    }
-			}
-		    }
-
-		    /* Store it if we loaded it */
-		    if (sound) {
-			[soundSamples addObject:sound];
-		    }
-
-		    /* Figure out next token */
-		    cur_token = next_token;
-		    if (next_token) {
-			 /* Try to find a space */
-			 search = strchr(cur_token, ' ');
-
-			 /*
-			  * If we can find one, terminate, and set new "next".
-			  */
-			 if (search) {
-			     search[0] = '\0';
-			     next_token = search + 1;
-			 } else {
-			     /* Otherwise prevent infinite looping */
-			     next_token = NULL;
-			 }
-		    }
-		}
-	    }
-	}
-
-	/* Close the file */
-	file_close(fff);
-    }
-
-    @autoreleasepool {
-	NSMutableArray *samples =
-	    [self->soundArraysByEvent
-		 objectForKey:[NSNumber numberWithInteger:event]];
-
-	if (samples == nil || samples.count == 0) {
-	    return;
-	}
-
-	/* Choose a random event. */
-	int s = randint0((int) samples.count);
-	NSSound *sound = samples[s];
-
-	if ([sound isPlaying])
-	    [sound stop];
-
-	/* Play the sound. */
-	[sound play];
-    }
+    /* Area is larger than that for any available option.  Use the largest. */
+    return tile_size_fractions[N_ELEMENTS(tile_size_fractions) - 1];
 }
-
-+ (int)maxSamples {
-    return 16;
-}
-
-/**
- * For sharedSounds and clearSharedSounds.
- */
-static __strong AngbandSoundCatalog* gSharedSounds = nil;
-
-+ (AngbandSoundCatalog*)sharedSounds {
-    if (gSharedSounds == nil) {
-	gSharedSounds = [[AngbandSoundCatalog alloc] init];
-    }
-    return gSharedSounds;
-}
-
-+ (void)clearSharedSounds {
-    gSharedSounds = nil;
-}
-
-@end
 
 /**
  * Each location in the terminal either stores a character, a tile,
@@ -1790,11 +1646,11 @@ static void draw_image_tile(
 
 /*
  * The max number of glyphs we support.  Currently this only affects
- * updateGlyphInfo() for the calculation of the tile size, fontAscender,
+ * updateGlyphInfoForFont() for the calculation of the tile size, fontAscender,
  * fontDescender, nColPre, and nColPost.  The rendering in drawWChar() will
- * work for a glyph not in updateGlyphInfo()'s set, though there may be
+ * work for a glyph not in updateGlyphInfoForFont()'s set, though there may be
  * clipping or clearing artifacts because it wasn't included in
- * updateGlyphInfo()'s calculations.
+ * updateGlyphInfoForFont()'s calculations.
  */
 #define GLYPH_COUNT 256
 
@@ -1830,8 +1686,8 @@ static void draw_image_tile(
 /* The font of this context */
 @property NSFont *angbandViewFont;
 
-/* The size of one tile */
-@property (readonly) NSSize tileSize;
+/* The size of one grid element */
+@property (readonly) NSSize cellSize;
 
 /* Font's ascender and descender */
 @property (readonly) CGFloat fontAscender;
@@ -1943,7 +1799,12 @@ static void draw_image_tile(
  * Sets the default font for all contexts.
  */
 + (void)setDefaultFont:(NSFont*)font;
-
+/**
+ * Precompute certain metrics for a font.
+ */
++ (void)updateGlyphInfoForFont:(NSFont*)font cellSize:(NSSize*)cs
+    ascender:(CGFloat*)asc descender:(CGFloat*)des
+    columnsBefore:(int*)nbef columnsAfter:(int*)naft;
 @end
 
 /**
@@ -2123,7 +1984,6 @@ static NSString* AngbandCorrectedDirectoryPath(NSString *originalPath);
 static void prepare_paths_and_directories(void);
 static void load_prefs(void);
 static void init_windows(void);
-static void play_sound(game_event_type unused, game_event_data *data, void *user);
 static BOOL check_events(int wait);
 static void cocoa_file_open_hook(const char *path, file_type ftype);
 static bool cocoa_get_file(const char *suggested_name, char *path, size_t len);
@@ -2202,203 +2062,29 @@ static BOOL initialized = NO;
      * the border.
      */
     return NSMakeSize(
-	floor(self.cols * self.tileSize.width + 2 * self.borderSize.width),
-	floor(self.rows * self.tileSize.height + 2 * self.borderSize.height));
-}
-
-/* qsort-compatible compare function for CGSizes */
-static int compare_advances(const void *ap, const void *bp)
-{
-    const CGSize *a = ap, *b = bp;
-    return (a->width > b->width) - (a->width < b->width);
+	floor(self.cols * self.cellSize.width + 2 * self.borderSize.width),
+	floor(self.rows * self.cellSize.height + 2 * self.borderSize.height));
 }
 
 /**
- * Precompute certain metrics (tileSize, fontAscender, fontDescender, nColPre,
- * and nColPost) for the current font.
+ * Precompute certain metrics for the current font.
  */
 - (void)updateGlyphInfo
 {
-    NSFont *screenFont = [self.angbandViewFont screenFont];
+    NSSize cs;
+    CGFloat asc, des;
+    int nbef, naft;
 
-    /* Generate a string containing each MacRoman character */
-    /*
-     * Here and below, dynamically allocate working arrays rather than put them
-     * on the stack in case limited stack space is an issue.
-     */
-    unsigned char *latinString = malloc(GLYPH_COUNT);
-    if (latinString == 0) {
-	NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
-					reason:@"latinString in updateGlyphInfo"
-					userInfo:nil];
-	@throw exc;
-    }
-    size_t i;
-    for (i=0; i < GLYPH_COUNT; i++) latinString[i] = (unsigned char)i;
+    [AngbandContext updateGlyphInfoForFont:[self.angbandViewFont screenFont]
+        cellSize:&cs ascender:&asc descender:&des
+        columnsBefore:&nbef columnsAfter:&naft];
 
-    /* Turn that into unichar. Angband uses ISO Latin 1. */
-    NSString *allCharsString = [[NSString alloc] initWithBytes:latinString
-        length:GLYPH_COUNT encoding:NSISOLatin1StringEncoding];
-    unichar *unicharString = malloc(GLYPH_COUNT * sizeof(unichar));
-    if (unicharString == 0) {
-	free(latinString);
-	NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
-					reason:@"unicharString in updateGlyphInfo"
-					userInfo:nil];
-	@throw exc;
-    }
-    unicharString[0] = 0;
-    [allCharsString getCharacters:unicharString range:NSMakeRange(0, MIN(GLYPH_COUNT, [allCharsString length]))];
-    allCharsString = nil;
-    free(latinString);
-
-    /* Get glyphs */
-    CGGlyph *glyphArray = calloc(GLYPH_COUNT, sizeof(CGGlyph));
-    if (glyphArray == 0) {
-	free(unicharString);
-	NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
-					reason:@"glyphArray in updateGlyphInfo"
-					userInfo:nil];
-	@throw exc;
-    }
-    CTFontGetGlyphsForCharacters((CTFontRef)screenFont, unicharString,
-				 glyphArray, GLYPH_COUNT);
-    free(unicharString);
-
-    /* Get advances. Record the max advance. */
-    CGSize *advances = malloc(GLYPH_COUNT * sizeof(CGSize));
-    if (advances == 0) {
-	free(glyphArray);
-	NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
-					reason:@"advances in updateGlyphInfo"
-					userInfo:nil];
-	@throw exc;
-    }
-    CTFontGetAdvancesForGlyphs(
-	(CTFontRef)screenFont, kCTFontHorizontalOrientation, glyphArray,
-	advances, GLYPH_COUNT);
-    CGFloat *glyphWidths = malloc(GLYPH_COUNT * sizeof(CGFloat));
-    if (glyphWidths == 0) {
-	free(glyphArray);
-	free(advances);
-	NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
-					reason:@"glyphWidths in updateGlyphInfo"
-					userInfo:nil];
-	@throw exc;
-    }
-    for (i=0; i < GLYPH_COUNT; i++) {
-        glyphWidths[i] = advances[i].width;
-    }
-
-    /*
-     * For good non-mono-font support, use the median advance. Start by sorting
-     * all advances.
-     */
-    qsort(advances, GLYPH_COUNT, sizeof *advances, compare_advances);
-
-    /* Skip over any initially empty run */
-    size_t startIdx;
-    for (startIdx = 0; startIdx < GLYPH_COUNT; startIdx++)
-    {
-        if (advances[startIdx].width > 0) break;
-    }
-
-    /* Pick the center to find the median */
-    CGFloat medianAdvance = 0;
-    /* In case we have all zero advances for some reason */
-    if (startIdx < GLYPH_COUNT)
-    {
-        medianAdvance = advances[(startIdx + GLYPH_COUNT)/2].width;
-    }
-
-    free(advances);
-
-    /*
-     * Record the ascender and descender.  Some fonts, for instance DIN
-     * Condensed and Rockwell in 10.14, the ascent on '@' exceeds that
-     * reported by [screenFont ascender].  Get the overall bounding box
-     * for the glyphs and use that instead of the ascender and descender
-     * values if the bounding box result extends farther from the baseline.
-     */
-    CGRect bounds = CTFontGetBoundingRectsForGlyphs(
-	(CTFontRef) screenFont, kCTFontHorizontalOrientation, glyphArray,
-	NULL, GLYPH_COUNT);
-    self->_fontAscender = [screenFont ascender];
-    if (self->_fontAscender < bounds.origin.y + bounds.size.height) {
-	self->_fontAscender = bounds.origin.y + bounds.size.height;
-    }
-    self->_fontDescender = [screenFont descender];
-    if (self->_fontDescender > bounds.origin.y) {
-	self->_fontDescender = bounds.origin.y;
-    }
-
-    /*
-     * Record the tile size.  Round the values (height rounded up; width to
-     * nearest unless that would be zero) to have tile boundaries match pixel
-     * boundaries.
-     */
-    if (medianAdvance < 1.0) {
-	self->_tileSize.width = 1.0;
-    } else {
-	self->_tileSize.width = floor(medianAdvance + 0.5);
-    }
-    self->_tileSize.height = ceil(self.fontAscender - self.fontDescender);
-
-    /*
-     * Determine whether neighboring columns need to be redrawn when a
-     * character changes.
-     */
-    CGRect *boxes = malloc(GLYPH_COUNT * sizeof(CGRect));
-    if (boxes == 0) {
-	free(glyphWidths);
-	free(glyphArray);
-	NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
-					reason:@"boxes in updateGlyphInfo"
-					userInfo:nil];
-	@throw exc;
-    }
-    CGFloat beyond_right = 0.;
-    CGFloat beyond_left = 0.;
-    CTFontGetBoundingRectsForGlyphs(
-	(CTFontRef)screenFont,
-	kCTFontHorizontalOrientation,
-	glyphArray,
-	boxes,
-	GLYPH_COUNT);
-    for (i = 0; i < GLYPH_COUNT; i++) {
-	/* Account for the compression and offset used by drawWChar(). */
-	CGFloat compression, offset;
-	CGFloat v;
-
-	if (glyphWidths[i] <= self.tileSize.width) {
-	    compression = 1.;
-	    offset = 0.5 * (self.tileSize.width - glyphWidths[i]);
-	} else {
-	    compression = self.tileSize.width / glyphWidths[i];
-	    offset = 0.;
-	}
-	v = (offset + boxes[i].origin.x) * compression;
-	if (beyond_left > v) {
-	    beyond_left = v;
-	}
-	v = (offset + boxes[i].origin.x + boxes[i].size.width) * compression;
-	if (beyond_right < v) {
-	    beyond_right = v;
-	}
-    }
-    free(boxes);
-    self->_nColPre = ceil(-beyond_left / self.tileSize.width);
-    if (beyond_right > self.tileSize.width) {
-	self->_nColPost =
-	    ceil((beyond_right - self.tileSize.width) / self.tileSize.width);
-    } else {
-	self->_nColPost = 0;
-    }
-
-    free(glyphWidths);
-    free(glyphArray);
+    self->_cellSize = cs;
+    self->_fontAscender = asc;
+    self->_fontDescender = des;
+    self->_nColPre = nbef;
+    self->_nColPost = naft;
 }
-
 
 - (void)requestRedraw
 {
@@ -2519,9 +2205,9 @@ static int compare_advances(const void *ap, const void *bp)
 - (NSRect)viewRectForCellBlockAtX:(int)x y:(int)y width:(int)w height:(int)h
 {
     return NSMakeRect(
-	x * self.tileSize.width + self.borderSize.width,
-	y * self.tileSize.height + self.borderSize.height,
-	w * self.tileSize.width, h * self.tileSize.height);
+	x * self.cellSize.width + self.borderSize.width,
+	y * self.cellSize.height + self.borderSize.height,
+	w * self.cellSize.width, h * self.cellSize.height);
 }
 
 - (void)setSelectionFont:(NSFont*)font adjustTerminal: (BOOL)adjustTerminal
@@ -2644,6 +2330,183 @@ static __strong NSFont* gDefaultFont = nil;
 + (void)setDefaultFont:(NSFont*)font
 {
     gDefaultFont = font;
+}
+
+/* qsort-compatible compare function for CGSizes */
+static int compare_advances(const void *ap, const void *bp)
+{
+    const CGSize *a = ap, *b = bp;
+    return (a->width > b->width) - (a->width < b->width);
+}
+
++ (void)updateGlyphInfoForFont:(NSFont*)font cellSize:(NSSize*)cs
+    ascender:(CGFloat*)asc descender:(CGFloat*)des
+    columnsBefore:(int*)nbef columnsAfter:(int*)naft
+{
+    /* Generate a string containing each MacRoman character */
+    /*
+     * Here and below, dynamically allocate working arrays rather than put them
+     * on the stack in case limited stack space is an issue.
+     */
+    unsigned char *latinString = malloc(GLYPH_COUNT);
+    if (latinString == 0) {
+        NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
+            reason:@"latinString in updateGlyphInfoForFont" userInfo:nil];
+        @throw exc;
+    }
+    size_t i;
+    for (i=0; i < GLYPH_COUNT; i++) latinString[i] = (unsigned char)i;
+
+    /* Turn that into unichar. Angband uses ISO Latin 1. */
+    NSString *allCharsString = [[NSString alloc] initWithBytes:latinString
+        length:GLYPH_COUNT encoding:NSISOLatin1StringEncoding];
+    unichar *unicharString = malloc(GLYPH_COUNT * sizeof(unichar));
+    if (unicharString == 0) {
+        free(latinString);
+        NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
+            reason:@"unicharString in updateGlyphInfoForFont" userInfo:nil];
+        @throw exc;
+    }
+    unicharString[0] = 0;
+    [allCharsString getCharacters:unicharString
+        range:NSMakeRange(0, MIN(GLYPH_COUNT, [allCharsString length]))];
+    allCharsString = nil;
+    free(latinString);
+
+    /* Get glyphs */
+    CGGlyph *glyphArray = calloc(GLYPH_COUNT, sizeof(CGGlyph));
+    if (glyphArray == 0) {
+        free(unicharString);
+        NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
+            reason:@"glyphArray in updateGlyphInfoForFont" userInfo:nil];
+        @throw exc;
+    }
+    CTFontGetGlyphsForCharacters((CTFontRef)font, unicharString,
+        glyphArray, GLYPH_COUNT);
+    free(unicharString);
+
+    /* Get advances. Record the max advance. */
+    CGSize *advances = malloc(GLYPH_COUNT * sizeof(CGSize));
+    if (advances == 0) {
+        free(glyphArray);
+        NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
+            reason:@"advances in updateGlyphInfoForFont" userInfo:nil];
+       @throw exc;
+    }
+    CTFontGetAdvancesForGlyphs(
+        (CTFontRef)font, kCTFontHorizontalOrientation, glyphArray,
+        advances, GLYPH_COUNT);
+    CGFloat *glyphWidths = malloc(GLYPH_COUNT * sizeof(CGFloat));
+    if (glyphWidths == 0) {
+        free(glyphArray);
+        free(advances);
+        NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
+            reason:@"glyphWidths in updateGlyphInfoForFont" userInfo:nil];
+        @throw exc;
+    }
+    for (i=0; i < GLYPH_COUNT; i++) {
+        glyphWidths[i] = advances[i].width;
+    }
+
+    /*
+     * For good non-mono-font support, use the median advance. Start by sorting
+     * all advances.
+     */
+    qsort(advances, GLYPH_COUNT, sizeof *advances, compare_advances);
+
+    /* Skip over any initially empty run */
+    size_t startIdx;
+    for (startIdx = 0; startIdx < GLYPH_COUNT; startIdx++) {
+        if (advances[startIdx].width > 0) break;
+    }
+
+    /* Pick the center to find the median */
+    CGFloat medianAdvance = 0;
+    /* In case we have all zero advances for some reason */
+    if (startIdx < GLYPH_COUNT) {
+        medianAdvance = advances[(startIdx + GLYPH_COUNT)/2].width;
+    }
+
+    free(advances);
+
+    /*
+     * Record the ascender and descender.  Some fonts, for instance DIN
+     * Condensed and Rockwell in 10.14, the ascent on '@' exceeds that
+     * reported by [font ascender].  Get the overall bounding box for the
+     * glyphs and use that instead of the ascender and descender values if
+     * the bounding box result extends farther from the baseline.
+     */
+    CGRect bounds = CTFontGetBoundingRectsForGlyphs((CTFontRef) font,
+        kCTFontHorizontalOrientation, glyphArray, NULL, GLYPH_COUNT);
+    *asc = [font ascender];
+    if (*asc < bounds.origin.y + bounds.size.height) {
+        *asc = bounds.origin.y + bounds.size.height;
+    }
+    *des = [font descender];
+    if (*des > bounds.origin.y) {
+        *des = bounds.origin.y;
+    }
+
+    /*
+     * Record the tile size.  Round the values (height rounded up; width to
+     * nearest unless that would be zero) to have tile boundaries match pixel
+     * boundaries.
+     */
+    if (medianAdvance < 1.0) {
+        cs->width = 1.0;
+    } else {
+        cs->width = floor(medianAdvance + 0.5);
+    }
+    cs->height = ceil(*asc - *des);
+
+    /*
+     * Determine whether neighboring columns need to be redrawn when a
+     * character changes.
+     */
+    CGRect *boxes = malloc(GLYPH_COUNT * sizeof(CGRect));
+    if (boxes == 0) {
+        free(glyphWidths);
+        free(glyphArray);
+        NSException *exc = [NSException exceptionWithName:@"OutOfMemory"
+            reason:@"boxes in updateGlyphInfoForFont" userInfo:nil];
+        @throw exc;
+    }
+    CGFloat beyond_right = 0.;
+    CGFloat beyond_left = 0.;
+    CTFontGetBoundingRectsForGlyphs(
+        (CTFontRef)font,
+        kCTFontHorizontalOrientation,
+        glyphArray,
+        boxes,
+        GLYPH_COUNT);
+    for (i = 0; i < GLYPH_COUNT; i++) {
+        /* Account for the compression and offset used by drawWChar(). */
+        CGFloat compression, offset;
+        CGFloat v;
+
+        if (glyphWidths[i] <= cs->width) {
+            compression = 1.;
+            offset = 0.5 * (cs->width - glyphWidths[i]);
+        } else {
+            compression = cs->width / glyphWidths[i];
+            offset = 0.;
+        }
+        v = (offset + boxes[i].origin.x) * compression;
+        if (beyond_left > v) {
+            beyond_left = v;
+        }
+        v = (offset + boxes[i].origin.x + boxes[i].size.width) * compression;
+        if (beyond_right < v) {
+            beyond_right = v;
+        }
+    }
+    free(boxes);
+    *nbef = ceil(-beyond_left / cs->width);
+    *naft = (beyond_right > cs->width) ?
+        (int) ceil((beyond_right - cs->width) / cs->width) : 0;
+
+    free(glyphWidths);
+    free(glyphArray);
 }
 
 - (NSWindow *)makePrimaryWindow
@@ -3054,11 +2917,11 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	    graf_width * pcell->hscl / (1.0 * pcell->hoff_d),
 	    graf_height * pcell->vscl / (1.0 * pcell->voff_d));
 	int dbl_height_bck = overdraw_row &&
-	    irow >= self.firstTileRow + pcell->hoff_d &&
+	    irow >= self.firstTileRow + pcell->voff_d &&
 	    (pcell->v.ti.bckRow >= overdraw_row &&
 	     pcell->v.ti.bckRow <= overdraw_max);
 	int dbl_height_fgd = overdraw_row &&
-	    irow >= self.firstTileRow + pcell->hoff_d &&
+	    irow >= self.firstTileRow + pcell->voff_d &&
 	    (pcell->v.ti.fgdRow >= overdraw_row) &&
 	    (pcell->v.ti.fgdRow <= overdraw_max);
 	int aligned_row = 0, aligned_col = 0;
@@ -3284,9 +3147,9 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
     [self throttle];
 
     CGFloat bottomY =
-	self.borderSize.height + self.tileSize.height * self.rows;
+	self.borderSize.height + self.cellSize.height * self.rows;
     CGFloat rightX =
-	self.borderSize.width + self.tileSize.width * self.cols;
+	self.borderSize.width + self.cellSize.width * self.cols;
 
     const NSRect *invalidRects;
     NSInteger invalidCount;
@@ -3409,20 +3272,20 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	}
 
 	iRowFirst = floor((modRect.origin.y - self.borderSize.height) /
-			  self.tileSize.height);
+			  self.cellSize.height);
 	iColFirst = floor((modRect.origin.x - self.borderSize.width) /
-			  self.tileSize.width);
+			  self.cellSize.width);
 	edge = modRect.origin.y + modRect.size.height;
 	if (edge <= bottomY) {
 	    iRowLast =
-		ceil((edge - self.borderSize.height) / self.tileSize.height);
+		ceil((edge - self.borderSize.height) / self.cellSize.height);
 	} else {
 	    iRowLast = self.rows;
 	}
 	edge = modRect.origin.x + modRect.size.width;
 	if (edge <= rightX) {
 	    iColLast =
-		ceil((edge - self.borderSize.width) / self.tileSize.width);
+		ceil((edge - self.borderSize.width) / self.cellSize.width);
 	} else {
 	    iColLast = self.cols;
 	}
@@ -3749,10 +3612,10 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 {
     CGFloat newRows = floor(
 	(contentRect.size.height - (self.borderSize.height * 2.0)) /
-	self.tileSize.height);
+	self.cellSize.height);
     CGFloat newColumns = floor(
 	(contentRect.size.width - (self.borderSize.width * 2.0)) /
-	self.tileSize.width);
+	self.cellSize.width);
 
     if (newRows < 1 || newColumns < 1) return;
     [self resizeWithColumns:newColumns rows:newRows];
@@ -3796,11 +3659,11 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
 	minsize.height = 1;
     }
     minsize.width =
-	minsize.width * self.tileSize.width + self.borderSize.width * 2.0;
+	minsize.width * self.cellSize.width + self.borderSize.width * 2.0;
     minsize.height =
-        minsize.height * self.tileSize.height + self.borderSize.height * 2.0;
+        minsize.height * self.cellSize.height + self.borderSize.height * 2.0;
     [[self makePrimaryWindow] setContentMinSize:minsize];
-    self.primaryWindow.contentResizeIncrements = self.tileSize;
+    self.primaryWindow.contentResizeIncrements = self.cellSize;
 }
 
 - (void)saveWindowVisibleToDefaults: (BOOL)windowVisible
@@ -4096,7 +3959,7 @@ static int get_background_color_index(int idx)
 {
     int ibkg = COLOUR_DARK;
 
-    switch (idx / MAX_COLORS) {
+    switch (idx / MULT_BG) {
     case BG_BLACK:
 	/* There's nothing to do. */
 	break;
@@ -4737,11 +4600,14 @@ static errr Term_curs_cocoa(int x, int y)
 static errr Term_bigcurs_cocoa(int x, int y)
 {
     AngbandContext *angbandContext = (__bridge AngbandContext*) (Term->data);
+    /* Out of paranoia, coerce to remain in bounds. */
+    int w = (x + tile_width <= angbandContext.cols) ?
+        tile_width : angbandContext.cols - x;
+    int h = (y + tile_height <= angbandContext.rows) ?
+        tile_height : angbandContext.rows - y;
 
-    [angbandContext.contents setCursorAtColumn:x row:y width:tile_width
-		   height:tile_height];
-    [angbandContext.changes markChangedBlockAtColumn:x row:y width:tile_width
-		   height:tile_height];
+    [angbandContext.contents setCursorAtColumn:x row:y width:w height:h];
+    [angbandContext.changes markChangedBlockAtColumn:x row:y width:w height:h];
 
     /* Success */
     return 0;
@@ -4774,7 +4640,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 
     /*
      * At least with 4.2.0 Angband, there's cases where Term_pict is called
-     * for the overhead view subwindow and y + tile_width is greater than the
+     * for the overhead view subwindow and y + tile_height is greater than the
      * number of rows.  Protect both dimensions.
      */
     if (y + tile_height > angbandContext.rows) {
@@ -5151,7 +5017,7 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 	{
 		int cols, rows, x, y;
 		Term_get_size(&cols, &rows);
-		NSSize tileSize = angbandContext.tileSize;
+		NSSize cellSize = angbandContext.cellSize;
 		NSSize border = angbandContext.borderSize;
 		NSPoint windowPoint = [event locationInWindow];
 
@@ -5162,8 +5028,8 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 		windowPoint = NSMakePoint( windowPoint.x - border.width, windowPoint.y + border.height );
 
 		NSPoint p = [[[event window] contentView] convertPoint: windowPoint fromView: nil];
-		x = floor( p.x / tileSize.width );
-		y = floor( p.y / tileSize.height );
+		x = floor( p.x / cellSize.width );
+		y = floor( p.y / cellSize.height );
 
 		BOOL displayingMapInterface = (inkey_flag) ? YES : NO;
 
@@ -5633,31 +5499,17 @@ static void load_prefs(void)
     }
 
     NSDictionary *defaults = [[NSDictionary alloc] initWithObjectsAndKeys:
-                              FallbackFontName, @"FontName-0",
-                              [NSNumber numberWithFloat:FallbackFontSizeMain], @"FontSize-0",
-                              [NSNumber numberWithInt:60], AngbandFrameRateDefaultsKey,
-                              [NSNumber numberWithBool:YES], AngbandSoundDefaultsKey,
-                              [NSNumber numberWithInt:GRAPHICS_NONE], AngbandGraphicsDefaultsKey,
-                              [NSNumber numberWithBool:YES], AngbandUseDefaultTileMultDefaultsKey,
-                              [NSNumber numberWithInt:1], AngbandTileWidthMultDefaultsKey,
-                              [NSNumber numberWithInt:1], AngbandTileHeightMultDefaultsKey,
-                              defaultTerms, AngbandTerminalsDefaultsKey,
-                              nil];
+        FallbackFontName, @"FontName-0",
+        [NSNumber numberWithFloat:FallbackFontSizeMain], @"FontSize-0",
+        [NSNumber numberWithInt:60], AngbandFrameRateDefaultsKey,
+        [NSNumber numberWithBool:YES], AngbandSoundDefaultsKey,
+        [NSNumber numberWithInt:GRAPHICS_NONE], AngbandGraphicsDefaultsKey,
+        [NSNumber numberWithInt:0], AngbandTileFracDefaultsKey,
+        [NSNumber numberWithInt:1], AngbandTileWidthMultDefaultsKey,
+        [NSNumber numberWithInt:1], AngbandTileHeightMultDefaultsKey,
+        defaultTerms, AngbandTerminalsDefaultsKey,
+        nil];
     [defs registerDefaults:defaults];
-
-    /* Preferred graphics mode */
-    graf_mode_req = [defs integerForKey:AngbandGraphicsDefaultsKey];
-    if (graphics_will_be_enabled()) {
-        tile_width = [defs integerForKey:AngbandTileWidthMultDefaultsKey];
-        tile_height = [defs integerForKey:AngbandTileHeightMultDefaultsKey];
-    } else {
-        tile_width = 1;
-        tile_height = 1;
-    }
-
-    /* Use sounds */
-    [AngbandSoundCatalog sharedSounds].enabled =
-	[defs boolForKey:AngbandSoundDefaultsKey];
 
     /* fps */
     frames_per_second = [defs integerForKey:AngbandFrameRateDefaultsKey];
@@ -5679,16 +5531,46 @@ static void load_prefs(void)
 	    }
 	}
     }
-}
 
-/**
- * Play sound effects asynchronously.  Select a sound from any available
- * for the required event, and bridge to Cocoa to play it.
- */
-static void play_sound(game_event_type unused, game_event_data *data, void *user)
-{
-    int event = data->message.type;
-    [[AngbandSoundCatalog sharedSounds] playSound:event];
+    /*
+     * Set preferred graphics mode and tile sizes.  Tile sizes are linked to
+     * the font size so do this after the font default above.
+     */
+    graf_mode_req = [defs integerForKey:AngbandGraphicsDefaultsKey];
+    if (graphics_will_be_enabled()) {
+        int frac = [defs integerForKey:AngbandTileFracDefaultsKey];
+        const graphics_mode *gm = get_graphics_mode(graf_mode_req);
+        NSSize cs;
+        CGFloat asc, des;
+        int nbef, naft;
+        int new_tile_width, new_tile_height;
+
+        [AngbandContext updateGlyphInfoForFont:[AngbandContext defaultFont]
+            cellSize:&cs ascender:&asc descender:&des
+            columnsBefore:&nbef columnsAfter:&naft];
+        if (frac > 0) {
+            frac = coerce_tile_fraction(frac);
+        } else {
+            /*
+             * These are old defaults.  Convert the tile multipliers specified
+             * there to a desired tile size.
+             */
+            frac = get_tile_fraction_from_size(gm,
+                [defs integerForKey:AngbandTileWidthMultDefaultsKey] * cs.width,
+                [defs integerForKey:AngbandTileHeightMultDefaultsKey]
+                    * cs.height, cs.width, cs.height);
+        }
+        /* Remember the possibly changed value for the fraction. */
+        [[NSUserDefaults angbandDefaults] setInteger:frac
+            forKey:AngbandTileFracDefaultsKey];
+        get_tile_multipliers_from_fraction(gm, frac, cs.width, cs.height,
+            &new_tile_width, &new_tile_height);
+        tile_width = new_tile_width;
+        tile_height = new_tile_height;
+    } else {
+        tile_width = 1;
+        tile_height = 1;
+    }
 }
 
 /**
@@ -5768,8 +5650,14 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
  */
 static void cocoa_reinit(void)
 {
-    /* Register the sound hook */
-    event_add_handler(EVENT_SOUND, play_sound, NULL);
+	/* Initialize sound. */
+#ifdef SOUND
+#if defined(SOUND_SDL) || defined(SOUND_SDL2)
+	init_sound("sdl", 0, NULL);
+#else
+	init_sound("cocoa", 0, NULL);
+#endif /* else SOUND_SDL || SOUND_SDL2 */
+#endif /* SOUND */
 }
 
 /**
@@ -5818,8 +5706,8 @@ static void cocoa_reinit(void)
 {
     int mainTerm;
     for (mainTerm=0; mainTerm < ANGBAND_TERM_MAX; mainTerm++) {
-	AngbandContext *context =
-	    (__bridge AngbandContext*) (angband_term[mainTerm]->data);
+        AngbandContext *context =
+            (__bridge AngbandContext*) (angband_term[mainTerm]->data);
         if ([context isMainWindow]) {
             break;
         }
@@ -5854,7 +5742,22 @@ static void cocoa_reinit(void)
     NSEnableScreenUpdates();
 
     if (mainTerm == 0) {
-	[self recomputeDefaultTileMultipliersIfNecessary];
+        int new_tile_width, new_tile_height;
+
+        /*
+         * Try to keep the displayed tiles at close to the same fraction of
+         * the native size.
+         */
+        get_tile_multipliers_from_fraction(get_graphics_mode(graf_mode_req),
+            [[NSUserDefaults angbandDefaults] integerForKey:AngbandGraphicsDefaultsKey],
+            angbandContext.cellSize.width, angbandContext.cellSize.height,
+            &new_tile_width, &new_tile_height);
+
+        if (tile_width != new_tile_width || tile_height != new_tile_height) {
+            tile_width = new_tile_width;
+            tile_height = new_tile_height;
+            tile_multipliers_changed = 1;
+        }
     }
 
     if (mainTerm != 0 || ! redraw_for_tiles_or_term0_font()) {
@@ -5931,40 +5834,6 @@ static void cocoa_reinit(void)
     record_current_savefile();
 }
 
-- (void)recomputeDefaultTileMultipliersIfNecessary
-{
-    NSInteger hscl, vscl;
-
-    if (graphics_will_be_enabled()) {
-	if ([[NSUserDefaults angbandDefaults]
-		boolForKey:AngbandUseDefaultTileMultDefaultsKey]) {
-	    [self computeDefaultTileSetScaling:&hscl vertical:&vscl];
-	    [[NSUserDefaults angbandDefaults]
-		setInteger:hscl forKey:AngbandTileWidthMultDefaultsKey];
-	    [[NSUserDefaults angbandDefaults]
-		setInteger:vscl forKey:AngbandTileHeightMultDefaultsKey];
-	    if (self.scalingPanelController != nil) {
-		self.scalingPanelController.horizontalScaling = hscl;
-		self.scalingPanelController.verticalScaling = vscl;
-		self.scalingPanelController.usesDefaultScaling = YES;
-	    }
-	} else {
-	    hscl = [[NSUserDefaults angbandDefaults]
-		       integerForKey:AngbandTileWidthMultDefaultsKey];
-	    vscl = [[NSUserDefaults angbandDefaults]
-		       integerForKey:AngbandTileHeightMultDefaultsKey];
-	}
-    } else {
-	hscl = 1;
-	vscl = 1;
-    }
-    if (tile_width != hscl || tile_height != vscl) {
-	tile_width = hscl;
-	tile_height = vscl;
-	tile_multipliers_changed = 1;
-    }
-}
-
 /**
  * Entry point for initializing Angband
  */
@@ -6003,19 +5872,19 @@ static void cocoa_reinit(void)
 	text_wcsz_hook = Term_wcsz_cocoa;
 	text_iswprint_hook = Term_iswprint_cocoa;
 
-	/* Set up game event handlers */
-	init_display();
-
-	/* Initialise game */
-	init_angband();
-	textui_init();
-
 	/*
 	 * Set action that needs to be done if restarting without exiting.
 	 * Also need to do it now.
 	 */
 	reinit_hook = cocoa_reinit;
 	cocoa_reinit();
+
+	/* Set up game event handlers */
+	init_display();
+
+	/* Initialise game */
+	init_angband();
+	textui_init();
 
 	/* Initialize some save file stuff */
 	player_egid = getegid();
@@ -6065,7 +5934,9 @@ static void cocoa_reinit(void)
     SEL sel = [menuItem action];
     NSInteger tag = [menuItem tag];
 
-    if( tag >= AngbandWindowMenuItemTagBase && tag < AngbandWindowMenuItemTagBase + ANGBAND_TERM_MAX )
+    if (tag >= AngbandWindowMenuItemTagBase
+            && tag < AngbandWindowMenuItemTagBase + ANGBAND_TERM_MAX
+            && menuItem.menu == [[NSApplication sharedApplication] windowsMenu])
     {
         if( tag == AngbandWindowMenuItemTagBase )
         {
@@ -6104,16 +5975,39 @@ static void cocoa_reinit(void)
     {
         NSInteger requestedGraphicsMode = [[NSUserDefaults standardUserDefaults] integerForKey:AngbandGraphicsDefaultsKey];
         [menuItem setState: (tag == requestedGraphicsMode)];
-        return YES;
+        /*
+         * Only allow changes to the graphics mode when at the splash screen
+         * or in the game proper and at a command prompt.  In other situations
+         * the saved screens for overlayed menus could have tile references
+         * that become outdated when the graphics mode is changed.
+         */
+        return (!game_in_progress || (character_generated && inkey_flag)) ?
+            YES : NO;
+    }
+    else if (sel == @selector(setTileFraction:))
+    {
+        BOOL have_graphics = graphics_are_enabled()
+            || (!character_generated && graphics_will_be_enabled());
+        NSInteger requestedTileFrac = (have_graphics) ?
+           [[NSUserDefaults standardUserDefaults]
+               integerForKey:AngbandTileFracDefaultsKey] : 1000;
+        [menuItem setState: (tag == requestedTileFrac)];
+        /*
+         * Only allow changes to the tile size if using tiles and, like changes
+         * to the graphics mode, if at the splash screen or command prompt.
+         */
+        return (have_graphics && (!game_in_progress
+            || (character_generated && inkey_flag))) ? YES : NO;
     }
     else if( sel == @selector(sendAngbandCommand:) ||
 	     sel == @selector(saveGame:) )
     {
         /*
          * we only want to be able to send commands during an active game
-         * after the birth screens
+         * after the birth screens when the core is waiting for a player
+	 * command
          */
-        return !!game_in_progress && character_generated;
+        return !!game_in_progress && character_generated && inkey_flag;
     }
     else return YES;
 }
@@ -6125,33 +6019,81 @@ static void cocoa_reinit(void)
     [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:AngbandFrameRateDefaultsKey];
 }
 
-- (IBAction)showTileSetScalingPanel:(id)sender
-{
-    if (self.scalingPanelController == nil) {
-	self.scalingPanelController =
-	    [[TileSetScalingPanelController alloc] initWithWindow:nil];
-
-	self.scalingPanelController.defaultScalingComputer = self;
-	self.scalingPanelController.scalingChangeHandler = self;
-    }
-    self.scalingPanelController.horizontalScaling = tile_width;
-    self.scalingPanelController.verticalScaling = tile_height;
-    self.scalingPanelController.usesDefaultScaling =
-	[[NSUserDefaults angbandDefaults]
-	    boolForKey:AngbandUseDefaultTileMultDefaultsKey];
-    [self.scalingPanelController showWindow:sender];
-}
-
 - (void)setGraphicsMode:(NSMenuItem *)sender
 {
+    int new_tile_width, new_tile_height;
+
     /* We stashed the graphics mode ID in the menu item's tag */
     graf_mode_req = [sender tag];
 
     /* Stash it in UserDefaults */
-    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:AngbandGraphicsDefaultsKey];
-    [self recomputeDefaultTileMultipliersIfNecessary];
+    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req
+        forKey:AngbandGraphicsDefaultsKey];
+    if (graphics_will_be_enabled()) {
+        /*
+         * Try to keep the displayed size of tiles at close to the same size as
+         * they are (or the same size as a character if not displaying tiles).
+         */
+        graphics_mode *gm = get_graphics_mode(graf_mode_req);
+        AngbandContext *mainAngbandContext = (__bridge AngbandContext*)
+            (angband_term[0]->data);
+        CGFloat target_width, target_height;
+        int new_frac;
+
+        target_width = mainAngbandContext.cellSize.width;
+        target_height = mainAngbandContext.cellSize.width;
+        if (current_graphics_mode
+                && current_graphics_mode->grafID != GRAPHICS_NONE) {
+            target_width *= tile_width;
+            target_height *= tile_height;
+        }
+        new_frac = get_tile_fraction_from_size(gm, target_width, target_height,
+            mainAngbandContext.cellSize.width,
+            mainAngbandContext.cellSize.height);
+        /* Remember the possibly changed value for the fraction. */
+        [[NSUserDefaults angbandDefaults] setInteger:new_frac
+            forKey:AngbandTileFracDefaultsKey];
+        get_tile_multipliers_from_fraction(gm, new_frac,
+            mainAngbandContext.cellSize.width,
+            mainAngbandContext.cellSize.height,
+            &new_tile_width, &new_tile_height);
+    } else {
+        new_tile_width = 1;
+        new_tile_height = 1;
+    }
+    if (tile_width != new_tile_width || tile_height != new_tile_height) {
+        tile_width = new_tile_width;
+        tile_height = new_tile_height;
+        tile_multipliers_changed = 1;
+    }
 
     redraw_for_tiles_or_term0_font();
+}
+
+- (void)setTileFraction:(NSMenuItem *)sender
+{
+    /* The desired fractional size * 1000 was stashed in the menu item's tag. */
+    int frac = [sender tag];
+
+    /* Stash it in UserDefaults */
+    [[NSUserDefaults angbandDefaults] setInteger:frac
+        forKey:AngbandTileFracDefaultsKey];
+    if (graphics_are_enabled() ||
+	    (! character_generated && graphics_will_be_enabled())) {
+        AngbandContext *term0_context =
+            (__bridge AngbandContext*) (angband_term[0]->data);
+        int new_tile_width, new_tile_height;
+
+        get_tile_multipliers_from_fraction(get_graphics_mode(graf_mode_req),
+            frac, term0_context.cellSize.width, term0_context.cellSize.height,
+            &new_tile_width, &new_tile_height);
+	if (tile_width != new_tile_width || tile_height != new_tile_height) {
+	    tile_width = new_tile_width;
+	    tile_height = new_tile_height;
+	    tile_multipliers_changed = 1;
+	    redraw_for_tiles_or_term0_font();
+	}
+    }
 }
 
 - (void)selectWindow: (id)sender
@@ -6162,92 +6104,6 @@ static void cocoa_reinit(void)
 	(__bridge AngbandContext*) (angband_term[subwindowNumber]->data);
     [context.primaryWindow makeKeyAndOrderFront: self];
     [context saveWindowVisibleToDefaults: YES];
-}
-
-/**
- * Implement the TileSetDefaultScalingComputing protocol.
- *
- * Assume that angband_term[0] and angbandDefaults are ready to use.
- */
-- (void)computeDefaultTileSetScaling:(NSInteger *)pHoriz vertical:(NSInteger *)pVert
-{
-    if (graf_mode_req != GRAPHICS_NONE) {
-	graphics_mode *new_mode = get_graphics_mode(graf_mode_req);
-
-	if (new_mode->grafID != GRAPHICS_NONE) {
-	    int tilew = new_mode->cell_width;
-	    int tileh = new_mode->cell_height;
-	    AngbandContext *term0_context =
-		(__bridge AngbandContext*) (angband_term[0]->data);
-	    CGFloat textw = term0_context.tileSize.width;
-	    CGFloat texth = term0_context.tileSize.height;
-	    CGFloat wratio = tilew / textw;
-	    CGFloat hratio = tileh / texth;
-	    CGFloat extratio = (wratio < hratio) ? wratio : hratio;
-
-	    /*
-	     * If a tile is enough smaller in either dimension relative to
-	     * a cell, use a scaled up tile as the point of comparison.
-	     */
-	    if (extratio < 2.0 / 3.0) {
-		CGFloat scl = floor(1.0 / extratio + 0.5);
-
-		wratio *= scl;
-		hratio *= scl;
-	    }
-	    /*
-	     * Cap the scale factors and try to approximately keep the tile's
-	     * aspect ratio if capped.
-	     */
-	    extratio = (wratio > hratio) ? wratio : hratio;
-	    if (extratio > TileSetScalingPanelController.scalingMaximum) {
-		CGFloat scl = TileSetScalingPanelController.scalingMaximum /
-		    extratio;
-
-		wratio *= scl;
-		hratio *= scl;
-	    }
-	    /* Don't try to scale if can't avoid a scale factor of zero. */
-	    extratio = (wratio < hratio) ? wratio : hratio;
-	    if (extratio >= 0.5) {
-		*pHoriz = (NSInteger) floor(wratio + 0.5);
-		*pVert = (NSInteger) floor(hratio + 0.5);
-	    } else {
-		*pHoriz = 1;
-		*pVert = 1;
-	    }
-	    return;
-	}
-    }
-
-    /* Not using a tile set so use what is stored in the defaults. */
-    *pHoriz = [[NSUserDefaults angbandDefaults]
-		  integerForKey:AngbandTileWidthMultDefaultsKey];
-    *pVert = [[NSUserDefaults angbandDefaults]
-		 integerForKey:AngbandTileHeightMultDefaultsKey];
-}
-
-/**
- * Implement the TileSetScalingChanging protocol.
- */
-- (void)changeTileSetScaling:(NSInteger)h vertical:(NSInteger)v isDefault:(BOOL)flag
-{
-    /* Update the defaults. */
-    [[NSUserDefaults angbandDefaults]
-	setBool:flag forKey:AngbandUseDefaultTileMultDefaultsKey];
-    [[NSUserDefaults angbandDefaults]
-	setInteger:h forKey:AngbandTileWidthMultDefaultsKey];
-    [[NSUserDefaults angbandDefaults]
-	setInteger:v forKey:AngbandTileHeightMultDefaultsKey];
-    if (graphics_are_enabled() ||
-	(! character_generated && graphics_will_be_enabled())) {
-	if (tile_width != h || tile_height != v) {
-	    tile_width = h;
-	    tile_height = v;
-	    tile_multipliers_changed = 1;
-	    redraw_for_tiles_or_term0_font();
-	}
-    }
 }
 
 - (void)prepareWindowsMenu
@@ -6435,46 +6291,91 @@ static void cocoa_reinit(void)
 }
 
 /**
- * Dynamically build the Graphics menu
+ * Dynamically build the Graphics menu.
  */
-- (void)menuNeedsUpdate:(NSMenu *)menu {
-    
-    /* Only the graphics menu is dynamic */
-    if (! [[menu title] isEqualToString:@"Graphics"])
-        return;
-    
+- (void)buildGraphicsMenu:(NSMenu *)menu
+{
+    /* This is the action for all these menu items */
+    SEL action = @selector(setGraphicsMode:);
+    NSMenuItem *classicItem;
+    NSInteger i;
+
     /*
      * If it's non-empty, then we've already built it. Currently graphics modes
      * won't change once created; if they ever can we can remove this check.
      * Note that the check mark does change, but that's handled in
-     * validateMenuItem: instead of menuNeedsUpdate:
+     * validateMenuItem: rather than here.
      */
-    if ([menu numberOfItems] > 0)
+    if ([menu numberOfItems] > 0) {
         return;
-    
-    /* This is the action for all these menu items */
-    SEL action = @selector(setGraphicsMode:);
-    
+    }
+
     /* Add an initial Classic ASCII menu item */
-    NSMenuItem *classicItem = [menu addItemWithTitle:@"Classic ASCII" action:action keyEquivalent:@""];
+    classicItem = [menu addItemWithTitle:@"Classic ASCII"
+        action:action keyEquivalent:@""];
     [classicItem setTag:GRAPHICS_NONE];
-    
+
     /* Walk through the list of graphics modes */
-    NSInteger i;
-    for (i=0; graphics_modes[i].pNext; i++)
-    {
+    for (i=0; graphics_modes[i].pNext; i++) {
         const graphics_mode *graf = &graphics_modes[i];
-        
+        NSString *title;
+        NSMenuItem *item;
+
         /*
          * Make the title. NSMenuItem throws on a nil title, so ensure it's
          * not nil.
          */
-        NSString *title = [[NSString alloc] initWithUTF8String:graf->menuname];
+        title = [[NSString alloc] initWithUTF8String:graf->menuname];
         if (! title) title = [@"(Unknown)" copy];
-        
+
         /* Make the item */
-        NSMenuItem *item = [menu addItemWithTitle:title action:action keyEquivalent:@""];
+        item = [menu addItemWithTitle:title action:action keyEquivalent:@""];
         [item setTag:graf->grafID];
+    }
+}
+
+/**
+ * Dynamically build the Tile Size menu.
+ */
+- (void)buildTileSizeMenu:(NSMenu *) menu
+{
+    /* This is the action for all these menu items */
+    SEL action = @selector(setTileFraction:);
+    NSInteger i;
+
+    /*
+     * The menu items, except the check marks which are handled by
+     * validateMenuItem:, are fixed so there's no need to populate it again.
+     */
+    if ([menu numberOfItems] > 0) {
+        return;
+    }
+    for (i = 0; i < (int) N_ELEMENTS(tile_size_fractions); ++i) {
+        NSString *title;
+        NSMenuItem *item;
+
+        /*
+         * Make the title. NSMenuItem throws on a nil title, so ensure it's
+         * not nil.
+         */
+        title = [[NSString alloc] initWithFormat:@"%.1f%%",
+            tile_size_fractions[i] / 10.0];
+        if (! title) title = [@"(Unknown)" copy];
+
+        /* Make the item */
+        item = [menu addItemWithTitle:title action:action keyEquivalent:@""];
+        [item setTag:tile_size_fractions[i]];
+    }
+}
+
+/**
+ * Dynamically build the Graphics or Tile Size menus.
+ */
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+    if ([[menu title] isEqualToString:@"Graphics"]) {
+        [self buildGraphicsMenu:menu];
+    } else if ([[menu title] isEqualToString:@"Tile Size"]) {
+        [self buildTileSizeMenu:menu];
     }
 }
 

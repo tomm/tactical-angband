@@ -597,7 +597,7 @@ static unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
 		modStr = XGetAtomName( xkb->dpy, xkb->names->vmods[i] );
 		if (modStr) {
 			if (streq(name, modStr))
-				XkbVirtualModsToReal( xkb, 1 << i, &mask );
+				XkbVirtualModsToReal( xkb, 1U << i, &mask );
 
 			XFree(modStr);
 		}
@@ -2020,7 +2020,32 @@ static errr Term_xtra_x11_react(void)
 					}
 				} else if (i == COLOUR_WHITE) {
 					Metadpy->fg = pixel;
+				} else if (i == COLOUR_SHADE) {
+					int j;
+
+					/*
+					 * For all colors, modify the variant
+					 * that uses COLOUR_SHADE as the
+					 * background.
+					 */
+					for (j = BG_DARK * MAX_COLORS;
+							j < (BG_DARK + 1)
+							* MAX_COLORS; ++j) {
+						Infoclr_set(clr[j]);
+						Infoclr_change_bg(pixel);
+					}
 				}
+
+				/*
+				 * Also modify the variants of this color
+				 * which uses the color itself as the
+				 * background or COLOUR_SHADE as the background.
+				 */
+				Infoclr_set(clr[i + BG_SAME * MAX_COLORS]);
+				Infoclr_change_fg(pixel);
+				Infoclr_change_bg(pixel);
+				Infoclr_set(clr[i + BG_DARK * MAX_COLORS]);
+				Infoclr_change_fg(pixel);
 			}
 		}
 
@@ -2140,7 +2165,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 static errr Term_text_x11(int x, int y, int n, int a, const wchar_t *s)
 {
 	/* Draw the text */
-	Infoclr_set(clr[a]);
+	Infoclr_set(clr[(a / MULT_BG) * MAX_COLORS + (a % MAX_COLORS)]);
 
 	/* Draw the text */
 	Infofnt_text_std(x, y, s, n);
@@ -2557,10 +2582,6 @@ static errr term_data_init(term_data *td, int i)
 
 	/* Use a "soft" cursor */
 	t->soft_cursor = true;
-
-	/* Erase with "white space" */
-	t->attr_blank = COLOUR_WHITE;
-	t->char_blank = ' ';
 
 	/* Differentiate between BS/^h, Tab/^i, etc. */
 	t->complex_input = true;
