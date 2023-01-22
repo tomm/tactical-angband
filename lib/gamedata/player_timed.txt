@@ -213,7 +213,7 @@ grade:r:10000:Paralyzed!:You are paralysed!
 on-end:You can move again.
 msgt:PARALYZED
 fail:1:FREE_ACT
-flags:NONSTACKING
+flags:NONSTACKING | DURATION_IN_PLAYER_TURNS
 
 name:CONFUSED
 desc:confusion

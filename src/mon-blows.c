@@ -922,7 +922,7 @@ static void melee_effect_handler_PARALYZE(melee_effect_handler_context_t *contex
 	if (context->p && context->p->timed[TMD_PARALYZED] && (context->damage < 1))
 		context->damage = 1;
 
-	melee_effect_timed(context, TMD_PARALYZED, 1 + randint1(3),
+	melee_effect_timed(context, TMD_PARALYZED, damroll(3, 2),
 					   OF_FREE_ACT, true, "You resist the effects!");
 }
 

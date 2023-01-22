@@ -578,6 +578,8 @@ static enum parser_error parse_player_timed_effect_flags(struct parser *p)
 	while (s) {
 		if (streq(s, "NONSTACKING")) {
 			ps->t->flags |= TMD_FLAG_NONSTACKING;
+		} else if (streq(s, "DURATION_IN_PLAYER_TURNS")) {
+			ps->t->flags |= TMD_FLAG_DURATION_IN_PLAYER_TURNS;
 		} else {
 			string_free(flags);
 			return PARSE_ERROR_INVALID_FLAG;
@@ -891,12 +893,6 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify,
 	/* Use the value */
 	p->timed[idx] = v;
 
-	/* After paralysis, make sure player gets a move! Note this effectively
-	 * reduces paralysis duration by one speed +0 turn... */
-	if (idx == TMD_PARALYZED && v == 0) {
-		player->energy = z_info->move_energy;
-	}
-
 	if (notify) {
 		/* Disturb */
 		if (can_disturb) {
@@ -1055,6 +1051,13 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify,
 {
 	assert(idx >= 0);
 	assert(idx < TMD_MAX);
+
+	/* Timed effects with TMD_FLAG_DURATION_IN_PLAYER_TURNS are decremented
+	 * *before* the player makes their turn (has energy enough), so they
+	 * need to be 'duration'+1 to match 'duration' player turns */
+	if (timed_effects[idx].flags & TMD_FLAG_DURATION_IN_PLAYER_TURNS) {
+		v += 1;
+	}
 
 	if (check == false || player_inc_check(p, idx, false) == true) {
 		if ((timed_effects[idx].flags & TMD_FLAG_NONSTACKING)

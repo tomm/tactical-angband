@@ -685,7 +685,7 @@ dice:3+1d4
 effect:TIMED_INC:CONFUSED
 dice:3+1d4
 effect:TIMED_INC:PARALYZED
-dice:1d3
+dice:3d2
 effect:TIMED_INC:BLIND
 dice:7+1d8
 lore:cause brain smashing
@@ -939,7 +939,7 @@ message-save:You fight off a sense of sluggishness.
 name:HOLD
 hit:100
 effect:TIMED_INC:PARALYZED
-dice:1d3
+dice:3d2
 lore:paralyze
 lore-color-base:Light Red
 lore-color-resist:Light Green

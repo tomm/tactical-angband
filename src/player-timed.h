@@ -50,6 +50,7 @@ enum {
 enum {
 	/* Increases to duration will be blocked if effect is already active */
 	TMD_FLAG_NONSTACKING = 0x01,
+	TMD_FLAG_DURATION_IN_PLAYER_TURNS = 0x02,
 };
 
 struct timed_grade {

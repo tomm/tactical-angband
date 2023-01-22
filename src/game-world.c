@@ -274,10 +274,25 @@ void play_ambient_sound(void)
 	}
 }
 
+static void decrease_timeouts_measured_in_player_turns(void)
+{
+	int i;
+
+	for (i = 0; i < TMD_MAX; i++) {
+		int decr = 1;
+		if (!player->timed[i])
+			continue;
+		if (!(timed_effects[i].flags & TMD_FLAG_DURATION_IN_PLAYER_TURNS))
+			continue;
+
+		player_dec_timed(player, i, decr, false, true);
+	}
+}
+
 /**
  * Helper for process_world -- decrement player->timed[] and curse effect fields
  */
-static void decrease_timeouts(void)
+static void decrease_timeouts_measured_in_speed0_turns(void)
 {
 	int adjust = (adj_con_fix[player->state.stat_ind[STAT_CON]] + 1);
 	int i;
@@ -286,6 +301,8 @@ static void decrease_timeouts(void)
 	for (i = 0; i < TMD_MAX; i++) {
 		int decr = 1;
 		if (!player->timed[i])
+			continue;
+		if (timed_effects[i].flags & TMD_FLAG_DURATION_IN_PLAYER_TURNS)
 			continue;
 
 		/* Special cases */
@@ -720,7 +737,7 @@ void process_world(struct chunk *c)
 	player_regen_mana(player);
 
 	/* Timeout various things */
-	decrease_timeouts();
+	decrease_timeouts_measured_in_speed0_turns();
 
 	/* Process light */
 	player_update_light(player);
@@ -821,7 +838,7 @@ void process_world(struct chunk *c)
  *
  * It maps all areas within a particular travel distance from the player.
  */
-void sense_surroundings(struct chunk *c) {
+static void sense_surroundings(struct chunk *c) {
 	int x, y;
 
 	/* Update each grid */
@@ -1165,8 +1182,15 @@ void run_game_loop(void)
 					return;
 			}
 
+			const int32_t old_energy = player->energy;
+
 			/* Give the player some energy */
 			player->energy += turn_energy(player->state.speed);
+
+			if (old_energy < z_info->move_energy &&
+			    player->energy >= z_info->move_energy) {
+				decrease_timeouts_measured_in_player_turns();
+			}
 
 			/* Count game turns */
 			turn++;
