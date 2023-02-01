@@ -880,7 +880,7 @@ blow:TOUCH:EAT_GOLD
 flags:MALE | EVIL
 flags:DROP_40
 flags:OPEN_DOOR | TAKE_ITEM
-#drop:potion:Running:35:1:3
+#drop:scroll:Phase Door:35:1:3
 friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
@@ -2900,7 +2900,7 @@ flags:UNIQUE | MALE | NAME_COMMA | EVIL | SMART
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:FORCE_SLEEP
 spell-freq:4
-spells:BLINK | CONF | HEAL | SLOW
+spells:BLINK | CONF | HEAL | SLOW | TELE_TO
 spells:S_MONSTER
 friends:50:2d5:terrified yeek:servant
 friends:100:2d5:Blue yeek:servant
@@ -4249,7 +4249,7 @@ flags:DROP_1
 flags:OPEN_DOOR | TAKE_ITEM
 innate-freq:8
 spells:SHOT
-#drop:potion:Running:70:2:6
+#drop:scroll:Phase Door:70:2:6
 friends:50:1d2:Illusionist
 friends:50:1d2:Priest
 friends:50:1d2:warrior
@@ -4298,7 +4298,7 @@ flags:DROP_1 | ONLY_ITEM
 flags:RAND_25 | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:10
-spells:BLIND | BLINK | CONF | SCARE
+spells:BLIND | BLINK | CONF | SCARE | TELE_TO
 spells:TPORT
 desc:A demon of small stature with an annoying bite.
 
@@ -4387,7 +4387,7 @@ flags:DROP_1 | ONLY_ITEM
 flags:RAND_25 | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:10
-spells:BLIND | BLINK | CONF | SCARE
+spells:BLIND | BLINK | CONF | SCARE | TELE_TO
 spells:TPORT
 desc:A poisonous little mischief-maker.
 
@@ -4880,7 +4880,7 @@ flags:EMPTY_MIND | UNIQUE | FORCE_SLEEP
 flags:IM_POIS | IM_ACID
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 spell-freq:10
-spells:HOLD
+spells:TELE_TO | HOLD
 desc:The ancient grey willow tree, ruler of the Old Forest.  He despises
 desc: trespassers in his territory.  "...a huge willow-tree, old and hoary.
 desc:  Enormous it looked, its sprawling branches going up like racing arms
@@ -6428,7 +6428,7 @@ blow:BITE:EXP_20:2d6
 blow:BITE:EXP_20:2d6
 flags:DROP_40 | DROP_1
 spell-freq:9
-spells:WOUND | DARKNESS | MIND_BLAST
+spells:WOUND | DARKNESS | MIND_BLAST | TELE_TO
 spells:HOLD | SCARE
 desc:It is a humanoid with an aura of power.  You notice a sharp set of front
 desc: teeth.
@@ -6648,7 +6648,7 @@ flags:DROP_1 | ONLY_ITEM
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CONF | TPORT
+spells:BLIND | CONF | TPORT | TELE_AWAY
 spells:BO_COLD | BO_ELEC | BO_FIRE
 spells:S_MONSTER
 drop-base:magic book:10:1:1
@@ -6698,8 +6698,8 @@ flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:RAND_25 | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:5
-spells:BLIND | BLINK | CONF | SCARE
-spells:TPORT
+spells:BLIND | BLINK | CONF | SCARE | TELE_AWAY
+spells:TELE_TO | TPORT
 spells:S_KIN
 friends-base:50:1d3:minor demon:servant
 friends-base:50:1d3:minor demon:servant
@@ -8177,7 +8177,7 @@ flags:DROP_1
 flags:HURT_LIGHT
 spell-freq:4
 spells:BLIND | BLINK | WOUND | DRAIN_MANA | HOLD | BRAIN_SMASH
-spells:SCARE | SLOW
+spells:SCARE | SLOW | TELE_AWAY | TELE_TO
 friends-base:70:1d3:skeleton
 desc:It is a skeletal form dressed in robes.  It radiates vastly evil power.
 
@@ -8558,7 +8558,7 @@ flags:IM_POIS
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:20
-spells:BO_ELEC | BE_ELEC
+spells:BO_ELEC | BE_ELEC | TELE_SELF_TO
 desc:A man-shaped form of living lightning.  Sparks and shocks crackle all over
 desc: this madly capering figure, as it leaps and whirls around and about you.
 
@@ -8603,6 +8603,7 @@ blow:BITE:EXP_40:3d6
 flags:DROP_4
 spell-freq:6
 spells:WOUND | CONF | DARKNESS | MIND_BLAST
+spells:TELE_TO
 spells:BO_NETH
 spells:HOLD | SCARE
 desc:It is a humanoid form dressed in robes.  Power emanates from its chilling
@@ -8789,6 +8790,7 @@ flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:4
+spells:TELE_TO
 spells:S_MONSTERS
 friends:50:1d3:Mûmak
 friends:100:2d5:Easterling champion:bodyguard
@@ -8843,7 +8845,7 @@ flags:EVIL | SPIRIT
 flags:BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:5
-spells:WOUND | DRAIN_MANA | HOLD
+spells:WOUND | DRAIN_MANA | HOLD | TELE_AWAY
 spells:BA_COLD
 spells:BO_ELEC
 desc:Another lesser relative of the beholder, this six-eyed creature feeds on
@@ -9618,7 +9620,7 @@ flags:OPEN_DOOR
 flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | BLINK | WOUND | CONF | TRAPS
+spells:BLIND | BLINK | WOUND | CONF | TELE_TO | TRAPS
 spells:BA_COLD | BA_FIRE
 spells:BO_ACID
 spells:S_DRAGON | S_MONSTER | S_UNDEAD
@@ -9897,6 +9899,7 @@ flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spells:BLIND | BLINK | WOUND | CONF | DARKNESS | HEAL
+spells:TELE_TO
 spells:BA_COLD | BA_FIRE
 spells:BO_ACID
 spells:S_DEMON | S_MONSTER | S_UNDEAD
@@ -9924,7 +9927,7 @@ blow:TOUCH:LOSE_DEX:2d12
 flags:DROP_4 | ONLY_ITEM
 spell-freq:3
 spells:BLIND | BLINK | WOUND | CONF | BRAIN_SMASH
-spells:DRAIN_MANA | HOLD | SCARE
+spells:DRAIN_MANA | HOLD | SCARE | TELE_TO
 spells:S_UNDEAD
 friends-base:80:1d3:zombie:servant
 friends-base:80:1d3:skeleton:servant
@@ -10066,7 +10069,7 @@ blow:CRUSH:HURT:5d6
 blow:CRUSH:HURT:5d6
 flags:DROP_60 | WEIRD_MIND | EVIL
 flags:BASH_DOOR | KILL_BODY
-flags:NO_STUN | NO_SLEEP
+flags:NO_STUN | NO_SLOW | NO_SLEEP
 innate-freq:8
 spell-freq:7
 spells:DARKNESS | SCARE | BLIND
@@ -10860,7 +10863,7 @@ flags:IM_COLD | IM_ELEC
 flags:FORCE_SLEEP
 innate-freq:40
 spell-freq:8
-spells:BLINK | CONF | SCARE
+spells:BLINK | CONF | SCARE | TELE_TO
 spells:BA_ELEC | BO_ELEC | STORM | BOULDER
 friends:60:1d7:Energy hound
 friends:80:1d3:Same
@@ -10937,6 +10940,7 @@ flags:HURT_LIGHT | IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spells:BLIND | BLINK | WOUND | CONF | DARKNESS | HEAL
+spells:TELE_TO
 spells:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
 spells:BO_MANA
 spells:S_DEMON | S_DRAGON | S_MONSTERS | S_UNDEAD
@@ -11118,7 +11122,7 @@ flags:OPEN_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
-spell-freq:6
+spell-freq:3
 spells:S_ANIMAL
 drop-base:nature book:8:1:1
 drop-base:nature book:8:1:1
@@ -11146,7 +11150,7 @@ blow:CLAW:LOSE_WIS:3d10
 flags:DROP_1 | ONLY_ITEM
 flags:FORCE_SLEEP
 spell-freq:8
-spells:SLOW
+spells:SLOW | TELE_TO
 spells:BO_NETH
 desc:A mighty spirit of darkness of vaguely humanoid form.  Razor-edged claws
 desc: reach out to end your life as it glides towards you, seeking to suck the
@@ -11354,7 +11358,7 @@ flags:OPEN_DOOR | TAKE_ITEM
 flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:4
-spells:BLINK | TRAPS | DARKNESS | BLIND | HOLD
+spells:TELE_TO | TELE_SELF_TO | BLINK | TRAPS | DARKNESS | BLIND | HOLD
 desc:He is a master of disguise, an expert of stealth, a genius at traps, and
 desc: moves with blinding speed.  Check your pockets!
 
@@ -11619,7 +11623,7 @@ blow:TOUCH:LOSE_DEX:4d12
 flags:DROP_3 | ONLY_ITEM
 spell-freq:3
 spells:BLIND | BLINK | WOUND | CONF | BRAIN_SMASH
-spells:DRAIN_MANA | FORGET | HEAL | HOLD | SCARE
+spells:DRAIN_MANA | FORGET | HEAL | HOLD | SCARE | TELE_TO
 spells:TPORT
 spells:S_DEMON | S_UNDEAD
 desc:A lich who is partially immaterial, on its way to a new, ethereal form.
@@ -11786,7 +11790,7 @@ flags:OPEN_DOOR | MOVE_BODY | TAKE_ITEM
 flags:IM_ELEC | IM_FIRE | IM_POIS
 flags:FORCE_SLEEP
 spell-freq:6
-spells:HEAL
+spells:HEAL | TELE_AWAY
 spells:S_KIN | S_MONSTERS
 desc:Last and proudest king of ancient Númenor.  Corrupted by power and avarice,
 desc: he fell victim to Sauron's wiles, tried to fight the Valar themselves, and
@@ -11841,7 +11845,7 @@ flags:OPEN_DOOR | TAKE_ITEM
 flags:FORCE_SLEEP
 innate-freq:6
 spell-freq:4
-spells:HEAL | BOULDER
+spells:HEAL | TELE_TO | BOULDER
 spells:S_MONSTERS
 desc:It is a humanoid figure thirty feet tall that gives off an aura of power
 desc: and hate.
@@ -11895,6 +11899,7 @@ flags:NEVER_BLOW | NEVER_MOVE
 flags:FORCE_SLEEP
 spell-freq:1
 spells:BLIND | WOUND | CONF | DARKNESS | FORGET | SCARE
+spells:TELE_AWAY
 spells:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 desc:A skeletal hand floating in the air, motionless except for its flexing
 desc: fingers.
@@ -12187,7 +12192,7 @@ flags:IM_ELEC
 flags:ATTR_MULTI
 spell-freq:2
 spells:BLIND | WOUND | FORGET | HASTE | HEAL | MIND_BLAST
-spells:SCARE | TPORT | TRAPS
+spells:SCARE | TELE_AWAY | TPORT | TRAPS
 spells:BA_ACID | BA_COLD | BA_FIRE | BA_WATE
 spells:BO_ICE
 spells:S_ANIMAL | S_DEMON | S_HI_DRAGON | S_MONSTERS | S_UNDEAD
@@ -12279,7 +12284,7 @@ flags:TAKE_ITEM
 flags:FORCE_SLEEP
 spell-freq:4
 spells:BLIND | BLINK | BRAIN_SMASH | CONF | DRAIN_MANA | HOLD
-spells:TPORT
+spells:TELE_TO | TPORT
 spells:BA_NETH
 spells:S_UNDEAD
 friends:50:2d3:Dread:servant
@@ -12428,7 +12433,7 @@ flags:DROP_4 | ONLY_ITEM
 flags:PASS_WALL
 spell-freq:3
 spells:BLINK | WOUND | DRAIN_MANA | FORGET | HEAL | BRAIN_SMASH
-spells:HOLD | SCARE | TPORT
+spells:HOLD | SCARE | TELE_TO | TPORT
 spells:BA_NETH
 spells:S_DEMON | S_HI_UNDEAD
 desc:A lich who has reached its ultimate evolutionary stage: a completely
@@ -12511,7 +12516,7 @@ flags:OPEN_DOOR
 flags:IM_COLD | IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:WOUND | HOLD | TRAPS
+spells:WOUND | HOLD | TELE_TO | TRAPS
 spells:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE
 spells:BO_PLAS
 spells:S_HI_DEMON | S_HI_UNDEAD
@@ -12618,7 +12623,7 @@ flags:TAKE_ITEM
 flags:FORCE_SLEEP
 innate-freq:6
 spell-freq:4
-spells:HEAL | BOULDER
+spells:HEAL | TELE_TO | BOULDER
 spells:S_MONSTERS
 desc:A forty foot tall humanoid that shakes the ground as it walks.  The power
 desc: radiating from its frame shakes your courage, its hatred inspired by your
@@ -12646,6 +12651,7 @@ flags:OPEN_DOOR | BASH_DOOR
 flags:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:3
+spells:TELE_TO
 spells:S_KIN
 friends:100:2d4:Tiger:servant
 friends:100:2d4:Sabre-tooth tiger:servant
@@ -12789,7 +12795,7 @@ flags:OPEN_DOOR | BASH_DOOR
 flags:IM_COLD | IM_FIRE | IM_POIS | NO_STUN
 flags:FORCE_SLEEP
 spell-freq:8
-spells:BRAIN_SMASH | WOUND | DRAIN_MANA
+spells:BRAIN_SMASH | WOUND | DRAIN_MANA | TELE_TO
 spells:BA_NETH
 spells:S_UNDEAD
 desc:A skeletal form, black as night, constructed from the bones of its previous
@@ -13084,7 +13090,7 @@ rarity:2
 experience:10500
 flags:ATTR_FLICKER
 spell-freq:2
-spells:BLINK
+spells:BLINK | TELE_TO
 spells:S_HI_DEMON
 message-invis:BLINK:Something slurps.
 desc:A massive pulsating mound of flesh, glowing with a hellish light.
@@ -13102,7 +13108,7 @@ rarity:2
 experience:10500
 flags:ATTR_FLICKER
 spell-freq:2
-spells:BLINK
+spells:BLINK | TELE_TO
 spells:S_HI_DRAGON
 message-invis:BLINK:Something slurps.
 desc:A massive mound of scaled flesh, throbbing and pulsating with multi-hued
@@ -13121,7 +13127,7 @@ rarity:2
 experience:10500
 flags:ATTR_FLICKER
 spell-freq:2
-spells:BLINK
+spells:BLINK | TELE_TO
 spells:S_HI_UNDEAD
 message-invis:BLINK:Something slurps.
 desc:A massive pile of rotting flesh.  A disgusting stench fills the air as it
@@ -13177,7 +13183,7 @@ flags:MOVE_BODY
 flags:IM_ACID | IM_ELEC | IM_WATER | IM_DISEN
 innate-freq:4
 spell-freq:2
-spells:BLIND | WHIP
+spells:BLIND | TELE_TO | WHIP
 spells:BA_WATE | STORM
 spells:BO_MANA | BO_WATE
 spells:BR_DISE
@@ -13380,7 +13386,7 @@ flags:DROP_2 | ONLY_ITEM
 flags:KILL_WALL
 spell-freq:3
 spells:BLIND | WOUND | CONF | DRAIN_MANA | BRAIN_SMASH
-spells:HOLD
+spells:HOLD | TELE_TO
 spells:BA_MANA | BA_NETH
 spells:S_UNDEAD
 desc:A humanoid form, black as night, advancing steadily and unstoppably, even
@@ -13532,6 +13538,7 @@ flags:IM_ACID | IM_FIRE | IM_POIS
 flags:FORCE_SLEEP
 innate-freq:40
 spell-freq:9
+spells:TELE_TO
 spells:BA_ELEC | BA_FIRE
 spells:BO_PLAS
 spells:BR_FIRE
@@ -13584,7 +13591,7 @@ rarity:2
 experience:15000
 flags:ATTR_FLICKER
 spell-freq:1
-spells:BLINK
+spells:BLINK | TELE_TO
 spells:S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS
 message-invis:BLINK:Something slurps.
 desc:A giant seething mass of flesh, overwhelming you with monster after
@@ -13634,7 +13641,7 @@ flags:UNIQUE | MALE | NAME_COMMA
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 spell-freq:2
 spells:BLIND | BLINK | WOUND | HOLD | SCARE | BRAIN_SMASH
-spells:TRAPS
+spells:TELE_TO | TRAPS
 spells:BA_MANA | BA_NETH
 spells:BO_MANA
 spells:S_KIN | S_MONSTERS | S_UNDEAD
@@ -13722,7 +13729,7 @@ blow:CRUSH:CONFUSE:15d10
 flags:ATTR_MULTI | RAND_25
 innate-freq:10
 spell-freq:6
-spells:BLINK
+spells:BLINK | TELE_TO
 spells:BR_CHAO
 message-invis:BLINK:Something hisses.
 desc:Writhing coil upon coil, this mighty spawn of chaos constantly
@@ -13834,7 +13841,7 @@ flags:DROP_4 | PASS_WALL
 flags:IM_FIRE | IM_POIS | IM_COLD
 spell-freq:4
 spells:WOUND | SCARE | BRAIN_SMASH
-spells:BLINK
+spells:BLINK | TELE_SELF_TO
 spells:S_HI_DEMON
 desc:A female embodiment of rage, intent on tearing your mind and body apart.
 
@@ -14233,7 +14240,7 @@ flags:IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:110
-spells:BRAIN_SMASH | WOUND | SCARE
+spells:BRAIN_SMASH | WOUND | SCARE | TELE_TO
 spells:BA_NETH | BA_WATE
 spells:BO_ICE | BO_MANA
 spells:S_HI_UNDEAD
@@ -14294,7 +14301,7 @@ flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | BRAIN_SMASH | WOUND | HOLD | SCARE
+spells:BLIND | BRAIN_SMASH | WOUND | HOLD | SCARE | TELE_AWAY
 spells:BA_NETH
 spells:BO_MANA
 spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_KIN | S_MONSTERS | S_WRAITH
@@ -14626,7 +14633,7 @@ flags:IM_ELEC | NO_FEAR
 flags:FORCE_DEPTH
 spell-freq:2
 spell-power:260
-spells:BRAIN_SMASH | WOUND
+spells:BRAIN_SMASH | WOUND | TPORT
 spells:BA_DARK | BA_FIRE | BA_NETH
 spells:BO_ICE | BO_MANA | BO_PLAS
 spells:SHAPECHANGE
@@ -14663,7 +14670,7 @@ flags:NO_CONF | NO_SLEEP | NO_FEAR
 innate-freq:3
 spell-freq:3
 spell-power:210
-spells:BLINK | TPORT
+spells:BLINK | TPORT | TELE_SELF_TO
 spells:BLIND | CONF | SCARE | WOUND
 spells:BR_FIRE | BR_NETH | BA_DARK
 spells:S_HOUND | S_DRAGON | S_HI_DEMON | S_HI_UNDEAD
@@ -14690,7 +14697,7 @@ flags:NO_CONF | NO_SLEEP | NO_FEAR
 innate-freq:4
 spell-freq:4
 spell-power:216
-spells:BLINK | TPORT
+spells:BLINK | TPORT | TELE_SELF_TO
 spells:BLIND | CONF | SCARE | WOUND
 spells:BRAIN_SMASH | FORGET
 spells:BR_POIS | BR_CHAO | BR_ACID
