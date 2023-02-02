@@ -104,6 +104,13 @@ echo "TAngband: " \
 	`grep "Armor-Ego" ~/.angband/Tactical\ Angband/stats.log | awk -F' ' '{sum+=$2;}END{print sum;}' -`
 echo
 
+echo "End-game rods (speed, healing):"
+echo "Vanilla: " \
+	`grep "Rods-Endgame" ~/.angband/Angband/stats.log | awk -F' ' '{sum+=$2;}END{print sum;}' -`
+echo "TAngband: " \
+	`grep "Rods-Endgame" ~/.angband/Tactical\ Angband/stats.log | awk -F' ' '{sum+=$2;}END{print sum;}' -`
+echo
+
 echo "TAngband-only items"
 echo "Boots of running (total, pre level 50, pre level 30): " \
 	`grep "Boots-Running" ~/.angband/Tactical\ Angband/stats.log | awk -F' ' '{sum+=$2;}END{print sum;}' -` \

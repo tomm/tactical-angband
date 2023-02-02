@@ -4327,7 +4327,7 @@ graphics:_:d
 level:70
 weight:50
 cost:5000
-alloc:10:70 to 100
+alloc:25:70 to 100
 attack:1d2:0:0
 armor:0:0
 charges:1+d2
@@ -4746,7 +4746,7 @@ graphics:-:d
 level:80
 weight:15
 cost:20000
-alloc:20:80 to 100
+alloc:50:80 to 100
 attack:1d1:0:0
 armor:0:0
 flags:IGNORE_ELEC
@@ -4886,7 +4886,7 @@ graphics:-:d
 level:95
 weight:15
 cost:25000
-alloc:10:80 to 100
+alloc:25:80 to 100
 attack:1d1:0:0
 armor:0:0
 flags:IGNORE_ELEC
