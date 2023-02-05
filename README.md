@@ -75,10 +75,6 @@ Monster breath damage halved, and most damage caps halved.
 
 Monster spell damage halved, except for Morgoth and Sauron.
 
-Most monsters have lost the power to teleport the player (either away or to them).
-
-Most monsters can no longer teleport to the player.
-
 ## Monster summoning
 
 Monster summoning has been considerably weakened: the level of summoned
@@ -136,7 +132,7 @@ detects nearby dungeon features by walk distance from the player.
 
 * Teleport Self, Teleport Other and Teleport Level have been
   replaced with Locking, Swap Places and Imprisonment respectively.
-* "Hit and run" now teleports up to 7 squares (not 20).
+* "Hit and run" now teleports up to 5 squares (not 20).
 
 Enjoy!
 
