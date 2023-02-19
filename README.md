@@ -1,5 +1,9 @@
 # Tactical Angband
 
+<p align="center">
+  <img src="screenshots/game.png" width="425"/>
+</p>
+
 ## What??
 
 Tactical Angband is a variant of the classic roguelike game Angband.
@@ -139,11 +143,6 @@ Enjoy!
 -- Tom Morton
 
 # Angband 4.2.4
-
-<p align="center">
-  <img src="screenshots/title.png" width="425"/>
-  <img src="screenshots/game.png" width="425"/>
-</p>
 
 Angband is a graphical dungeon adventure game that uses textual characters to
 represent the walls and floors of a dungeon and the inhabitants therein, in the
