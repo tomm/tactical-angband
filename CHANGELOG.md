@@ -11,3 +11,29 @@
   speed, the shorter absolute game time you will spend paralysed.
 * Pulled code from vanilla master branch up to 4.2.4-232-g6e34fd35f. Many fixes.
 
+## 0.5
+
+* Fix a crash when examining wands of swap places
+* Monster drops tweaked
+* Re-enable labyrinth, moria and hard centre dungeon types
+* Stat-gain tweaked (again) to attempt to roughly match Vanilla stat gain completion depth
+* Increase gold value of +MOVES objects (boots/amulets of running had been absurdly cheap)
+* Replace druid/ranger mapping spell with a sil-q-style 'delving' timed mapping spell
+* Allow winning characters with birth_force_descend enabled to take up staircases
+* ESP range reduced from 12 to 10, as that is the LoS range
+* Make amulet of running much rarer, and add a mixed blessings version, 'amulet of sure movement'.
+* Various wand balancing (charges, rarity)
+
+## 0.4
+
+* Fixed a bug in 0.3.x that made monsters super-vigilant (you may have noticed this if you got stampeded by a hydra pit from half way across the level).
+* Reduced and made the detection 'radius' of almost all spells square, rather than being much wider than high (as in V)
+* Slightly increased monster densities
+* Un-nerfed some monsters that had been slowed down vs Vanilla -- this was an early experiment and probably isn't needed anymore now more escape options exist.
+* Reduced the size of simple and overlapping rooms.
+* Reduced ESP range in line with LoS changes.
+* Reordered the 'game mode' birth options, and made 'iron' (forced descent, no recall) the default. This is only a serving suggestion, and the classic infinite dungeon is available too.
+
+## 0.3
+
+Initial release!
