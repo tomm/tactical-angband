@@ -206,6 +206,7 @@ grade:o:10000:Blind:You are blind.
 on-end:You blink and your eyes clear.
 msgt:BLIND
 fail:1:PROT_BLIND
+flags:NONSTACKING | DURATION_IN_PLAYER_TURNS
 
 name:PARALYZED
 desc:paralysis
@@ -223,6 +224,7 @@ on-increase:You are more confused!
 on-decrease:You feel a little less confused.
 msgt:CONFUSED
 fail:1:PROT_CONF
+flags:NONSTACKING | DURATION_IN_PLAYER_TURNS
 
 name:AFRAID
 desc:fear

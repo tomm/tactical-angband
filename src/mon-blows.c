@@ -891,7 +891,7 @@ static void melee_effect_handler_COLD(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_BLIND(melee_effect_handler_context_t *context)
 {
-	melee_effect_timed(context, TMD_BLIND, 10 + randint1(context->rlev),
+	melee_effect_timed(context, TMD_BLIND, damroll(3, 2),
 					   OF_PROT_BLIND, false, NULL);
 }
 
@@ -900,7 +900,7 @@ static void melee_effect_handler_BLIND(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_CONFUSE(melee_effect_handler_context_t *context)
 {
-	melee_effect_timed(context, TMD_CONFUSED, 3 + randint1(context->rlev),
+	melee_effect_timed(context, TMD_CONFUSED, damroll(3, 2),
 					   OF_PROT_CONF, false, NULL);
 }
 

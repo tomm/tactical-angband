@@ -65,12 +65,9 @@ aim:0
 power:3
 effect:HEAL_HP
 dice:20
-effect:CURE:BLIND
 effect:TIMED_DEC:CUT
 dice:20
-effect:TIMED_DEC:CONFUSED
-dice:20
-desc:heals 20 hitpoints, some cut damage, makes you a little less confused, and cures blindness
+desc:heals 20 hitpoints and some cut damage
 
 name:CURE_SERIOUS
 aim:0
@@ -78,49 +75,41 @@ power:6
 msg:Your {kind} radiate{s} deep purple...
 effect:HEAL_HP
 dice:40
-effect:CURE:BLIND
 effect:CURE:CUT
-effect:CURE:CONFUSED
-desc:heals 40 hitpoints, cut damage, and cures blindness and confusion
+desc:heals 40 hitpoints and cut damage
 
 name:CURE_CRITICAL
 aim:0
 power:9
 effect:HEAL_HP
 dice:60
-effect:CURE:BLIND
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
-effect:CURE:CONFUSED
-desc:heals 60 hitpoints, cut damage, and cures stunning, poisoning, blindness, and confusion
+desc:heals 60 hitpoints, cut damage, and cures stunning and poisoning
 
 name:CURE_FULL
 aim:0
 power:12
 effect:HEAL_HP
 dice:300+m35
-effect:CURE:BLIND
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
-effect:CURE:CONFUSED
-desc:heals 35% of max HP (minimum 300HP), cut damage, and cures stunning, poisoning, blindness, and confusion
+desc:heals 35% of max HP (minimum 300HP), cut damage, and cures stunning and poisoning
 
 name:CURE_FULL2
 aim:0
 power:18
 effect:HEAL_HP
 dice:1200
-effect:CURE:BLIND
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
-effect:CURE:CONFUSED
-desc:heals 1200 hit points, cut damage, and cures stunning, poisoning, blindness, and confusion
+desc:heals 1200 hit points, cut damage, and cures stunning and poisoning
 
 name:CURE_NONORLYBIG
 aim:0
@@ -146,12 +135,10 @@ desc:heals 5000 hit points, restores experience and stats, heals cut damage, and
 name:CURE_TEMP
 aim:0
 power:9
-effect:CURE:BLIND
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
-effect:CURE:CONFUSED
-desc:heals cut damage, and cures all stunning, poison, blindness and confusion
+desc:heals cut damage, and cures all stunning and poison
 
 name:HEAL1
 aim:0

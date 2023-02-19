@@ -667,7 +667,7 @@ hit:100
 effect:DAMAGE
 dice:4d8
 effect:TIMED_INC:CONFUSED
-dice:3+1d4
+dice:3d2
 lore:cause mind blasting
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -687,7 +687,7 @@ dice:3+1d4
 effect:TIMED_INC:PARALYZED
 dice:3d2
 effect:TIMED_INC:BLIND
-dice:7+1d8
+dice:3d2
 lore:cause brain smashing
 lore-color-base:Light Red
 lore-color-resist:Orange
@@ -906,7 +906,7 @@ message-save:You fight off a sense of dread.
 name:BLIND
 hit:100
 effect:TIMED_INC:BLIND
-dice:11+1d4
+dice:3d2
 lore:blind
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -917,7 +917,7 @@ message-save:You repel a sudden bleariness.
 name:CONF
 hit:100
 effect:TIMED_INC:CONFUSED
-dice:3+1d4
+dice:3d2
 lore:confuse
 lore-color-base:Orange
 lore-color-resist:Light Green
