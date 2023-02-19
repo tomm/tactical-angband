@@ -8707,10 +8707,10 @@ sleepiness:10
 depth:36
 rarity:3
 experience:580
-blow:HIT:HURT:3d8
-blow:HIT:HURT:3d8
-blow:HIT:PARALYZE:15d1
-blow:HIT:PARALYZE:15d1
+blow:HIT:HURT:6d7
+blow:HIT:HURT:6d7
+blow:HIT:PARALYZE:4d1
+blow:HIT:PARALYZE:4d1
 desc:A larger cousin of the lurker, this creature traps unsuspecting victims and
 desc: paralyzes them, to be slowly digested later.
 
@@ -11112,10 +11112,10 @@ sleepiness:5
 depth:50
 rarity:3
 experience:6000
-blow:KICK:HURT:10d2
-blow:KICK:HURT:10d2
-blow:HIT:PARALYZE:20d1
-blow:HIT:PARALYZE:15d1
+blow:KICK:HURT:18d2
+blow:KICK:HURT:18d2
+blow:HIT:PARALYZE:6d1
+blow:HIT:PARALYZE:6d1
 flags:MALE | INVISIBLE | ATTR_FLICKER
 flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR
@@ -11863,10 +11863,10 @@ sleepiness:5
 depth:57
 rarity:3
 experience:15000
-blow:KICK:HURT:20d2
-blow:KICK:HURT:10d2
-blow:HIT:PARALYZE:20d1
-blow:HIT:PARALYZE:15d1
+blow:KICK:HURT:30d2
+blow:KICK:HURT:15d2
+blow:HIT:PARALYZE:6d1
+blow:HIT:PARALYZE:6d1
 flags:MALE | INVISIBLE | ATTR_FLICKER
 flags:DROP_4 | ONLY_ITEM
 flags:OPEN_DOOR
@@ -12643,8 +12643,8 @@ rarity:3
 experience:30000
 blow:CLAW:CONFUSE:12d12
 blow:CLAW:LOSE_DEX:2d12
-blow:CLAW:BLIND:10d5
-blow:BITE:PARALYZE:15d1
+blow:CLAW:BLIND:12d5
+blow:BITE:PARALYZE:6d1
 flags:UNIQUE | MALE | NAME_COMMA | INVISIBLE | SPIRIT
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
