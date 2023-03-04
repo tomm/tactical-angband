@@ -670,7 +670,7 @@ static void project_monster_handler_GRAVITY(project_monster_handler_context_t *c
 {
 	/* Higher level monsters can resist the teleportation better */
 	if (randint1(127) > context->mon->race->level)
-		context->teleport_distance = 10;
+		context->teleport_distance = 5;
 
 	/* Prevent displacement on gravity breathers. */
 	if (rsf_has(context->mon->race->spell_flags, RSF_BR_GRAV))
