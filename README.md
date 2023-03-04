@@ -13,14 +13,10 @@ while maintaining the feel of Angband.
 The following is a (possibly incomplete) list of changes made to Tactical
 Angband relative to (Vanilla) Angband 4.2.4 (4.2.4-232-g6e34fd35f).
 
-## General
+## Dungeon
 
 The dungeon is now 50 levels deep rather than 100, and each level is one-fourth
 the area of a classic Angband level.
-
-Standard turns are used in the highscore table.
-
-## Dungeon
 
 Although the dungeon has half as many levels as Vanilla Angband, levels are
 counted 2, 4, 6, ..., 100 for consistency with Vanilla monster and item depths.
@@ -91,6 +87,15 @@ When paralyzed the player is now guaranteed a move at the end of paralysis,
 whereas in Vanilla Angband you can be re-paralyzed when paralysis has ended but
 the player has not accumulated 'movement energy' enough to take a turn yet.
 
+Blindness, confusion and paralysis have shorter durations, which are measured 
+in player turns (so the effects last less absolute game time the faster the player
+is). They are non-stacking (you can't be made more blind/confused/paralyzed while
+already afflicted). Immediate cures for blindness and confusion are now much rarer.
+
+## Scoring
+
+Standard turns are used in the highscore table.
+
 ## Class changes
 
 ### Mage
@@ -103,7 +108,6 @@ the player has not accumulated 'movement energy' enough to take a turn yet.
 
 ### Druid
 
-* Portal now has the same range as Phase Door.
 * Sense Surroundings spell is now a timed effect that detects nearby
 dungeon features by walk distance from the player.
 
