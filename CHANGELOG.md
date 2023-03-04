@@ -1,3 +1,17 @@
+## 0.7
+
+* Fixed a bug where monsters capable of knocking out the player (mystics and
+  trappers) could do so in a single turn.
+* Blindness and confusion are now non-stacking, shorter duration, measured in 
+  player turns, and mostly incurable.
+* Ringwraiths can now summon each other again. This is a special exemption from 
+  the general summoning nerf, which restricts summons to two-thirds the level
+  of the summoner.
+* Fixed a bug preventing individual monster friends from appearing. This fixes
+  issues like Bill, Tom and Bert not appearing together.
+* Gravity now teleports monsters 5 tiles, not 10.
+* Tweak to detection rod rarity.
+
 ## 0.6
 
 * Extensive rebalancing of monster drops to match vanilla angband stat gain,
