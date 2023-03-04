@@ -111,6 +111,13 @@ echo "TAngband: " \
 	`grep "Rods-Endgame" ~/.angband/Tactical\ Angband/stats.log | awk -F' ' '{sum+=$2;}END{print sum;}' -`
 echo
 
+echo "Detection rods:"
+echo "Vanilla: " \
+	`grep "Rods-Detect all" ~/.angband/Angband/stats.log | awk -F' ' '{sum+=$3;}END{print sum;}' -`
+echo "TAngband: " \
+	`grep "Rods-Detect all" ~/.angband/Tactical\ Angband/stats.log | awk -F' ' '{sum+=$3;}END{print sum;}' -`
+echo
+
 echo "TAngband-only items"
 echo "Boots of running (total, pre level 50, pre level 30): " \
 	`grep "Boots-Running" ~/.angband/Tactical\ Angband/stats.log | awk -F' ' '{sum+=$2;}END{print sum;}' -` \
