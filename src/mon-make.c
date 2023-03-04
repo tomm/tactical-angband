@@ -1304,7 +1304,7 @@ static bool place_friends(struct chunk *c, struct loc grid, struct monster_race 
 	bool is_unique = rf_has(friends_race->flags, RF_UNIQUE);
 	
 	/* Tactical-angband hack: reduce monster group sizes */
-	total = 2 * total / 3;
+	total = MAX(1, 2 * total / 3);
 
 	/* Make sure the unique hasn't been killed already */
 	if (is_unique && (friends_race->cur_num >= friends_race->max_num)) {
