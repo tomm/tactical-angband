@@ -29,5 +29,6 @@ bool multiply_monster(const struct monster *mon);
 void process_monsters(int minimum_energy);
 void reset_monsters(void);
 void restore_monsters(void);
+void monsters_handle_player_noise(int percent_chance);
 
 #endif /* !MONSTER_MOVE_H */

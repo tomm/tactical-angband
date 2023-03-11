@@ -668,7 +668,7 @@ cost:30
 alloc:20:0 to 100
 attack:1d4:0:0
 armor:0:0
-flags:THROWING
+flags:THROWING | OPPORTUNIST
 desc:A short two-edged blade perfect for thrusting or throwing.
 
 name:& Main Gauche~
@@ -680,6 +680,7 @@ cost:45
 alloc:20:3 to 100
 attack:1d5:0:0
 armor:0:0
+flags:OPPORTUNIST
 desc:A short thrusting blade with a large guard, primarily used in duels.
 
 name:& Rapier~
@@ -2107,6 +2108,7 @@ effect:BALL:FIRE:2
 dice:80
 effect:TIMED_INC:OPP_FIRE
 dice:20+1d20
+effect:NOISY
 time:50+d50
 
 name:Acid
@@ -2125,6 +2127,7 @@ effect:BALL:ACID:2
 dice:70
 effect:TIMED_INC:OPP_ACID
 dice:20+1d20
+effect:NOISY
 time:50+d50
 
 name:Ice
@@ -2143,6 +2146,7 @@ effect:BALL:COLD:2
 dice:75
 effect:TIMED_INC:OPP_COLD
 dice:20+1d20
+effect:NOISY
 time:50+d50
 
 name:Lightning
@@ -2161,6 +2165,7 @@ effect:BALL:ELEC:2
 dice:85
 effect:TIMED_INC:OPP_ELEC
 dice:20+1d20
+effect:NOISY
 time:50+d50
 
 ### Combat rings ###
@@ -2846,6 +2851,7 @@ alloc:40:10 to 60
 pile:25:2d3
 power:6
 effect:TOUCH:KILL_DOOR
+effect:NOISY
 
 name:Deep Descent
 type:scroll
@@ -3632,6 +3638,7 @@ effect:BREATH:FIRE:0:20
 dice:80
 effect:BREATH:COLD:0:20
 dice:80
+effect:NOISY
 
 
 
@@ -3666,6 +3673,7 @@ charges:6+d8
 power:5
 effect:BEAM:ELEC
 dice:6d6
+effect:NOISY
 
 name:Frost Bolts
 type:wand
@@ -3680,6 +3688,7 @@ charges:6+d5
 power:4
 effect:BOLT:COLD
 dice:12d8
+effect:NOISY
 
 name:Fire Bolts
 type:wand
@@ -3694,6 +3703,7 @@ charges:6+d8
 power:7
 effect:BOLT_OR_BEAM:FIRE
 dice:12d8
+effect:NOISY
 
 name:Acid Bolts
 type:wand
@@ -3708,6 +3718,7 @@ charges:6+d8
 power:6
 effect:BOLT_OR_BEAM:ACID
 dice:10d8
+effect:NOISY
 
 
 ### Balls ###
@@ -3740,6 +3751,7 @@ flags:IGNORE_ELEC
 power:9
 effect:BALL:ELEC:2
 dice:64
+effect:NOISY
 
 name:Cold Balls
 type:wand
@@ -3755,6 +3767,7 @@ flags:IGNORE_COLD
 power:10
 effect:BALL:COLD:2
 dice:100
+effect:NOISY
 
 name:Fire Balls
 type:wand
@@ -3770,6 +3783,7 @@ flags:IGNORE_FIRE
 power:11
 effect:BALL:FIRE:2
 dice:144
+effect:NOISY
 
 name:Acid Balls
 type:wand
@@ -3785,6 +3799,7 @@ flags:IGNORE_ACID
 power:11
 effect:BALL:ACID:2
 dice:120
+effect:NOISY
 
 
 ### Monster status changing ###
@@ -3995,6 +4010,7 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:13
 effect:ARC:FIRE:0:30
 dice:200
+effect:NOISY
 
 name:Dragon's Frost
 type:wand
@@ -4010,6 +4026,7 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
 effect:ARC:COLD:0:30
 dice:160
+effect:NOISY
 
 name:Dragon's Breath
 type:wand
@@ -4035,6 +4052,7 @@ effect:ARC:COLD:0:30
 dice:160
 effect:ARC:POIS:0:30
 dice:160
+effect:NOISY
 
 
 ### Drain lifes ###
@@ -4569,6 +4587,7 @@ armor:0:0
 power:7
 effect:BOLT_OR_BEAM:FIRE
 dice:12d8
+effect:NOISY
 time:15
 
 name:Frost Bolts
@@ -4583,6 +4602,7 @@ armor:0:0
 power:7
 effect:BOLT:COLD
 dice:12d8
+effect:NOISY
 time:13
 
 name:Lightning Bolts
@@ -4597,6 +4617,7 @@ armor:0:0
 power:5
 effect:BEAM:ELEC
 dice:6d6
+effect:NOISY
 time:11
 
 name:Acid Bolts
@@ -4611,6 +4632,7 @@ armor:0:0
 power:7
 effect:BOLT_OR_BEAM:ACID
 dice:12d8
+effect:NOISY
 time:12
 
 
@@ -4628,6 +4650,7 @@ armor:0:0
 power:11
 effect:BALL:FIRE:2
 dice:144
+effect:NOISY
 time:30
 
 name:Cold Balls
@@ -4642,6 +4665,7 @@ armor:0:0
 power:10
 effect:BALL:COLD:2
 dice:100
+effect:NOISY
 time:25
 
 name:Lightning Balls
@@ -4657,6 +4681,7 @@ flags:IGNORE_ELEC
 power:9
 effect:BALL:ELEC:2
 dice:64
+effect:NOISY
 time:23
 
 name:Acid Balls
@@ -4671,6 +4696,7 @@ armor:0:0
 power:11
 effect:BALL:ACID:2
 dice:120
+effect:NOISY
 time:27
 
 

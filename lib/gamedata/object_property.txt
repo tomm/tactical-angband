@@ -725,6 +725,14 @@ id-type:on wield
 code:THROWING
 power:4
 
+name:opportunist
+type:flag
+subtype:melee
+id-type:on wield
+code:OPPORTUNIST
+power:0
+desc:Silent and lethal (+2 might) when used against sleeping foe
+
 name:ignore acid
 type:ignore
 code:ACID

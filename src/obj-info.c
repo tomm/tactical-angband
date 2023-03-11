@@ -431,38 +431,21 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 /**
  * Account for criticals in the calculation of melee prowess
  *
- * Note -- This relies on the criticals being an affine function
- * of previous damage, since we are used to transform the mean
- * of a roll.
- *
- * Also note -- rounding error makes this not completely accurate
- * (but for the big crit weapons like Grond an odd point of damage
- * won't be missed)
- *
- * This code written according to the KISS principle.  650 adds
- * are cheaper than a FOV call and get the job done fine.
+ * This is calculating an average of player-attack.c critical_melee()
  */
-static void calculate_melee_crits(struct player_state *state, int weight,
+static void calculate_melee_crits(struct player_state *state,
+		const struct object *weapon,
 		int plus, int *mult, int *add, int *div)
 {
-	int k, to_crit = weight + 5 * (state->to_h + plus) +
-		3 * state->skills[SKILL_TO_HIT_MELEE] - 60;
-	to_crit = MIN(5000, MAX(0, to_crit));
+	const int effective_tohit = state->skills[SKILL_TO_HIT_MELEE] + plus * BTH_PLUS_ADJ;
+	const int power = MAX(0, (effective_tohit - weapon->weight) / 3);
+	const int crit_chance = 100 * power / (power + 240);
 
-	*mult = *add = 0;
-
-	for (k = weight; k < weight + 650; k++) {
-		if (k <  400) { *mult += 4; *add += 10; continue; }
-		if (k <  700) { *mult += 4; *add += 20; continue; }
-		if (k <  900) { *mult += 6; *add += 30; continue; }
-		if (k < 1300) { *mult += 6; *add += 40; continue; }
-		                *mult += 8; *add += 40;
-	}
-
-	/* Scale the output to a reasonable size to prevent integer overflow. */
-	*mult = 100 + to_crit * (*mult - 1300) / (50 * 1300);
-	*add  = *add * to_crit / (500 * 50);
-	*div  = 100;
+	*div = 100;
+	*mult = (400 + 2*350 + 4*300 + 8*250 + 16*200) / 31;
+	*add = (2000 + 2*1500 + 4*1000 + 8*500 + 16*200) / 31;
+	*mult = (*mult * crit_chance / 100) + (100 - crit_chance);
+	*add = (*add * crit_chance / 100) + (100 - crit_chance);
 }
 
 /**
@@ -794,7 +777,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		xtra_precrit += obj->known->to_d * 10;
 		plus += obj->known->to_h;
 
-		calculate_melee_crits(&state, obj->weight, plus, &crit_mult, &crit_add,
+		calculate_melee_crits(&state, obj, plus, &crit_mult, &crit_add,
 							  &crit_div);
 
 		old_blows = state.num_blows;
@@ -865,7 +848,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		/* Include bonus damage and brand in stated average */
 		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult)
 			+ xtra_precrit;
-		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
 		if (weapon) {
@@ -894,7 +877,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		/* Include bonus damage and slay in stated average */
 		total_dam = dam * (multiplier + slays[i].multiplier - melee_adj_mult)
 			+ xtra_precrit;
-		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
 		if (weapon) {
@@ -909,7 +892,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Include bonus damage in stated average */
 	total_dam = dam * multiplier + xtra_precrit;
-	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+	total_dam = (total_dam * crit_mult + 10 * crit_add) / crit_div;
 	total_dam += xtra_postcrit;
 
 	/* Normal damage, not considering brands or slays */

@@ -1708,6 +1708,62 @@ static bool monster_check_active(struct monster *mon)
 /* Was 50 in V */
 #define NOISE_WAKEUP_THRESHOLD 25
 
+static void monster_apply_reduce_sleep(struct monster *mon)
+{
+	struct monster_lore *lore = get_lore(mon->race);
+	int sleep_reduction = 1;
+	/* local_noise will just be distance to the player (in tiles, as sound travels) */
+	int local_noise = cave->noise.grids[mon->grid.y][mon->grid.x];
+	bool woke_up = false;
+
+	/* Test - wake up faster in hearing distance of the player 
+	 * Note no dependence on stealth for now */
+	if ((local_noise > 0) && (local_noise < NOISE_WAKEUP_THRESHOLD)) {
+		/* Vanilla formula is:
+		 *   sleep_reduction = (2 * NOISE_WAKEUP_THRESHOLD / local_noise);
+		 * which gives:
+		 *   [100, 50, 33, 25, 20, 16, 14, 12, 11, 10, 9, ...]
+		 * Tactical angband's altered formula gives:
+		 *   [100, 33, 20, 14, 11, 9, 7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 3, 2, 2, ...]
+		 * Which makes typical wakeup distances roughly halved,
+		 * matching reduced player LoS
+		 */
+		sleep_reduction = (2 * NOISE_WAKEUP_THRESHOLD - 1) / local_noise;
+	}
+
+	/* Note a complete wakeup */
+	if (mon->m_timed[MON_TMD_SLEEP] <= sleep_reduction) {
+		woke_up = true;
+	}
+
+	/* Monster wakes up a bit */
+	mon_dec_timed(mon, MON_TMD_SLEEP, sleep_reduction, MON_TMD_FLG_NOTIFY);
+
+	/* Update knowledge */
+	if (monster_is_obvious(mon)) {
+		if (!woke_up && lore->ignore < UCHAR_MAX)
+			lore->ignore++;
+		else if (woke_up && lore->wake < UCHAR_MAX)
+			lore->wake++;
+		lore_update(mon->race, lore);
+	}
+}
+
+void monsters_handle_player_noise(int percent_chance)
+{
+	int i;
+
+	/* Process the monsters (backwards) */
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+		/* Get a 'live' monster */
+		struct monster *mon = cave_monster(cave, i);
+		if (!mon->race) continue;
+		if (mon->m_timed[MON_TMD_SLEEP] && randint1(100) <= percent_chance) {
+			monster_apply_reduce_sleep(mon);
+		}
+	}
+}
+
 /**
  * Wake a monster or reduce its depth of sleep
  *
@@ -1716,12 +1772,11 @@ static bool monster_check_active(struct monster *mon)
  * the player.  Currently straight line distance is used; possibly this
  * should take into account dungeon structure.
  */
-static void monster_reduce_sleep(struct monster *mon)
+static void monster_maybe_reduce_sleep(struct monster *mon)
 {
 	int stealth = player->state.skills[SKILL_STEALTH];
 	uint32_t player_noise = ((uint32_t) 1) << (30 - stealth);
 	uint32_t notice = (uint32_t) randint0(1024);
-	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Aggravation */
 	if (player_of_has(player, OF_AGGRAVATE)) {
@@ -1740,42 +1795,7 @@ static void monster_reduce_sleep(struct monster *mon)
 			equip_learn_flag(player, OF_AGGRAVATE);
 		}
 	} else if ((notice * notice * notice) <= player_noise) {
-		int sleep_reduction = 1;
-		/* local_noise will just be distance to the player (in tiles, as sound travels) */
-		int local_noise = cave->noise.grids[mon->grid.y][mon->grid.x];
-		bool woke_up = false;
-
-		/* Test - wake up faster in hearing distance of the player 
-		 * Note no dependence on stealth for now */
-		if ((local_noise > 0) && (local_noise < NOISE_WAKEUP_THRESHOLD)) {
-			/* Vanilla formula is:
-			 *   sleep_reduction = (2 * NOISE_WAKEUP_THRESHOLD / local_noise);
-			 * which gives:
-			 *   [100, 50, 33, 25, 20, 16, 14, 12, 11, 10, 9, ...]
-			 * Tactical angband's altered formula gives:
-			 *   [100, 33, 20, 14, 11, 9, 7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 3, 2, 2, ...]
-			 * Which makes typical wakeup distances roughly halved,
-			 * matching reduced player LoS
-			 */
-			sleep_reduction = (2 * NOISE_WAKEUP_THRESHOLD - 1) / local_noise;
-		}
-
-		/* Note a complete wakeup */
-		if (mon->m_timed[MON_TMD_SLEEP] <= sleep_reduction) {
-			woke_up = true;
-		}
-
-		/* Monster wakes up a bit */
-		mon_dec_timed(mon, MON_TMD_SLEEP, sleep_reduction, MON_TMD_FLG_NOTIFY);
-
-		/* Update knowledge */
-		if (monster_is_obvious(mon)) {
-			if (!woke_up && lore->ignore < UCHAR_MAX)
-				lore->ignore++;
-			else if (woke_up && lore->wake < UCHAR_MAX)
-				lore->wake++;
-			lore_update(mon->race, lore);
-		}
+		monster_apply_reduce_sleep(mon);
 	}
 }
 
@@ -1788,7 +1808,7 @@ static bool process_monster_timed(struct monster *mon)
 {
 	/* If the monster is asleep or just woke up, then it doesn't act */
 	if (mon->m_timed[MON_TMD_SLEEP]) {
-		monster_reduce_sleep(mon);
+		monster_maybe_reduce_sleep(mon);
 		return true;
 	} else {
 		/* Awake, active monsters may become aware */

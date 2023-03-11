@@ -26,6 +26,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-summon.h"
 #include "mon-util.h"
@@ -2074,6 +2075,19 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	}
 
 	return used;
+}
+
+/**
+ * Make noise that can wake up monsters.
+ */
+bool effect_handler_NOISY(effect_handler_context_t *context)
+{
+	if (context->origin.what == SRC_PLAYER)
+	{
+		monsters_handle_player_noise(100);
+	}
+
+	return false;
 }
 
 /**

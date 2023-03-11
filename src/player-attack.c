@@ -27,6 +27,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-msg.h"
 #include "mon-predicate.h"
 #include "mon-timed.h"
@@ -43,6 +44,7 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "player.h"
 #include "project.h"
 #include "target.h"
 
@@ -85,11 +87,11 @@ int breakage_chance(const struct object *obj, bool hit_target) {
  * \param p The player
  * \param weapon The player's weapon
  */
-int chance_of_melee_hit_base(const struct player *p,
+int chance_of_melee_hit_base(const struct player_state *pstate,
 		const struct object *weapon)
 {
-	int bonus = p->state.to_h + (weapon ? weapon->to_h : 0);
-	return p->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
+	int bonus = pstate->to_h + (weapon ? weapon->to_h : 0);
+	return pstate->skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
 }
 
 /**
@@ -103,9 +105,18 @@ int chance_of_melee_hit_base(const struct player *p,
 static int chance_of_melee_hit(const struct player *p,
 		const struct object *weapon, const struct monster *mon)
 {
-	int chance = chance_of_melee_hit_base(p, weapon);
+	int chance = chance_of_melee_hit_base(&p->state, weapon);
 	/* Non-visible targets have a to-hit penalty of 50% */
-	return monster_is_visible(mon) ? chance : chance / 2;
+	if (!monster_is_visible(mon)) {
+		return chance / 2;
+	}
+	/* Sleeping targets have to-hit bonus of 100% */
+	else if (mon->m_timed[MON_TMD_SLEEP]) {
+		return chance * 2;
+	}
+	else {
+		return chance;
+	}
 }
 
 /**
@@ -374,34 +385,44 @@ static int o_critical_shot(const struct player *p,
  *
  * Factor in weapon weight, total plusses, player level.
  */
-static int critical_melee(const struct player *p,
-		const struct monster *monster,
-		int weight, int plus,
+static int critical_melee(const struct monster *monster,
+		const struct object *weapon,
+		const int effective_tohit,
 		int dam, uint32_t *msg_type)
 {
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = weight + randint1(650);
-	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 5
-		+ (p->state.skills[SKILL_TO_HIT_MELEE] - 60);
+	int debuff_to_hit = (monster && is_debuffed(monster)) ? DEBUFF_CRITICAL_HIT : 0;
+	int power = MAX(0, (effective_tohit + debuff_to_hit - weapon->weight) / 3);
 	int new_dam = dam;
 
-	if (randint1(5000) > chance) {
-		*msg_type = MSG_HIT;
-	} else if (power < 400) {
-		*msg_type = MSG_HIT_GOOD;
-		new_dam = 2 * dam + 5;
-	} else if (power < 700) {
-		*msg_type = MSG_HIT_GREAT;
-		new_dam = 2 * dam + 10;
-	} else if (power < 900) {
-		*msg_type = MSG_HIT_SUPERB;
-		new_dam = 3 * dam + 15;
-	} else if (power < 1300) {
-		*msg_type = MSG_HIT_HI_GREAT;
-		new_dam = 3 * dam + 20;
+	/* Test for critical hit - chance power / (power + 240) */
+	if (randint1(power + 240) <= power) {
+		/* Determine level of critical hit. */
+		switch (randint0(31)) {
+			case 0:
+				*msg_type = MSG_HIT_HI_SUPERB;
+				new_dam = 4 * dam + 20;
+				break;
+			case 1: case 2:
+				*msg_type = MSG_HIT_HI_GREAT;
+				new_dam = 7 * dam / 2 + 15;
+				break;
+			case 3: case 4: case 5: case 6:
+				*msg_type = MSG_HIT_SUPERB;
+				new_dam = 3 * dam + 10;
+				break;
+			case 7: case 8: case 9: case 10:
+			case 11: case 12: case 13: case 14:
+				*msg_type = MSG_HIT_GREAT;
+				new_dam = 5 * dam / 2 + 5;
+				break;
+			/* 16 default cases */
+			default:
+				*msg_type = MSG_HIT_GOOD;
+				new_dam = 2 * dam + 2;
+				break;
+		}
 	} else {
-		*msg_type = MSG_HIT_HI_SUPERB;
-		new_dam = 4 * dam + 20;
+		*msg_type = MSG_HIT;
 	}
 
 	return new_dam;
@@ -414,10 +435,10 @@ static int critical_melee(const struct player *p,
  */
 static int o_critical_melee(const struct player *p,
 		const struct monster *monster,
-		const struct object *obj, uint32_t *msg_type)
+		const int effective_tohit, uint32_t *msg_type)
 {
 	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = (chance_of_melee_hit_base(p, obj) + debuff_to_hit) / 3;
+	int power = (effective_tohit + debuff_to_hit) / 3;
 	int add_dice = 0;
 
 	/* Test for critical hit - chance power / (power + 240) */
@@ -473,7 +494,7 @@ static int melee_damage(const struct monster *mon, struct object *obj, int b, in
  * criticals add extra dice.
  */
 static int o_melee_damage(struct player *p, const struct monster *mon,
-		struct object *obj, int b, int s, uint32_t *msg_type)
+		struct object *obj, int effective_tohit, int b, int s, uint32_t *msg_type)
 {
 	int dice = (obj) ? obj->dd : 1;
 	int sides, dmg, add = 0;
@@ -509,7 +530,7 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 	 * Get number of critical dice; for now, excluding criticals for
 	 * unarmed combat
 	 */
-	if (obj) dice += o_critical_melee(p, mon, obj, msg_type);
+	if (obj) dice += o_critical_melee(p, mon, effective_tohit, msg_type);
 
 	/* Roll out the damage. */
 	dmg = damroll(dice, sides);
@@ -710,6 +731,7 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 	char verb[20];
 	uint32_t msg_type = MSG_HIT;
 	int j, b, s, weight, dmg;
+	int effective_tohit;
 
 	/* Default to punching */
 	my_strcpy(verb, "punch", sizeof(verb));
@@ -730,12 +752,23 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 		return false;
 	}
 
+	effective_tohit = chance_of_melee_hit(p, obj, mon);
+
+	if (of_has(obj->flags, OF_OPPORTUNIST) && mon->m_timed[MON_TMD_SLEEP]) {
+		/* Silent, +2 might */
+		msg("You cruelly attack a sleeping foe!");
+		num_blows_x100 += 200;
+	} else {
+		/* Melee attacks disturb other monsters nearby */
+		monsters_handle_player_noise(100);
+	}
+
 	/* Disturb the monster */
 	monster_wake(mon, false, 100);
 	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
 
 	/* See if the player hit */
-	success = test_hit(chance_of_melee_hit(p, obj, mon), mon->race->ac);
+	success = test_hit(effective_tohit, mon->race->ac);
 
 	/* If a miss, skip this hit */
 	if (!success) {
@@ -778,10 +811,9 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 	if (!OPT(p, birth_percent_damage)) {
 		dmg = melee_damage(mon, obj, b, s);
 		/* For now, exclude criticals on unarmed combat */
-		if (obj) dmg = critical_melee(p, mon, weight, obj->to_h,
-			dmg, &msg_type);
+		if (obj) dmg = critical_melee(mon, obj, effective_tohit, dmg, &msg_type);
 	} else {
-		dmg = o_melee_damage(p, mon, obj, b, s, &msg_type);
+		dmg = o_melee_damage(p, mon, obj, effective_tohit, b, s, &msg_type);
 	}
 
 	/* Splash damage and earthquakes */
@@ -1203,7 +1235,6 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	drop_near(cave, &missile, breakage_chance(missile, hit_target), grid, true, false);
 }
 
-
 /**
  * Helper function used with ranged_helper by do_cmd_fire.
  */
@@ -1217,6 +1248,9 @@ static struct attack_result make_ranged_shot(struct player *p,
 	int b = 0, s = 0;
 
 	my_strcpy(hit_verb, "hits", 20);
+
+	/* Shooting makes noise */
+	monsters_handle_player_noise(100);
 
 	/* Did we hit it */
 	if (!test_hit(chance_of_missile_hit(p, ammo, bow, mon), mon->race->ac))
@@ -1254,6 +1288,9 @@ static struct attack_result make_ranged_throw(struct player *p,
 	int b = 0, s = 0;
 
 	my_strcpy(hit_verb, "hits", 20);
+
+	/* Throwing makes noise */
+	monsters_handle_player_noise(100);
 
 	/* If we missed then we're done */
 	if (!test_hit(chance_of_missile_hit(p, obj, NULL, mon), mon->race->ac))

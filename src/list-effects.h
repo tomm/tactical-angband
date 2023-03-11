@@ -126,3 +126,4 @@ EFFECT(IMPRISON,				        true,	NULL,		0,		EFINFO_NONE,	"surrounds the monster
 EFFECT(DAMNATION,				        true,	NULL,		0,		EFINFO_NONE,	"opens a pit of lava under the monster",	"damnation")
 EFFECT(SCRAMBLE_STATS,					false,  NULL,		0,		EFINFO_NONE,	"", 					"")
 EFFECT(UNSCRAMBLE_STATS,				false,	NULL,		0,		EFINFO_NONE,	"",					"")
+EFFECT(NOISY,                                           false,  NULL,           0,              EFINFO_NONE,    "can wake up nearby monsters", "")
