@@ -341,7 +341,7 @@ cost:100000
 alloc:6:20 to 100
 attack:1d7:7:8
 armor:0:0
-flags:PROT_FEAR | FREE_ACT | SEE_INVIS
+flags:PROT_FEAR | FREE_ACT | SEE_INVIS | OPPORTUNIST
 values:SPEED[3] | BLOWS[2] | STR[1] | DEX[1] | CON[1] | LIGHT[1] | RES_LIGHT[1]
 slay:EVIL_2
 slay:UNDEAD_3
