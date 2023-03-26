@@ -2269,9 +2269,9 @@ level:30
 weight:2
 cost:100
 alloc:50:10 to 50
-attack:0d0:0:-3d5
+attack:0d0:0:0
 armor:0:0
-values:DEX[d4] | STEALTH[d4]
+values:STR[-5+d4] | INFRA[d4] | STEALTH[d4]
 
 name:the Dog
 type:ring
