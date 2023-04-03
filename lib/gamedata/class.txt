@@ -1495,7 +1495,7 @@ desc:Repairs and locks all adjacent doors.
 spell:Hit and Run:23:20:40:20
 effect:TIMED_INC:ATT_RUN
 dice:10
-desc:Prepares you to teleport a short distance after stealing from a monster.
+desc:Prepares you to teleport a short distance and run after attacking or stealing from a monster.
 
 spell:Swap Places:30:10:30:50
 effect:BOLT_STATUS:SWAP_PLACES

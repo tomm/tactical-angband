@@ -689,6 +689,19 @@ static bool blow_after_effects(struct loc grid, int dmg, int splash,
 			return true;
 	}
 
+	/* Player hit and run */
+	/* XXX code duplicated from mon-util.c steal_monster_item */
+	if (player->timed[TMD_ATT_RUN]) {
+		player_inc_timed(player, TMD_RUNNING, 10, false, false, false);
+
+		const char *near = "5";
+		msg("You vanish into the shadows!");
+		effect_simple(EF_TELEPORT, source_player(), near, 0, 0, 0, 0, 0,
+					  NULL);
+		(void) player_clear_timed(player, TMD_ATT_RUN, false,
+			false);
+	}
+
 	return false;
 }
 
