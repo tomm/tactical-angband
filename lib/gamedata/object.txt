@@ -2223,7 +2223,7 @@ graphics:=:d
 level:5
 weight:2
 cost:1000
-alloc:20:10 to 50
+alloc:20:10 to 100
 flags:EASY_KNOW
 curse:teleportation:100
 values:SPEED[2]
@@ -2836,7 +2836,6 @@ level:40
 weight:5
 cost:400
 alloc:20:40 to 100
-pile:12:1d3
 power:22
 effect:RECHARGE
 dice:6
@@ -4236,7 +4235,7 @@ cost:700
 alloc:20:10 to 100
 attack:1d2:0:0
 armor:0:0
-charges:6+d5
+charges:2+d4
 power:8
 effect:PROJECT_LOS_AWARE:SLEEP_ALL
 dice:$B
