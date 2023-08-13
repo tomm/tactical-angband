@@ -767,7 +767,7 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 
 	effective_tohit = chance_of_melee_hit(p, obj, mon);
 
-	if (of_has(obj->flags, OF_OPPORTUNIST) && mon->m_timed[MON_TMD_SLEEP]) {
+	if (obj && of_has(obj->flags, OF_OPPORTUNIST) && mon->m_timed[MON_TMD_SLEEP]) {
 		/* Silent, +2 might */
 		msg("You cruelly attack a sleeping foe!");
 		num_blows_x100 += 200;
