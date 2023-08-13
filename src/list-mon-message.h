@@ -62,6 +62,7 @@ MON_MSG(MAINTAIN_SHAPE,		MSG_GENERIC,	false,	"maintain[s] the same shape.")
 MON_MSG(UNHARMED,			MSG_GENERIC,	false,	"[is|are] unharmed.")
 MON_MSG(APPEAR,			MSG_GENERIC,	false,	"appear[s]!")
 MON_MSG(HIT_AND_RUN,		MSG_GENERIC,	true,	"There is a puff of smoke!")
+MON_MSG(TOO_INJURED_TO_SLEEP,	MSG_GENERIC,	false,	"[is|are] too injured to sleep!")
 /* Dummy messages for monster pain - we use edit file info instead. */
 MON_MSG(95,					MSG_GENERIC,	false,	"")
 MON_MSG(75,					MSG_GENERIC,	false,	"")

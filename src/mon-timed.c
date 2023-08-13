@@ -193,6 +193,10 @@ static bool mon_set_timed(struct monster *mon,
 	if (check_resist && does_resist(mon, effect_type, &timer, flag)) {
 		resisted = true;
 		m_note = MON_MSG_UNAFFECTED;
+	} else if (effect_type == MON_TMD_SLEEP && mon->hp < 9*mon->maxhp/10) {
+		/* XXX hack - injured monsters can't be slept */
+		resisted = true;
+		m_note = MON_MSG_TOO_INJURED_TO_SLEEP;
 	} else {
 		mon->m_timed[effect_type] = timer;
 		update = true;
