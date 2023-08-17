@@ -141,7 +141,7 @@ static void fill_in_object_base(struct object_base *base)
 	base->next = NULL;
 	base->attr = COLOUR_WHITE;
 	of_wipe(base->flags);
-	kf_wipe(base->flags);
+	kf_wipe(base->kind_flags);
 	memset(base->el_info, 0, ELEM_MAX * sizeof(base->el_info[0]));
 	base->break_perc = 0;
 	base->max_stack = 40;
@@ -444,6 +444,7 @@ static int test_get_monster_brand_multiplier(void *state)
 static int test_improve_attack_modifier(void *state)
 {
 	struct slays_test_state *ts = state;
+	bool pctdam = OPT(player, birth_percent_damage);
 	struct object_base weapon_base;
 	struct object_kind weapon_kind;
 	struct object weapon;
@@ -673,10 +674,20 @@ static int test_improve_attack_modifier(void *state)
 			weapon.brands[i2] = true;
 
 			/* Susceptible to both */
-			if (brands[i1].multiplier >= brands[i2].multiplier) {
-				expected = i1;
+			if (pctdam) {
+				if (brands[i1].o_multiplier
+						>= brands[i2].o_multiplier) {
+					expected = i1;
+				} else {
+					expected = i2;
+				}
 			} else {
-				expected = i2;
+				if (brands[i1].multiplier
+						>= brands[i2].multiplier) {
+					expected = i1;
+				} else {
+					expected = i2;
+				}
 			}
 			b = 0;
 			s = 0;
@@ -737,11 +748,20 @@ static int test_improve_attack_modifier(void *state)
 			if (brands[i1].vuln_flag) {
 				/* Especially vulnerable to the first */
 				rf_on(dummy.race->flags, brands[i1].vuln_flag);
-				if (2 * brands[i1].multiplier
-						>= brands[i2].multiplier) {
-					expected = i1;
+				if (pctdam) {
+					if (2 * (brands[i1].o_multiplier - 10)
+							+ 10 >= brands[i2].o_multiplier) {
+						expected = i1;
+					} else {
+						expected = i2;
+					}
 				} else {
-					expected = i2;
+					if (2 * brands[i1].multiplier
+							>= brands[i2].multiplier) {
+						expected = i1;
+					} else {
+						expected = i2;
+					}
 				}
 				b = 0;
 				s = 0;
@@ -764,11 +784,20 @@ static int test_improve_attack_modifier(void *state)
 			if (brands[i2].vuln_flag) {
 				/* Especially vulnerable to the second */
 				rf_on(dummy.race->flags, brands[i2].vuln_flag);
-				if (2 * brands[i2].multiplier
-						> brands[i1].multiplier) {
-					expected = i2;
+				if (pctdam) {
+					if (2 * (brands[i2].o_multiplier - 10)
+							+ 10 > brands[i1].o_multiplier) {
+						expected = i2;
+					} else {
+						expected = i1;
+					}
 				} else {
-					expected = i1;
+					if (2 * brands[i2].multiplier
+							> brands[i1].multiplier) {
+						expected = i2;
+					} else {
+						expected = i1;
+					}
 				}
 				b = 0;
 				s = 0;
@@ -798,6 +827,7 @@ static int test_improve_attack_modifier(void *state)
 			bool *old_slays;
 			int es, eb;
 			char em_verb[20], er_verb[20];
+			bool brand_better;
 
 			if (!slays[i2].base || !slays[i2].race_flag) continue;
 
@@ -813,7 +843,14 @@ static int test_improve_attack_modifier(void *state)
 			if (slays[i2].base) {
 				dummy_race.base->name = slays[i2].base;
 			}
-			if (brands[i1].multiplier >= slays[i2].multiplier) {
+			if (pctdam) {
+				brand_better = (brands[i1].o_multiplier
+					>= slays[i2].o_multiplier);
+			} else {
+				brand_better = (brands[i1].multiplier
+					>= slays[i2].multiplier);
+			}
+			if (brand_better) {
 				eb = i1;
 				es = 0;
 				my_strcpy(em_verb, brands[i1].verb,
@@ -856,8 +893,17 @@ static int test_improve_attack_modifier(void *state)
 				if (slays[i2].base) {
 					dummy_race.base->name = slays[i2].base;
 				}
-				if (2 * brands[i1].multiplier
-						>= slays[i2].multiplier) {
+				if (pctdam) {
+					brand_better = (2
+						* (brands[i1].o_multiplier
+						- 10) + 10
+						>= slays[i2].o_multiplier);
+				} else {
+					brand_better =
+						(2 * brands[i1].multiplier
+						>= slays[i2].multiplier);
+				}
+				if (brand_better) {
 					eb = i1;
 					es = 0;
 					my_strcpy(em_verb, brands[i1].verb,
@@ -984,10 +1030,20 @@ static int test_improve_attack_modifier(void *state)
 			if (slays[i2].base) {
 				dummy_race.base->name = slays[i2].base;
 			}
-			if (slays[i1].multiplier >= slays[i2].multiplier) {
-				expected = i1;
+			if (pctdam) {
+				if (slays[i1].o_multiplier
+						>= slays[i2].multiplier) {
+					expected = i1;
+				} else {
+					expected = i2;
+				}
 			} else {
-				expected = i2;
+				if (slays[i1].multiplier
+						>= slays[i2].multiplier) {
+					expected = i1;
+				} else {
+					expected = i2;
+				}
 			}
 			b = 0;
 			s = 0;

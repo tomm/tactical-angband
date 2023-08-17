@@ -231,10 +231,10 @@ void build_score(struct high_score *entry, const struct player *p,
 	strnfmt(entry->pts, sizeof(entry->pts), "%9ld", total_points(p));
 
 	/* Save the current gold */
-	strnfmt(entry->gold, sizeof(entry->gold), "%9u", p->au);
+	strnfmt(entry->gold, sizeof(entry->gold), "%9ld", (long)p->au);
 
 	/* Save the current turn (standard turns) */
-	strnfmt(entry->turns, sizeof(entry->turns), "%9u", p->total_energy / 100);
+	strnfmt(entry->turns, sizeof(entry->turns), "%9ld", (long)(p->total_energy / 100));
 
 	/* Time of death */
 	if (death_time)

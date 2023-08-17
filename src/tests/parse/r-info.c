@@ -10,11 +10,14 @@
 #include <locale.h>
 #include <langinfo.h>
 
+static char dummy_chest_1[24] = "& Small wooden chest~";
+static char dummy_chest_2[24] = "& Small iron chest~";
+static char dummy_torch[24] = "& Wooden Torch~";
 static struct object_kind dummy_kinds[] = {
 	{ .name = NULL, .kidx = 0, .tval = 0 },
-	{ .name = "& Small wooden chest~", .kidx = 1, .tval = TV_CHEST, .sval = 1 },
-	{ .name = "& Small iron chest~", .kidx = 2, .tval = TV_CHEST, .sval = 2 },
-	{ .name = "& Wooden Torch~", .kidx = 3, .tval = TV_LIGHT, .sval = 1, .next = NULL }
+	{ .name = dummy_chest_1, .kidx = 1, .tval = TV_CHEST, .sval = 1 },
+	{ .name = dummy_chest_2, .kidx = 2, .tval = TV_CHEST, .sval = 2 },
+	{ .name = dummy_torch, .kidx = 3, .tval = TV_LIGHT, .sval = 1, .next = NULL }
 };
 
 int setup_tests(void **state) {
@@ -500,6 +503,15 @@ static int test_flags0(void *state) {
 	ok;
 }
 
+static int test_flags_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/* Check that an unknown flag generates an appropriate error. */
+	enum parser_error r = parser_parse(p, "flags:XYZZY");
+
+	eq(r, PARSE_ERROR_INVALID_FLAG);
+	ok;
+}
+
 static int test_flags_off0(void *state) {
 	struct parser *p = (struct parser*) state;
 	struct monster_race *mr = (struct monster_race*) parser_priv(p);
@@ -529,6 +541,15 @@ static int test_flags_off0(void *state) {
 	require(!rf_has(mr->flags, RF_UNIQUE));
 	require(!rf_has(mr->flags, RF_MALE));
 	require(!rf_has(mr->flags, RF_UNAWARE));
+	ok;
+}
+
+static int test_flags_off_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/* Check that an unknown flag generates an appropriate error. */
+	enum parser_error r = parser_parse(p, "flags-off:XYZZY");
+
+	eq(r, PARSE_ERROR_INVALID_FLAG);
 	ok;
 }
 
@@ -648,6 +669,15 @@ static int test_spells0(void *state) {
 	rsf_wipe(eflags);
 	rsf_on(eflags, RSF_BA_ACID);
 	require(rsf_is_equal(mr->spell_flags, eflags));
+	ok;
+}
+
+static int test_spells_bad0(void *state) {
+	struct parser *p = (struct parser*) state;
+	/* Check that an unknown spell generates an appropriate error. */
+	enum parser_error r = parser_parse(p, "spells:XYZZY");
+
+	eq(r, PARSE_ERROR_INVALID_FLAG);
 	ok;
 }
 
@@ -1003,7 +1033,9 @@ struct test tests[] = {
 	{ "blow1", test_blow1 },
 	{ "blow_bad0", test_blow_bad0 },
 	{ "flags0", test_flags0 },
+	{ "flags_bad0", test_flags_bad0 },
 	{ "flags_off0", test_flags_off0 },
+	{ "flags_off_bad0", test_flags_off_bad0 },
 	{ "desc0", test_desc0 },
 	{ "innate-freq0", test_innate_freq0 },
 	{ "innate-freq_bad0", test_innate_freq_bad0 },
@@ -1011,6 +1043,7 @@ struct test tests[] = {
 	{ "spell-freq_bad0", test_spell_freq_bad0 },
 	{ "spell_power0", test_spell_power0 },
 	{ "spells0", test_spells0 },
+	{ "spells_bad0", test_spells_bad0 },
 	{ "message-vis0", test_messagevis0 },
 	{ "message-vis-bad0", test_messagevis_bad0 },
 	{ "message-invis0", test_messageinvis0 },

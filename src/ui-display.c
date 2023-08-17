@@ -258,7 +258,7 @@ static void prt_gold(int row, int col)
 	char tmp[32];
 
 	put_str("AU ", row, col);
-	strnfmt(tmp, sizeof(tmp), "%9d", player->au);
+	strnfmt(tmp, sizeof(tmp), "%9ld", (long)player->au);
 	c_put_str(COLOUR_L_GREEN, tmp, row, col + 3);
 }
 
@@ -335,9 +335,18 @@ static void prt_sp(int row, int col)
 	uint8_t color = player_sp_attr(player);
 
 	/* Do not show mana unless we should have some */
-	if (player_has(player, PF_NO_MANA) || 
-		(player->lev < player->class->magic.spell_first))
+	if (!player->class->magic.total_spells
+			|| (player->lev < player->class->magic.spell_first)) {
+		/*
+		 * But clear if experience drain may have left no points after
+		 * having points.
+		 */
+		if (player->class->magic.total_spells
+				&& player->exp < player->max_exp) {
+			put_str("            ", row, col);
+		}
 		return;
+	}
 
 	put_str("SP ", row, col);
 
@@ -661,7 +670,7 @@ static int prt_gold_short(int row, int col)
 	char tmp[32];
 
 	put_str("AU:", row, col);
-	strnfmt(tmp, sizeof(tmp), "%d", player->au);
+	strnfmt(tmp, sizeof(tmp), "%ld", (long)player->au);
 	c_put_str(COLOUR_L_GREEN, tmp, row, col + 3);
 	return 4+strlen(tmp);
 }
@@ -691,8 +700,8 @@ static int prt_sp_short(int row, int col)
 	uint8_t color = player_sp_attr(player);
 
 	/* Do not show mana unless we should have some */
-	if (player_has(player, PF_NO_MANA) || 
-		(player->lev < player->class->magic.spell_first))
+	if (!player->class->magic.total_spells
+			|| (player->lev < player->class->magic.spell_first))
 		return 0;
 
 	put_str("SP:", row, col);

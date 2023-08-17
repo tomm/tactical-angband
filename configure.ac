@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(TacticalAngband, 4.2.4, bugs@rephial.org)
+AC_INIT(TacticalAngband, [4.2.4], bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -445,9 +445,6 @@ fi
 ENABLEWIN="$enable_win"; AC_SUBST(ENABLEWIN)
 
 
-LIBS="${LIBS} -lm"
-
-
 dnl Test checking
 if test "$enable_test" = "yes"; then
 	AC_DEFINE(USE_TEST, 1, [Define to 1 to build the test frontend])
@@ -496,7 +493,7 @@ if test "$enable_stats" = "yes"; then
 		AC_DEFINE(USE_STATS, 1, [Define to 1 to build the stats frontend])
 		CPPFLAGS="${CPPFLAGS} ${SQLITE3_CFLAGS}"
 		LDFLAGS="${LDFLAGS_SAVE} ${SQLITE3_LDFLAGS}"
-		LIBS="${LIBS} ${SQLITE3_LIBS}"
+		LIBS="${LIBS} ${SQLITE3_LIBS} -lm"
 		MAINFILES="${MAINFILES} \$(STATSMAINFILES)"
 		AC_SUBST(USE_STATS, 1)
 	else

@@ -77,9 +77,7 @@ Wear/Wield equipment (``w``)
   only one object can be in each slot at a time, if you wear or wield an
   item into a slot which is already occupied, the old item will be first be
   taken off, and may in fact be dropped if there is no room for it in your
-  inventory. Wielding ammunition will add it to an empty slot in your
-  quiver and prompt you to replace a type of ammunition if your quiver is
-  already full. This command takes some energy.
+  inventory. This command takes some energy.
 
 Take off equipment (``t``) or Take off equipment (``T``)
   Use this command to take off a piece of equipment and return it to your
@@ -124,9 +122,10 @@ Go up staircase (``<``)
   case you will return to the town level. Note that whenever you leave a
   level (not the town), you will never find it again. This means that for
   all intents and purposes, any objects on that level are destroyed. This
-  includes artifacts unless the "Create characters in preserve mode" option
-  was set when your character was created, in which case the artifacts may
-  show up again later. This command takes some energy.
+  includes artifacts unless the "Lose artifacts when leaving level" option
+  was turned off when your character was created, in which case the artifacts
+  may show up again later. The option to lose artifacts is off in the default
+  configuration. This command takes some energy.
 
 Go down staircase (``>``)
   Descends a down staircase you are standing on. There are always at least
@@ -489,7 +488,25 @@ Character Description (``C``)
   From this screen, you can change your name or use the file character
   description command to save your character status to a file. That command
   saves additional information, including your background, your inventory,
-  and the contents of your house.
+  and the contents of your house. The command to change the mode switches
+  what's displayed back and forth from the original view to one that shows
+  how your current equipment and the player's innate characteristics affect
+  certain attributes. The default symbols used within that view are '.' for
+  nothing equipped or no known effect on the attribute, '?' if your character
+  does not know if there's an effect on the attribute, '+' if your character
+  knows that there is a positive effect on the attribute, '-' if your character
+  knows that there is a negative effect on the attribute, '!' if a timed effect
+  positively affects the attribute, or '=' if a timed effect negatively affects
+  the attribute.  For elemental resistances (the block of attributes on the
+  far left), '*', to indicate an immunity, and '~' to indicate that something
+  provides both a '+' and '-', are also possible.  The color of the label for
+  the attribute will indicate the sum of the different sources for your
+  character. Those colors default to be: slate for when your character does
+  not know the rune associated with that attribute, white if there is no
+  combined effect (excluding timed effects) known to the character, light
+  blue if the known combined effect (excluding timed effects) is positive, red
+  if the known combined effect (excluding timed effects) is negative, and
+  green if the known combined effect is an elemental immunity.
 
 Check knowledge (``~``)
   This command allows you to ask about the knowledge possessed by your
@@ -516,10 +533,10 @@ Check knowledge (``~``)
   artifacts
     Will display all artifacts that your character has encountered. Normally,
     once an artifact is "generated" and "lost", it can never again be found,
-    and will become "known" to the player. With "preserve" mode, an artifact
-    can never be "lost" until it is "known" to the player. In either case,
-    any "known" artifacts not in the possession of the player will never
-    again be "generated".
+    and will become "known" to the player. With the "Lose artifacts when
+    leaving level" option turned off, an artifact can never be "lost" until
+    it is "known" to the player. In either case, any "known" artifacts not
+    in the possession of the player will never again be "generated".
 
   ego items
     Will display the "egos" your character has encountered.  Each "ego" is
@@ -707,12 +724,12 @@ control keys, and often, you can disable their special effects.
 If you are playing on a UNIX or similar system, then Ctrl-c will interrupt
 Angband. The second and third interrupt will induce a warning bell, and the
 fourth will induce both a warning bell and a special message, since the
-fifth will quit the game, after killing your character. Also, 'Ctrl-z'
-will suspend the game, and return you to the original command shell, until
-you resume the game with the 'fg' command. There is now a compilation
-option to force the game to prevent the "double 'ctrl-z' escape death
-trick". The 'Ctrl-\\' and 'Ctrl-d' and 'Ctrl-s' keys should not be
-intercepted.
+fifth will either quit without saving (if Angband was compiled without the
+SETGID option which puts the save files in a shared location for all users)
+or kill your character (if Angband was compiled with the SETGID option).
+Also, 'Ctrl-z' will suspend the game, and return you to the original command
+shell, until you resume the game with the 'fg' command. The 'Ctrl-\\' and
+'Ctrl-d' and 'Ctrl-s' keys should not be intercepted.
 
 It is often possible to specify "control-keys" without actually pressing
 the control key, by typing a caret (``^``) followed by the key. This is

@@ -137,14 +137,17 @@ acquire treasure.
 Town Buildings
 ==============
 
-Your character will begin their adventure with some basic supplies, and some
-extra gold with which to purchase more supplies at the town stores.
+Your character will begin their adventure with some basic supplies and some
+extra gold with which to purchase more supplies at the town stores. If you
+choose to play with the starting kit option on (it is on by default), your
+character will start with more items but with less gold.
 
 You may enter any open store to buy items of the appropriate type.
 The price the shopkeeper requests is dependent on the price of the item.
-By default stores will not buy items from the player.  If you choose to play
-with selling enabled, stores have a maximum value; they will not pay more
-than that for any item, regardless of how much it is actually worth.
+By default stores will not buy items from the player. If you choose to play
+with the no selling option off (it is on by default), they will buy, but
+each shopkeeper has a maximum amount she or he is willing to offer for any item,
+regardless of how much it is actually worth.
 
 Once inside a store, you will see the name and race of the store owner, the
 name of the store, the maximum amount of cash that the store owner will pay
@@ -489,10 +492,10 @@ The possible messages are :
 ===   ========================================= 
 
 The last message indicates an artifact is present and is only possible
-if the preserve option is disabled (if preserve is enabled, an artifact will
-guarantee a feeling of 5 or better).
+if the option to lose artifacts is on (if that option is off, an
+artifact will guarantee a feeling of 5 or better).
 
-You may review your level feeling any time by using the ^K command.
+You may review your level feeling any time by using the ^f command.
 You may also consult it by checking the LF: indicator at the bottom
 left of the screen. The first number after it is the level feeling
 and the second one is the object feeling. The second one will be ?
