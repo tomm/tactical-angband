@@ -1438,11 +1438,11 @@ void steal_monster_item(struct monster *mon, int midx)
 	if (midx < 0) {
 		/* Base monster protection and player stealing skill */
 		bool unique = rf_has(mon->race->flags, RF_UNIQUE);
-		int guard = (mon->race->level * (unique ? 4 : 3)) / 4 +
-			mon->mspeed - player->state.speed;
-		int steal_skill = player->state.skills[SKILL_STEALTH] +
-			adj_dex_th[player->state.stat_ind[STAT_DEX]];
-		int monster_reaction;
+		int guard = (mon->race->level * (unique ? 4 : 3)) / 2 +
+                       4 * (mon->mspeed - player->state.speed);
+		int steal_skill = player->lev / 10 +
+			player->state.skills[SKILL_STEALTH] +
+			adj_dex_th[player->state.stat_ind[STAT_DEX]] / 2;
 
 		/* No object */
 		if (!obj) {
@@ -1460,12 +1460,15 @@ void steal_monster_item(struct monster *mon, int midx)
 			steal_skill /= 4;
 		}
 		if (mon->m_timed[MON_TMD_SLEEP]) {
-			guard /= 2;
+			guard /= 4;
 		}
 
-		/* Monster base reaction, plus allowance for item weight */
-		monster_reaction = guard / 2 + randint1(MAX(guard, 1));
-		monster_reaction += obj->weight / 20;
+		/* allowance for item weight */
+		guard += obj->weight / 20;
+		guard = MAX(1, guard);
+		int monster_reaction = randint1(guard);
+
+		//msg("Chance of success: %d%%.", MIN(100, 100 * steal_skill / guard));
 
 		/* Try and steal */
 		if (monster_reaction < steal_skill) {
