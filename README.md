@@ -146,7 +146,7 @@ Enjoy!
 
 -- Tom Morton
 
-# Angband 4.2.4
+# Angband 4.2.5
 
 Angband is a graphical dungeon adventure game that uses textual characters to
 represent the walls and floors of a dungeon and the inhabitants therein, in the

@@ -3,6 +3,9 @@ the broader role of release management, please see the ReleaseManager page.
 
 Before release:
 
+* Check that the dependencies in src/Makefile.inc are up to date;  on Linux/Unix
+  run "cd src; make -f Makefile.std depgen" and then merge the generated
+  src/Makefile.new into src/Makefile.inc
 * Check it compiles on:
    * Linux with and without autoconf: ncurses, x11, sdl (ask d_m or magnate to confirm)
    * OpenBSD + FreeBSD (ask Aerdan to confirm; nudge Edd to build the OpenBSD package)
@@ -17,12 +20,12 @@ Before release:
      330.txt for example)
    * check that all docs in lib/help are up-to-date with gameplay changes
    * check copyrights and licences are correct and up-to-date
-   * don't forget the top-level readme.txt!
+   * don't forget the top-level README.md!
 * Check all version strings
    * configure.ac
    * src/Makefile.src
    * src/angband.man
-   * src/buildid.h
+   * src/buildid.c
 * git tag -a version; git push official tag version
 
 Release:
