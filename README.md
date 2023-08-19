@@ -11,7 +11,7 @@ Tactical Angband reduces the grind and increases the tactical depth,
 while maintaining the feel of Angband.
 
 The following is a (possibly incomplete) list of changes made to Tactical
-Angband relative to (Vanilla) Angband 4.2.4 (4.2.4-232-g6e34fd35f).
+Angband relative to (Vanilla) Angband 4.2.4 (4.2.4-317-gabbaf5268).
 
 ## Dungeon
 
