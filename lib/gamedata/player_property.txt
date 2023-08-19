@@ -135,6 +135,11 @@ desc:  When you spend SP by casting a spell you regain some health, and
 desc: fading SP replenish your health more efficiently.  The more damaged
 desc: you are, the bigger these health gains will be.
 
+type:player
+code:ASSASSIN
+name:Assassin
+desc:Your melee attacks on sleeping enemies are silent.
+
 
 # Object flags
 

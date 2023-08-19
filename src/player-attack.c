@@ -785,9 +785,13 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 	tohit_chance = chance_of_melee_hit(p, obj, mon);
 
 	if (obj && of_has(obj->flags, OF_OPPORTUNIST) && mon->m_timed[MON_TMD_SLEEP]) {
-		/* Silent, +2 might */
-		msg("You cruelly attack a sleeping foe!");
+		/* +2 might */
 		num_blows_x100 += 200;
+	}
+
+	if (player_has(p, PF_ASSASSIN) && mon->m_timed[MON_TMD_SLEEP]) {
+		msg("You strike silently...");
+		tohit_chance *= 2;
 	} else {
 		/* Melee attacks disturb other monsters nearby */
 		monsters_handle_player_noise(100);

@@ -1430,7 +1430,7 @@ equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
 #equip:scroll:Deep Descent:1:1:none
 equip:magic book:[First Spells]:1:1:none
-player-flags:CHOOSE_SPELLS | STEAL
+player-flags:CHOOSE_SPELLS | STEAL | ASSASSIN
 title:Vagabond
 title:Cutpurse
 title:Footpad

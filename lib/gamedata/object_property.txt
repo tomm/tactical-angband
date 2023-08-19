@@ -732,7 +732,7 @@ subtype:melee
 id-type:on wield
 code:OPPORTUNIST
 power:0
-desc:Silent and lethal (+2 might) when used against sleeping foe
+desc:Lethal (+2 might) when used against sleeping foe
 
 name:ignore acid
 type:ignore
