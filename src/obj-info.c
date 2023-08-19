@@ -577,7 +577,7 @@ static void o_calculate_melee_crits(struct player_state *state,
 		}
 
 		player->state = *state;
-		power = chance_of_melee_hit_base(&player->state, obj);
+		power = chance_of_melee_hit_base(player, obj);
 		player->state = old_state;
 		power = (power * z_info->o_m_crit_power_toh_scl_num)
 			/ z_info->o_m_crit_power_toh_scl_den;

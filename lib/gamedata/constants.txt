@@ -230,7 +230,7 @@ melee-critical:chance-level-scale:0
 
 # Scale factor for the to-hit skill when calculating the chance for a melee
 # critical
-melee-critical:chance-toh-skill-scale:1
+melee-critical:chance-toh-skill-scale:0
 
 # Value added to the chance for a melee critical
 melee-critical:chance-offset:-60

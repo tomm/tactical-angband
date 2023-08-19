@@ -88,11 +88,11 @@ int breakage_chance(const struct object *obj, bool hit_target) {
  * \param p The player
  * \param weapon The player's weapon
  */
-int chance_of_melee_hit_base(const struct player_state *pstate,
+int chance_of_melee_hit_base(const struct player *p,
 		const struct object *weapon)
 {
-	int bonus = pstate->to_h + (weapon ? weapon->to_h : 0);
-	return pstate->skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
+	int bonus = p->state.to_h + (weapon ? weapon->to_h : 0);
+	return p->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
 }
 
 /**
@@ -106,7 +106,7 @@ int chance_of_melee_hit_base(const struct player_state *pstate,
 static int chance_of_melee_hit(const struct player *p,
 		const struct object *weapon, const struct monster *mon)
 {
-	int chance = chance_of_melee_hit_base(&p->state, weapon);
+	int chance = chance_of_melee_hit_base(p, weapon);
 	/* Non-visible targets have a to-hit penalty of 50% */
 	if (!monster_is_visible(mon)) {
 		return chance / 2;
@@ -409,11 +409,10 @@ static int o_critical_shot(const struct player *p,
  */
 static int critical_melee(const struct player *p,
 		const struct monster *monster,
-		int weight,
-		const int effective_tohit,
+		int weight, const int tohit_chance,
 		int dam, uint32_t *msg_type)
 {
-	int to_h = effective_tohit;
+	int to_h = tohit_chance / BTH_PLUS_ADJ;
 	int chance, new_dam;
 
 	if (is_debuffed(monster)) {
@@ -451,9 +450,9 @@ static int critical_melee(const struct player *p,
 static int o_critical_melee(const struct player *p,
 		const struct monster *monster,
 		const struct object *obj,
-		const int effective_tohit, uint32_t *msg_type)
+		const int tohit_chance, uint32_t *msg_type)
 {
-	int power = chance_of_melee_hit_base(&p->state, obj);
+	int power = tohit_chance;
 	int chance_num, chance_den, add_dice;
 
 	if (is_debuffed(monster)) {
@@ -512,7 +511,7 @@ static int melee_damage(const struct monster *mon, struct object *obj, int b, in
  * criticals add extra dice.
  */
 static int o_melee_damage(struct player *p, const struct monster *mon,
-		struct object *obj, int effective_tohit, int b, int s, uint32_t *msg_type)
+		struct object *obj, int tohit_chance, int b, int s, uint32_t *msg_type)
 {
 	int dice = (obj) ? obj->dd : 1;
 	int sides, dmg, add = 0;
@@ -548,7 +547,7 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
 	 * Get number of critical dice; for now, excluding criticals for
 	 * unarmed combat
 	 */
-	if (obj) dice += o_critical_melee(p, mon, obj, effective_tohit, msg_type);
+	if (obj) dice += o_critical_melee(p, mon, obj, tohit_chance, msg_type);
 
 	/* Roll out the damage. */
 	dmg = damroll(dice, sides);
@@ -762,7 +761,7 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 	char verb[20];
 	uint32_t msg_type = MSG_HIT;
 	int j, b, s, weight, dmg;
-	int effective_tohit;
+	int tohit_chance;
 
 	/* Default to punching */
 	my_strcpy(verb, "punch", sizeof(verb));
@@ -783,7 +782,7 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 		return false;
 	}
 
-	effective_tohit = chance_of_melee_hit(p, obj, mon);
+	tohit_chance = chance_of_melee_hit(p, obj, mon);
 
 	if (obj && of_has(obj->flags, OF_OPPORTUNIST) && mon->m_timed[MON_TMD_SLEEP]) {
 		/* Silent, +2 might */
@@ -799,7 +798,7 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
 
 	/* See if the player hit */
-	success = test_hit(effective_tohit, mon->race->ac);
+	success = test_hit(tohit_chance, mon->race->ac);
 
 	/* If a miss, skip this hit */
 	if (!success) {
@@ -842,9 +841,9 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 	if (!OPT(p, birth_percent_damage)) {
 		dmg = melee_damage(mon, obj, b, s);
 		/* For now, exclude criticals on unarmed combat */
-		if (obj) dmg = critical_melee(p, mon, weight, effective_tohit, dmg, &msg_type);
+		if (obj) dmg = critical_melee(p, mon, weight, tohit_chance, dmg, &msg_type);
 	} else {
-		dmg = o_melee_damage(p, mon, obj, effective_tohit, b, s, &msg_type);
+		dmg = o_melee_damage(p, mon, obj, tohit_chance, b, s, &msg_type);
 	}
 
 	/* Splash damage and earthquakes */
@@ -1025,9 +1024,7 @@ static bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fea
  */
 void py_attack(struct player *p, struct loc grid)
 {
-	//int avail_energy = MIN(p->energy, z_info->move_energy);
-	//int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
-	bool /*slain = false,*/ fear = false;
+	bool fear = false;
 	struct monster *mon = square_monster(cave, grid);
 
 	/* Disturb the player */
