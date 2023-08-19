@@ -219,7 +219,7 @@ player:esp-range:10
 melee-critical:debuff-toh:10
 
 # Scale factor for the weapon's weight in the chance for a melee critical
-melee-critical:chance-weight-scale:1
+melee-critical:chance-weight-scale:-1
 
 # Scale factor for the overall to-hit value when calculating the chance
 # for a melee critical
