@@ -223,7 +223,7 @@ melee-critical:chance-weight-scale:1
 
 # Scale factor for the overall to-hit value when calculating the chance
 # for a melee critical
-melee-critical:chance-toh-scale:5
+melee-critical:chance-toh-scale:25
 
 # Scale factor for player level when calculating the chance for a melee critical
 melee-critical:chance-level-scale:0
