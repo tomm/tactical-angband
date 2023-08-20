@@ -475,7 +475,7 @@ static void calculate_melee_crits(struct player_state *state, int weight,
 	 * critical_melee().
 	 */
 	int crit_chance = z_info->m_crit_chance_weight_scl * weight
-		+ z_info->m_crit_chance_toh_scl * (state->to_h + plus)
+		+ z_info->m_crit_chance_toh_scl * (state->skills[SKILL_TO_HIT_MELEE]/3 + state->to_h + plus)
 		+ z_info->m_crit_chance_level_scl * player->lev
 		+ z_info->m_crit_chance_toh_skill_scl
 			* state->skills[SKILL_TO_HIT_MELEE]

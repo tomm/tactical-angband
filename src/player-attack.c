@@ -111,10 +111,6 @@ static int chance_of_melee_hit(const struct player *p,
 	if (!monster_is_visible(mon)) {
 		return chance / 2;
 	}
-	/* Sleeping targets have to-hit bonus of 100% */
-	else if (mon->m_timed[MON_TMD_SLEEP]) {
-		return chance * 2;
-	}
 	else {
 		return chance;
 	}

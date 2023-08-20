@@ -138,7 +138,7 @@ desc: you are, the bigger these health gains will be.
 type:player
 code:ASSASSIN
 name:Assassin
-desc:Your melee attacks on sleeping enemies are silent.
+desc:Your melee attacks on sleeping enemies are silent and accurate.
 
 
 # Object flags
