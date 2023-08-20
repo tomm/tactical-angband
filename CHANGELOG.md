@@ -1,3 +1,20 @@
+## 0.8
+
+* Ring of mouse is reworked: -d4 STR, +d4 STEALTH, +d4 INFRA
+* Melee, archery, throwing, using most offensive magic items, and casting most
+  offensive spells now creates noise that can wake up monsters.
+* Rogues gain +100% to-hit bonus against sleeping monsters 
+* Rogues can silently attack sleeping monsters
+* Rogue hit-and-run power can now be triggered by attacking, as well as by stealing
+* Melee criticals go down with weapon weight, not up
+* Plus-to-hit has more (positive) effect on criticals
+* Some small stabby weapons gain +might when used against sleeping monsters
+* Rogue item theft chance tweaked, making the power useful into the late game
+* Teleportation rings are now generated down to dlvl 100
+* Sleep monsters works against more monster types
+* Staff of sleep has fewer charges
+* Recharge scrolls are less common
+
 ## 0.7
 
 * Fixed a bug where monsters capable of knocking out the player (mystics and
