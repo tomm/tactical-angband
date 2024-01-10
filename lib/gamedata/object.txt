@@ -2538,7 +2538,7 @@ level:1
 weight:5
 cost:150
 alloc:25:1 to 100
-pile:100:1d3
+pile:100:1d1
 power:5
 effect:TELEPORT
 dice:5
@@ -5416,7 +5416,7 @@ graphics:_:d
 level:20
 weight:50
 cost:2000
-alloc:5:20 to 100
+alloc:0:20 to 100
 attack:1d2:0:0
 armor:0:0
 charges:2+d2
