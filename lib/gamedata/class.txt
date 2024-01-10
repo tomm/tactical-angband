@@ -257,9 +257,9 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Fire Ball:6:5:33:5
+effect:NOISY
 effect:BALL:FIRE:2
 dice:$B
-effect:NOISY
 expr:B:PLAYER_LEVEL:* 2
 desc:Shoots a radius-2 fire ball.
 
@@ -288,9 +288,9 @@ effect-yx:20:20
 desc:Detects gold and senses objects in the immediate area.
 
 spell:Frost Bolt:13:5:40:6
+effect:NOISY
 effect:BOLT_OR_BEAM:COLD
 dice:$Dd8
-effect:NOISY
 expr:D:PLAYER_LEVEL:- 5 / 3 + 6
 desc:Shoots a bolt of frost that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
@@ -305,9 +305,9 @@ effect-yx:20:20
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Acid Spray:20:5:30:12
+effect:NOISY
 effect:ARC:ACID:10:60
 dice:$Dd8
-effect:NOISY
 expr:D:PLAYER_LEVEL:/ 2
 desc:Sprays acid in a 60-degree cone, hitting all monsters up to 10 grids away.
 
@@ -405,37 +405,37 @@ book-graphics:?:r
 book-properties:50000:28:60 to 100
 
 spell:Shock Wave:20:5:40:16
+effect:NOISY
 effect:BALL:SOUND:2
 dice:$B
-effect:NOISY
 expr:B:PLAYER_LEVEL:* 2
 desc:Shoots a radius-2 sound ball.
 desc:  Apart from doing sound damage, this also has a chance to stun
 desc: each monster in the area of effect.
 
 spell:Explosion:30:10:50:20
+effect:NOISY
 effect:BALL:SHARD:2
 dice:$B
 expr:B:PLAYER_LEVEL:* 2
 effect:BALL:FORCE:2
 dice:$B
 expr:B:PLAYER_LEVEL:/ 5
-effect:NOISY
 desc:Shoots a radius-2 shards ball and throws around anything in the area of
 desc: effect.
 
 spell:Lightning Storm:35:12:60:25
+effect:NOISY
 effect:SPHERE:ELEC:10:10
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 200
-effect:NOISY
 desc:A vast lightning storm centred on the player.
 
 spell:Inferno:40:13:60:30
+effect:NOISY
 effect:SPHERE:FIRE:10:10
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 250
-effect:NOISY
 desc:An fiery tempest centred on the player.
 
 #spell:Banishment:35:45:95:25
@@ -559,12 +559,12 @@ expr:B:PLAYER_LEVEL:* 2
 desc:Senses the rock and earth around you for a level-dependent duration.
 
 spell:Lightning Strike:12:6:35:8
+effect:NOISY
 effect:STRIKE:ELEC:0
 dice:$Dd4
 expr:D:PLAYER_LEVEL:/ 4
 effect:STRIKE:SOUND:3
 dice:$B
-effect:NOISY
 expr:B:PLAYER_LEVEL:+ 5
 desc:Strikes a target from above with a lightning bolt, followed by a clap
 desc: of thunder.  Target grid must be targetable and known to the player;
@@ -575,7 +575,6 @@ effect:NOISY
 effect:SHORT_BEAM:SHARD:4:5
 dice:$Dd6
 expr:D:PLAYER_LEVEL:/ 3 + 2
-effect:NOISY
 desc:Causes shards to explode in a line out of the earth, striking objects and
 desc: monsters.  Length of the line increases with player level.
 
@@ -658,11 +657,11 @@ book-graphics:?:o
 book-properties:50000:28:60 to 100
 
 spell:Meteor Swarm:30:14:85:20
+effect:NOISY
 effect:SWARM:METEOR:1
 dice:$B+m$M
 expr:B:PLAYER_LEVEL:/ 2 + 30
 expr:M:PLAYER_LEVEL:/ 20 + 2
-effect:NOISY
 desc:Shoots a swarm of 3 or 4 meteors.
 desc:  Meteors will travel until hitting a wall, a monster,
 desc: or reaching the target location.
@@ -679,27 +678,27 @@ desc:Fires a gravity beam that hurts each monster in its path
 desc: and has a chance of teleporting it away.
 
 spell:Ice Storm:37:25:75:24
+effect:NOISY
 effect:PROJECT_LOS:ICE
 dice:3d$S
-effect:NOISY
 expr:S:PLAYER_LEVEL:* 3
 desc:Strikes every monster in line of sight with sheets of ice from above.
 
 spell:Volcanic Eruption:40:30:75:50
+effect:NOISY
 effect:SPHERE:FIRE:5:5
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:* 3 / 2
 expr:S:PLAYER_LEVEL:* 3
 effect:EARTHQUAKE:NONE:5
-effect:NOISY
 desc:Creates a radius 5 ball of fire, followed by a radius 5 earthquake,
 desc: around the player.
 
 spell:River of Lightning:43:35:75:100
+effect:NOISY
 effect:ARC:PLASMA:0:20
 dice:$Dd8
 expr:D:PLAYER_LEVEL:+ 10
-effect:NOISY
 desc:Spews plasma in a long narrow cone from the player.
 
 
@@ -1164,6 +1163,7 @@ desc: unless you have resistance to blindness or dark.
 desc:  This ritual has no effect when used in the town.
 
 spell:Unleash Chaos:38:15:90:100
+effect:NOISY
 effect:RANDOM
 dice:3
 effect:BEAM:CHAOS
@@ -1179,7 +1179,6 @@ effect:WAKE
 effect:PROJECT_LOS:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-effect:NOISY
 desc:Fires a chaos beam, arc or ball in the chosen direction, wakes everything
 desc: in the area, and attempts to frighten everything in line of sight.
 
