@@ -538,7 +538,7 @@ static void collect_damage_results(double *avg, double *avg_var, int *work,
 			int16_t old_hp = m->hp;
 			bool afraid = false;
 
-			(void)py_attack_real(p, m->grid, &afraid);
+			(void)py_attack_real(p, m->grid, 100, &afraid);
 			/*
 			 * Will not work if hits can have non-positive damage.
 			 * Could test for the message string (but that'll break
