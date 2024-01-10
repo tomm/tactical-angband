@@ -848,7 +848,7 @@ bool py_attack_real(struct player *p, struct loc grid, int num_blows_x100, bool 
 
 	/* Splash damage and earthquakes */
 	splash = (weight * dmg) / 100;
-	if (player_of_has(p, OF_IMPACT) && dmg > 50) {
+	if (player_of_has(p, OF_IMPACT) && dmg > 250) {
 		do_quake = true;
 		equip_learn_flag(p, OF_IMPACT);
 	}
