@@ -1,3 +1,8 @@
+## 0.8.1
+
+* Fixed a bug that caused some spells to do no damage (particularly mage).
+* Rarer phase door scrolls, and no phase door staves
+
 ## 0.8
 
 * Ring of mouse is reworked: -d4 STR, +d4 STEALTH, +d4 INFRA
